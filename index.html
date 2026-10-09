@@ -1,906 +1,881 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#080808">
-  <title>Spooky House | A Casa do Basquete</title>
-  <meta name="description" content="Portal oficial Spooky House Basketball. Treinos, turmas, campeonatos e financeiro.">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --bg:#080808;--panel:#121212;--panel2:#191919;--line:#292929;
-      --text:#f5f5f5;--muted:#a0a0a0;--white:#fff;
-      --green:#77e5a1;--red:#ff7777;--yellow:#ffd36e;
-      --radius:16px;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
-    button,input,select,textarea{font:inherit}
-    button,a{transition:.18s}
-    button{cursor:pointer}
-    a{color:inherit}
-    .hidden{display:none!important}
-    .muted{color:var(--muted)}
-    .small{font-size:12px}
-    .wrap{width:min(1180px,94%);margin:auto}
-    .topbar{border-bottom:1px solid var(--line);background:#0b0b0b;position:sticky;top:0;z-index:10}
-    .topinner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 0}
-    .brand{display:flex;align-items:center;gap:11px;font-weight:900;letter-spacing:1px}
-    .brandmark{width:42px;height:42px;border:2px solid white;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:13px}
-    .brand small{display:block;color:var(--muted);font-weight:500;font-size:10px;letter-spacing:2px;margin-top:4px}
-    .top-actions{display:flex;align-items:center;gap:9px}
-    .layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:22px;padding:25px 0 50px}
-    .sidebar{align-self:start;position:sticky;top:86px}
-    .sidebox{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
-    .navbtn{display:block;width:100%;text-align:left;border:0;background:transparent;color:#c8c8c8;padding:12px;border-radius:10px;margin:2px 0}
-    .navbtn:hover,.navbtn.active{background:#252525;color:white}
-    .navlabel{font-size:10px;color:#777;letter-spacing:1.5px;padding:14px 12px 5px}
-    main{min-width:0}
-    .hero{padding:27px;border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(125deg,#191919,#0c0c0c);margin-bottom:20px}
-    .eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
-    h1{font-size:clamp(26px,4vw,40px);margin:9px 0}
-    h2{font-size:23px;margin:0 0 16px}
-    h3{font-size:16px;margin:0 0 10px}
-    p{line-height:1.55}
-    .hero p{max-width:620px;color:#aaa;margin-bottom:0}
-    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
-    .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
-    .card,.section,.stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:19px;min-width:0}
-    .card{display:block;text-decoration:none}
-    .card:hover{border-color:#666;transform:translateY(-2px)}
-    .card p{color:var(--muted);font-size:13px}
-    .cardicon{font-size:22px;margin-bottom:12px}
-    .stat .num{font-size:27px;font-weight:800;margin-top:9px}
-    .stat .label{font-size:12px;color:var(--muted)}
-    .section{margin-bottom:17px}
-    .sectionhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}
-    .sectionhead h2{margin:0}
-    .btn{border:1px solid #393939;background:#222;color:white;border-radius:10px;padding:10px 14px;font-weight:700}
-    .btn:hover{background:#333}
-    .btn.primary{background:white;color:black;border-color:white}
-    .btn.primary:hover{background:#ddd}
-    .btn.danger{border-color:#6b3030;color:#ffaaaa;background:#261313}
-    .btn.success{border-color:#28583a;color:var(--green);background:#102018}
-    .btn.ghost{background:transparent}
-    .btn.smallbtn{font-size:12px;padding:7px 9px}
-    .actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-    .formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-    .field{display:flex;flex-direction:column;gap:7px;min-width:0}
-    .field.full{grid-column:1/-1}
-    label{font-size:12px;color:#c8c8c8}
-    input,select,textarea{width:100%;min-width:0;background:#090909;color:white;border:1px solid #363636;border-radius:9px;padding:11px 12px;outline:none}
-    input:focus,select:focus,textarea:focus{border-color:#999}
-    textarea{min-height:85px;resize:vertical}
-    select option{background:#111}
-    .checkgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
-    .checkitem{display:flex;align-items:center;gap:8px;font-size:12px;color:#ddd}
-    .checkitem input{width:auto}
-    .list{display:grid;gap:10px}
-    .item{padding:15px;border:1px solid var(--line);border-radius:12px;background:#0d0d0d}
-    .itemtop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-    .item p{margin:7px 0;color:var(--muted);font-size:13px;white-space:pre-wrap}
-    .item .actions{margin-top:12px}
-    .badge{display:inline-flex;align-items:center;border:1px solid #383838;border-radius:99px;padding:5px 9px;font-size:11px;color:#ddd;white-space:nowrap}
-    .badge.green{border-color:#28583a;color:var(--green)}
-    .badge.red{border-color:#693232;color:#ffaaaa}
-    .badge.yellow{border-color:#65512a;color:var(--yellow)}
-    .empty{padding:25px 10px;text-align:center;color:var(--muted);border:1px dashed #333;border-radius:12px;font-size:13px}
-    .notice{border:1px solid #353535;background:#151515;border-radius:11px;padding:13px;color:#ccc;font-size:13px;line-height:1.5;margin-bottom:14px}
-    .notice.error{border-color:#633333;color:#ffb3b3}
-    .notice.ok{border-color:#28583a;color:#a4efbd}
-    .tablewrap{overflow-x:auto}
-    table{width:100%;border-collapse:collapse;font-size:13px}
-    th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #292929;vertical-align:top}
-    th{color:#999;font-weight:600}
-    .loginwrap{min-height:100vh;display:grid;place-items:center;padding:22px}
-    .loginbox{width:min(430px,100%);padding:28px;background:var(--panel);border:1px solid var(--line);border-radius:20px}
-    .loginbox .brand{margin-bottom:25px}
-    .loginbox .field{margin-bottom:13px}
-    .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#f5f5f5;color:#111;padding:12px 18px;border-radius:10px;box-shadow:0 8px 30px #0008;z-index:99;max-width:90%;font-size:13px}
-    .footer{padding:25px 0 35px;text-align:center;color:#666;font-size:11px;border-top:1px solid #222}
-    .inlineform{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .inlineform input,.inlineform select{flex:1;min-width:130px}
-    .sectionnote{font-size:12px;color:#999;margin:-7px 0 15px}
-    .money{font-size:24px;font-weight:800}
-    .divider{height:1px;background:#292929;margin:17px 0}
-    @media(max-width:760px){
-      .layout{grid-template-columns:1fr;padding-top:14px}
-      .sidebar{position:static}
-      .sidebox{display:flex;gap:5px;overflow-x:auto;padding:7px}
-      .navlabel{display:none}
-      .navbtn{white-space:nowrap;width:auto;margin:0;padding:10px;font-size:12px}
-      .grid3{grid-template-columns:repeat(2,minmax(0,1fr))}
-      .topinner{padding:10px 0}
-      .brandmark{width:36px;height:36px}
-      .hero{padding:21px}
-      .section,.card{padding:15px}
-    }
-    @media(max-width:450px){
-      .grid,.formgrid{grid-template-columns:1fr}
-      .grid3{grid-template-columns:1fr 1fr}
-      .field.full{grid-column:auto}
-      .top-actions .btn{padding:8px;font-size:12px}
-      .itemtop{flex-direction:column}
-      .checkgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#050505">
+<title>Spooky House | A Casa do Basquete</title>
+<style>
+:root{color-scheme:dark;--bg:#050505;--panel:#101010;--line:#292929;--muted:#999;--white:#fff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--white);font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.5;cursor:wait}
+.hidden{display:none!important}
+.screen{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:24px 16px}
+.container{width:100%;max-width:440px}
+.brand{text-align:center;margin-bottom:32px}
+.brand h1{margin:0;font-size:48px;font-weight:900;letter-spacing:7px}
+.brand p{color:var(--muted);font-size:11px;letter-spacing:3px;text-transform:uppercase}
+.panel,.card,.section-panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+.field{margin:14px 0}
+label{display:block;margin-bottom:7px;color:#bbb;font-size:12px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #353535;border-radius:8px;background:#070707;color:#fff}
+textarea{min-height:88px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:1px solid #fff}
+.primary{padding:13px 16px;background:#fff;color:#000;border:0;border-radius:8px;font-weight:800}
+.secondary,.danger{background:transparent;color:#fff;border:1px solid #444;border-radius:8px;padding:10px 13px}
+.danger{border-color:#793434;color:#ffc0c0}
+.text-button{display:block;margin:18px auto 0;padding:4px;color:#aaa;background:none;border:0;font-size:13px}
+#message{display:none;margin-top:16px;padding:12px;border-radius:8px;font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+#message.show{display:block}
+#message.error{background:#290d0d;color:#ffc0c0}
+#message.success{background:#102817;color:#b7f5c3}
+.footnote{text-align:center;color:#555;font-size:10px;letter-spacing:2px;margin-top:24px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 5%;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.small-brand{font-weight:900;letter-spacing:4px;font-size:21px}
+main{width:100%;max-width:1100px;margin:auto;padding:30px 20px 60px}
+.eyebrow{color:var(--muted);font-size:11px;letter-spacing:2px;text-transform:uppercase}
+.welcome h1{font-size:32px;margin:10px 0}
+.welcome p,.card p,.muted{color:var(--muted);line-height:1.6}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:26px}
+.card{min-height:145px;text-align:left;color:#fff;transition:border-color .15s}
+button.card:hover{border-color:#777}
+.card h2{font-size:19px;margin:12px 0 8px}
+.card p{font-size:13px;margin:0}
+.wide{grid-column:1/-1}
+.section-panel{margin-top:18px}
+.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.section-head h2{margin:0 0 8px}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}
+.form-grid .full{grid-column:1/-1}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.item{border:1px solid #303030;border-radius:10px;padding:15px;margin-top:12px;overflow-wrap:anywhere}
+.item h3{margin:0 0 7px;font-size:17px}
+.item p{margin:5px 0;color:#bbb;font-size:13px;line-height:1.5}
+.tag{display:inline-block;border:1px solid #444;border-radius:99px;padding:4px 8px;font-size:11px;color:#ddd;margin:0 5px 6px 0}
+.notice{margin-top:24px;padding:16px;border:1px solid var(--line);border-radius:10px;color:#aaa;font-size:13px;line-height:1.6}
+.inline-check{display:flex;align-items:center;gap:9px;margin:12px 0;color:#ccc;font-size:13px}
+.inline-check input{width:auto}
+.empty{color:#888;font-size:13px;padding:15px 0}
+.small{font-size:12px;color:#888;line-height:1.5}
+@media(max-width:560px){
+ .cards{grid-template-columns:1fr}
+ .wide{grid-column:auto}
+ .panel{padding:20px}
+ .welcome h1{font-size:27px}
+ .form-grid{grid-template-columns:1fr}
+ .form-grid .full{grid-column:auto}
+ main{padding:25px 14px 45px}
+}
+</style>
 </head>
 <body>
 
-<div id="loginScreen" class="loginwrap">
-  <div class="loginbox">
+<section id="loginScreen" class="screen">
+  <div class="container">
     <div class="brand">
-      <div class="brandmark">SH</div>
-      <div>SPOOKY HOUSE<small>A CASA DO BASQUETE</small></div>
+      <h1>SPOOKY</h1>
+      <p>A Casa do Basquete</p>
     </div>
-    <div class="eyebrow">Portal oficial</div>
-    <h1 style="font-size:30px">Entre na sua conta.</h1>
-    <p class="muted">Acesse seus treinos, turmas, campeonatos e informações financeiras.</p>
-    <div id="loginMessage"></div>
-    <form id="loginForm">
-      <div class="field">
-        <label for="loginEmail">E-mail</label>
-        <input id="loginEmail" type="email" autocomplete="username" required placeholder="seu@email.com">
-      </div>
-      <div class="field">
-        <label for="loginPassword">Senha</label>
-        <input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Sua senha">
-      </div>
-      <button class="btn primary" style="width:100%;margin-top:7px" type="submit">Entrar</button>
-      <button class="btn ghost" style="width:100%;margin-top:8px" type="button" id="forgotBtn">Esqueci minha senha</button>
-    </form>
-    <p class="small muted" style="margin-top:20px">Sua conta é criada e gerenciada pela equipe Spooky House.</p>
+    <div class="panel">
+      <h2>Área do Atleta</h2>
+      <p class="muted" style="font-size:14px">Entre com os dados da sua conta.</p>
+      <form id="loginForm">
+        <div class="field">
+          <label for="email">E-mail</label>
+          <input id="email" type="email" placeholder="seu@email.com" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="password">Senha</label>
+          <input id="password" type="password" placeholder="Sua senha" autocomplete="current-password" required>
+        </div>
+        <button id="loginButton" class="primary" style="width:100%" type="submit">ENTRAR</button>
+      </form>
+      <button id="forgotPassword" class="text-button" type="button">Esqueci minha senha</button>
+      <div id="message" role="status" aria-live="polite"></div>
+    </div>
+    <div class="footnote">SPOOKY HOUSE • A CASA DO BASQUETE</div>
   </div>
-</div>
+</section>
 
-<div id="app" class="hidden">
-  <header class="topbar">
-    <div class="wrap topinner">
-      <div class="brand">
-        <div class="brandmark">SH</div>
-        <div>SPOOKY HOUSE<small>A CASA DO BASQUETE</small></div>
-      </div>
-      <div class="top-actions">
-        <span id="userName" class="small muted"></span>
-        <button id="logoutBtn" class="btn smallbtn">Sair</button>
-      </div>
+<section id="appScreen" class="hidden">
+  <header>
+    <div class="small-brand">SPOOKY</div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span id="roleLabel" class="tag">ATLETA</span>
+      <button id="logoutButton" class="secondary" type="button">Sair da conta</button>
     </div>
   </header>
 
-  <div class="wrap layout">
-    <aside class="sidebar">
-      <div class="sidebox">
-        <div class="navlabel">MENU PRINCIPAL</div>
-        <button class="navbtn active" data-view="home">⌂ Início</button>
-        <button class="navbtn" data-view="treinos">◷ Treinos</button>
-        <button class="navbtn" data-view="turmas">▦ Minhas turmas</button>
-        <button class="navbtn" data-view="campeonatos">🏆 Campeonatos</button>
-        <button class="navbtn" data-view="financeiro">R$ Financeiro</button>
-        <a class="navbtn" href="https://www.instagram.com/spooky4house/" target="_blank" rel="noopener" style="text-decoration:none">▣ Loja Spooky</a>
-        <div id="adminNav" class="hidden">
-          <div class="navlabel">ADMINISTRAÇÃO</div>
-          <button class="navbtn" data-view="adminTurmas">⚙ Gerenciar turmas</button>
-          <button class="navbtn" data-view="adminTreinos">⚙ Gerenciar treinos</button>
-          <button class="navbtn" data-view="adminCampeonatos">⚙ Gerenciar campeonatos</button>
-          <button class="navbtn" data-view="adminFinanceiro">⚙ Gerenciar financeiro</button>
+  <main>
+    <div class="welcome">
+      <div class="eyebrow">Área do atleta</div>
+      <h1>Olá, <span id="athleteName">Atleta</span>.</h1>
+      <p>Bem-vindo à Casa do Basquete.</p>
+    </div>
+
+    <div class="cards">
+      <button class="card" data-section="treinos" type="button">
+        <div class="eyebrow">Minha rotina</div>
+        <h2>Treinos</h2>
+        <p>Consulte os horários. Administradores podem gerenciar a programação.</p>
+      </button>
+      <button class="card" data-section="campeonatos" type="button">
+        <div class="eyebrow">Calendário</div>
+        <h2>Campeonatos</h2>
+        <p>Veja as competições e os atletas convocados.</p>
+      </button>
+      <a class="card" href="https://www.instagram.com/spooky4house/" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
+        <div class="eyebrow">Produtos oficiais</div>
+        <h2>Spooky House</h2>
+        <p>Acesse o Instagram oficial da equipe.</p>
+      </a>
+      <article class="card">
+        <div class="eyebrow">Financeiro</div>
+        <h2>Mensalidade</h2>
+        <p>Para consultar ou gerenciar mensalidades, é necessário conectar o módulo financeiro ao banco de dados.</p>
+      </article>
+    </div>
+
+    <div id="sectionArea" class="hidden">
+      <div class="section-panel">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Spooky House</div>
+            <h2 id="sectionTitle">Treinos</h2>
+          </div>
+          <button id="closeSection" class="secondary" type="button">Fechar</button>
         </div>
+        <p id="sectionDescription" class="muted" style="font-size:13px"></p>
+        <div id="adminArea" class="hidden"></div>
+        <div id="itemsList"></div>
+        <div id="sectionMessage" class="small" role="status" aria-live="polite"></div>
       </div>
-    </aside>
+    </div>
 
-    <main>
-      <div id="globalMessage"></div>
+    <div class="notice">
+      As informações de treinos, campeonatos e convocações são carregadas do banco de dados da Spooky House.
+    </div>
+  </main>
+</section>
 
-      <section id="view-home" class="view">
-        <div class="hero">
-          <div class="eyebrow">Bem-vindo à Spooky House</div>
-          <h1 id="welcomeTitle">A Casa do Basquete.</h1>
-          <p>Treino, evolução e comunidade. Confira suas atividades e acompanhe tudo em um só lugar.</p>
-        </div>
-        <div id="stats" class="grid3" style="margin-bottom:18px"></div>
-        <div class="grid">
-          <button class="card" data-goto="treinos" style="text-align:left;color:white;cursor:pointer">
-            <div class="cardicon">🏀</div><h3>Treinos</h3><p>Consulte horários, locais e informações das suas atividades.</p>
-          </button>
-          <button class="card" data-goto="campeonatos" style="text-align:left;color:white;cursor:pointer">
-            <div class="cardicon">🏆</div><h3>Campeonatos</h3><p>Acompanhe eventos e veja suas convocações.</p>
-          </button>
-          <button class="card" data-goto="financeiro" style="text-align:left;color:white;cursor:pointer">
-            <div class="cardicon">R$</div><h3>Financeiro</h3><p>Consulte valores, vencimentos e pagamentos registrados.</p>
-          </button>
-          <a class="card" href="https://www.instagram.com/spooky4house/" target="_blank" rel="noopener">
-            <div class="cardicon">▣</div><h3>Loja Spooky</h3><p>Acesse o Instagram oficial para conferir os produtos.</p>
-          </a>
-        </div>
-        <div class="section" style="margin-top:18px">
-          <div class="sectionhead"><h2>Próximos campeonatos</h2><button class="btn smallbtn" data-goto="campeonatos">Ver todos</button></div>
-          <div id="homeChampList" class="list"></div>
-        </div>
-      </section>
-
-      <section id="view-treinos" class="view hidden">
-        <div class="hero"><div class="eyebrow">Agenda esportiva</div><h1>Treinos</h1><p>Confira dias da semana, horários, local e detalhes dos treinos disponíveis para você.</p></div>
-        <div id="treinosList" class="list"></div>
-      </section>
-
-      <section id="view-turmas" class="view hidden">
-        <div class="hero"><div class="eyebrow">Sua equipe</div><h1>Minhas turmas</h1><p>Consulte as turmas às quais você está vinculado e os respectivos treinos.</p></div>
-        <div id="minhasTurmasList" class="list"></div>
-      </section>
-
-      <section id="view-campeonatos" class="view hidden">
-        <div class="hero"><div class="eyebrow">Competições</div><h1>Campeonatos</h1><p>Confira os eventos cadastrados e suas convocações.</p></div>
-        <div id="campeonatosList" class="list"></div>
-      </section>
-
-      <section id="view-financeiro" class="view hidden">
-        <div class="hero"><div class="eyebrow">Controle pessoal</div><h1>Meu financeiro</h1><p>Consulte suas mensalidades e os pagamentos registrados pela administração.</p></div>
-        <div id="meuFinanceiroResumo" class="grid3" style="margin-bottom:18px"></div>
-        <div class="section"><div class="sectionhead"><h2>Histórico</h2></div><div id="meuFinanceiroList" class="list"></div></div>
-      </section>
-
-      <section id="view-adminTurmas" class="view hidden">
-        <div class="hero"><div class="eyebrow">Administração</div><h1>Gerenciar turmas</h1><p>Crie turmas, edite suas informações e vincule atletas e treinos.</p></div>
-        <div class="section">
-          <div class="sectionhead"><h2 id="turmaFormTitle">Nova turma</h2><button id="cancelTurmaEdit" class="btn smallbtn hidden" type="button">Cancelar edição</button></div>
-          <form id="turmaForm" class="formgrid">
-            <input id="turmaId" type="hidden">
-            <div class="field"><label for="turmaNome">Nome da turma *</label><input id="turmaNome" required placeholder="Ex.: Sub-17 masculino"></div>
-            <div class="field"><label for="turmaCategoria">Categoria</label><input id="turmaCategoria" placeholder="Ex.: Sub-17, adulto, feminino"></div>
-            <div class="field full"><label for="turmaDescricao">Descrição</label><textarea id="turmaDescricao" placeholder="Informações da turma"></textarea></div>
-            <div class="field"><label for="turmaAtiva">Situação</label><select id="turmaAtiva"><option value="true">Ativa</option><option value="false">Inativa</option></select></div>
-            <div class="field" style="justify-content:end"><button class="btn primary" type="submit">Salvar turma</button></div>
-          </form>
-        </div>
-        <div class="section"><div class="sectionhead"><h2>Turmas cadastradas</h2><button class="btn smallbtn" id="reloadTurmas">Atualizar</button></div><div id="adminTurmasList" class="list"></div></div>
-        <div id="turmaAssignPanel" class="section hidden">
-          <div class="sectionhead"><h2 id="assignTitle">Vincular turma</h2><button class="btn smallbtn" id="closeAssign">Fechar</button></div>
-          <div class="notice">Marque os atletas e os treinos que devem pertencer a esta turma. Salvar substitui os vínculos atuais desta turma.</div>
-          <div class="formgrid">
-            <div class="field full"><h3>Atletas</h3><div id="assignAthletes" class="checkgrid"></div></div>
-            <div class="field full"><h3>Treinos</h3><div id="assignTrainings" class="checkgrid"></div></div>
-            <div class="field full"><button id="saveAssignments" class="btn primary" type="button">Salvar vínculos</button></div>
-          </div>
-        </div>
-      </section>
-
-      <section id="view-adminTreinos" class="view hidden">
-        <div class="hero"><div class="eyebrow">Administração</div><h1>Gerenciar treinos</h1><p>Cadastre horários e informações. Depois, vincule cada treino às turmas correspondentes.</p></div>
-        <div class="section">
-          <div class="sectionhead"><h2 id="treinoFormTitle">Novo treino</h2><button id="cancelTreinoEdit" class="btn smallbtn hidden" type="button">Cancelar edição</button></div>
-          <form id="treinoForm" class="formgrid">
-            <input id="treinoId" type="hidden">
-            <div class="field"><label for="treinoTitulo">Título *</label><input id="treinoTitulo" required placeholder="Ex.: Treino técnico"></div>
-            <div class="field"><label for="treinoCategoria">Categoria</label><input id="treinoCategoria" placeholder="Ex.: Sub-17"></div>
-            <div class="field"><label for="treinoModalidade">Modalidade</label><input id="treinoModalidade" placeholder="Ex.: Basquete"></div>
-            <div class="field"><label for="treinoLocal">Local</label><input id="treinoLocal" placeholder="Ex.: João do Pulo"></div>
-            <div class="field"><label for="treinoInicio">Horário de início</label><input id="treinoInicio" type="time"></div>
-            <div class="field"><label for="treinoFim">Horário de término</label><input id="treinoFim" type="time"></div>
-            <div class="field full"><label>Dias da semana</label><div class="checkgrid" id="diasTreino"></div></div>
-            <div class="field full"><label for="treinoDescricao">Descrição</label><textarea id="treinoDescricao"></textarea></div>
-            <div class="field"><label for="treinoAtivo">Situação</label><select id="treinoAtivo"><option value="true">Ativo</option><option value="false">Inativo</option></select></div>
-            <div class="field" style="justify-content:end"><button class="btn primary" type="submit">Salvar treino</button></div>
-          </form>
-        </div>
-        <div class="section"><div class="sectionhead"><h2>Treinos cadastrados</h2><button id="reloadTreinos" class="btn smallbtn">Atualizar</button></div><div id="adminTreinosList" class="list"></div></div>
-      </section>
-
-      <section id="view-adminCampeonatos" class="view hidden">
-        <div class="hero"><div class="eyebrow">Administração</div><h1>Gerenciar campeonatos</h1><p>Cadastre competições e controle a convocação de atletas.</p></div>
-        <div class="section">
-          <div class="sectionhead"><h2 id="champFormTitle">Novo campeonato</h2><button id="cancelChampEdit" class="btn smallbtn hidden">Cancelar edição</button></div>
-          <form id="champForm" class="formgrid">
-            <input id="champId" type="hidden">
-            <div class="field"><label for="champNome">Nome do campeonato *</label><input id="champNome" required></div>
-            <div class="field"><label for="champCategoria">Categoria</label><input id="champCategoria" placeholder="Ex.: Sub-21"></div>
-            <div class="field"><label for="champData">Data</label><input id="champData" type="date"></div>
-            <div class="field"><label for="champHora">Horário</label><input id="champHora" type="time"></div>
-            <div class="field full"><label for="champLocal">Local</label><input id="champLocal"></div>
-            <div class="field full"><label for="champDescricao">Descrição</label><textarea id="champDescricao"></textarea></div>
-            <div class="field full"><button class="btn primary" type="submit">Salvar campeonato</button></div>
-          </form>
-        </div>
-        <div class="section"><div class="sectionhead"><h2>Eventos cadastrados</h2><button id="reloadChamps" class="btn smallbtn">Atualizar</button></div><div id="adminChampList" class="list"></div></div>
-        <div id="convocationPanel" class="section hidden">
-          <div class="sectionhead"><h2 id="convocationTitle">Convocar atletas</h2><button class="btn smallbtn" id="closeConvocation">Fechar</button></div>
-          <div id="convocationAthletes" class="checkgrid"></div>
-          <button class="btn primary" id="saveConvocations" style="margin-top:15px">Salvar convocações</button>
-        </div>
-      </section>
-
-      <section id="view-adminFinanceiro" class="view hidden">
-        <div class="hero"><div class="eyebrow">Administração</div><h1>Financeiro</h1><p>Cadastre cobranças individuais e registre os pagamentos recebidos diretamente por você. O site não processa pagamentos.</p></div>
-        <div id="adminFinanceResumo" class="grid3" style="margin-bottom:18px"></div>
-        <div class="section">
-          <div class="sectionhead"><h2 id="financeFormTitle">Nova cobrança</h2><button id="cancelFinanceEdit" class="btn smallbtn hidden">Cancelar edição</button></div>
-          <form id="financeForm" class="formgrid">
-            <input id="financeId" type="hidden">
-            <div class="field full"><label for="financeAtleta">Atleta *</label><select id="financeAtleta" required><option value="">Selecione o atleta</option></select></div>
-            <div class="field"><label for="financeValor">Valor (R$) *</label><input id="financeValor" type="number" min="0" step="0.01" required placeholder="99,00"></div>
-            <div class="field"><label for="financeVencimento">Vencimento *</label><input id="financeVencimento" type="date" required></div>
-            <div class="field full"><label for="financeDescricao">Descrição / referência</label><input id="financeDescricao" placeholder="Ex.: Mensalidade outubro/2026"></div>
-            <div class="field"><label for="financeStatus">Situação</label><select id="financeStatus"><option value="pendente">Pendente</option><option value="pago">Pago</option></select></div>
-            <div class="field" style="justify-content:end"><button class="btn primary" type="submit">Salvar cobrança</button></div>
-          </form>
-        </div>
-        <div class="section">
-          <div class="sectionhead"><h2>Cobranças e pagamentos</h2><button id="reloadFinance" class="btn smallbtn">Atualizar</button></div>
-          <div class="inlineform" style="margin-bottom:15px">
-            <input id="financeSearch" placeholder="Buscar por atleta ou descrição">
-            <select id="financeFilter"><option value="todas">Todas as situações</option><option value="pendente">Pendentes</option><option value="pago">Pagas</option></select>
-          </div>
-          <div id="adminFinanceList" class="list"></div>
-        </div>
-      </section>
-    </main>
-  </div>
-  <footer class="footer"><div class="wrap">SPOOKY HOUSE · A CASA DO BASQUETE</div></footer>
-</div>
-
-<div id="toast" class="toast hidden" role="status"></div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (() => {
-  "use strict";
+"use strict";
 
-  // Configuração pública do projeto Supabase.
-  const SUPABASE_URL = "https://mcrreffapstciqpsgvro.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_S798hSSxNl63S2sgDYJoog_tl-N6poI";
+/* CONFIGURAÇÃO SUPABASE */
+const SUPABASE_URL = "https://mcrreffapstciqpsgvro.supabase.co";
+const SUPABASE_KEY = "sb_publishable_S798hSSxNl63S2sgDYJoog_tl-N6poI";
 
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  const $ = id => document.getElementById(id);
-  const DAYS = [
-    ["domingo","Domingo"],["segunda","Segunda"],["terca","Terça"],
-    ["quarta","Quarta"],["quinta","Quinta"],["sexta","Sexta"],["sabado","Sábado"]
-  ];
-  let user = null, profile = null, isAdmin = false;
-  let profiles = [], turmas = [], treinos = [], campeonatos = [], mensalidades = [];
-  let currentAssignTurma = null, currentConvChamp = null;
-  let assignments = {athletes:[], trainings:[]};
-  let convocationIds = [];
+const $ = id => document.getElementById(id);
+const loginScreen = $("loginScreen");
+const appScreen = $("appScreen");
+const loginForm = $("loginForm");
+const loginButton = $("loginButton");
+const message = $("message");
 
-  function esc(value) {
-    return String(value ?? "").replace(/[&<>"']/g, c => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-    }[c]));
-  }
-  function money(value) {
-    return Number(value || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-  }
-  function dateBR(value) {
-    if (!value) return "Não informado";
-    const d = new Date(value.length === 10 ? value + "T12:00:00" : value);
-    return Number.isNaN(d.getTime()) ? esc(value) : d.toLocaleDateString("pt-BR");
-  }
-  function dateInput(value) {
-    if (!value) return "";
-    return String(value).slice(0,10);
-  }
-  function dayLabel(day) {
-    const found = DAYS.find(d => d[0] === day);
-    return found ? found[1] : day;
-  }
-  function toast(message, error=false) {
-    const el = $("toast");
-    el.textContent = message;
-    el.style.background = error ? "#ffdddd" : "#f5f5f5";
-    el.style.color = "#111";
-    el.classList.remove("hidden");
-    clearTimeout(toast.timer);
-    toast.timer = setTimeout(() => el.classList.add("hidden"), 3800);
-  }
-  function showMessage(target, message, type="error") {
-    $(target).innerHTML = message ? `<div class="notice ${type}">${esc(message)}</div>` : "";
-  }
-  function fail(error, context="Não foi possível concluir a operação") {
-    console.error(context, error);
-    const msg = error?.message || error?.details || context;
-    toast(context + ": " + msg, true);
-  }
-  async function query(promise, context) {
-    const {data,error} = await promise;
-    if (error) throw new Error(context + " — " + error.message);
-    return data;
-  }
-  function showLogin(message="") {
-    $("loginScreen").classList.remove("hidden");
-    $("app").classList.add("hidden");
-    showMessage("loginMessage",message);
-  }
-  function showApp() {
-    $("loginScreen").classList.add("hidden");
-    $("app").classList.remove("hidden");
-    $("userName").textContent = profile?.nome || user?.email || "";
-    $("welcomeTitle").textContent = `Olá, ${(profile?.nome || "atleta").split(" ")[0]}.`;
-    $("adminNav").classList.toggle("hidden",!isAdmin);
-    document.querySelectorAll("[data-view]").forEach(btn => {
-      btn.classList.toggle("hidden", !isAdmin && btn.dataset.view.startsWith("admin"));
-    });
-  }
-  function navigate(view) {
-    if (view.startsWith("admin") && !isAdmin) {
-      toast("Acesso exclusivo da administração.",true);
-      return;
-    }
-    document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
-    const target = $("view-" + view);
-    if (!target) return;
-    target.classList.remove("hidden");
-    document.querySelectorAll(".navbtn[data-view]").forEach(b => b.classList.toggle("active",b.dataset.view===view));
-    window.scrollTo({top:0,behavior:"smooth"});
-    const loaders = {
-      home:loadHome,treinos:loadTreinos,turmas:loadMinhasTurmas,
-      campeonatos:loadCampeonatos,financeiro:loadMeuFinanceiro,
-      adminTurmas:loadAdminTurmas,adminTreinos:loadAdminTreinos,
-      adminCampeonatos:loadAdminCampeonatos,adminFinanceiro:loadAdminFinanceiro
-    };
-    if (loaders[view]) loaders[view]().catch(e=>fail(e,"Erro ao carregar a tela"));
-  }
+let client = null;
+let currentUser = null;
+let isAdmin = false;
+let currentSection = "";
+let editingTrainingId = null;
+let editingChampionshipId = null;
+let authRequestRunning = false;
 
-  async function loadProfile() {
-    const {data,error} = await sb.from("perfis")
-      .select("user_id,nome,papel").eq("user_id",user.id).maybeSingle();
+const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#39;"
+}[ch]));
+
+function showMessage(text, type = "error") {
+  message.textContent = text;
+  message.className = "show " + type;
+}
+
+function clearMessage() {
+  message.textContent = "";
+  message.className = "";
+}
+
+function sectionMessage(text, isError = false) {
+  $("sectionMessage").textContent = text;
+  $("sectionMessage").style.color = isError ? "#ffc0c0" : "#aaa";
+}
+
+function showLogin() {
+  appScreen.classList.add("hidden");
+  loginScreen.classList.remove("hidden");
+  currentUser = null;
+  isAdmin = false;
+  $("roleLabel").textContent = "ATLETA";
+}
+
+function showAppShell(user) {
+  currentUser = user;
+  loginScreen.classList.add("hidden");
+  appScreen.classList.remove("hidden");
+  $("athleteName").textContent = user.email ? user.email.split("@")[0] : "Atleta";
+}
+
+function formatDate(value) {
+  if (!value) return "Data a definir";
+  const parts = String(value).slice(0, 10).split("-");
+  return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : value;
+}
+
+function field(label, id, value = "", type = "text", required = true) {
+  return `<div class="field">
+    <label for="${id}">${label}</label>
+    <input id="${id}" type="${type}" value="${esc(value)}" ${required ? "required" : ""}>
+  </div>`;
+}
+
+function selectField(label, id, options, value = "") {
+  return `<div class="field">
+    <label for="${id}">${label}</label>
+    <select id="${id}" required>
+      ${options.map(o => `<option value="${esc(o)}" ${o === value ? "selected" : ""}>${esc(o || "Selecione")}</option>`).join("")}
+    </select>
+  </div>`;
+}
+
+/* CARREGA O PERFIL DA CONTA */
+async function loadProfileAndStart(user) {
+  showAppShell(user);
+
+  try {
+    const { data: profile, error } = await client
+      .from("perfis")
+      .select("nome,papel")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
     if (error) throw error;
-    if (!data) {
-      throw new Error("Sua conta não tem perfil cadastrado na tabela perfis. Peça à administração para criar o perfil.");
-    }
-    profile = data;
-    isAdmin = data.papel === "admin";
-  }
 
-  async function startSession(sessionUser) {
-    user = sessionUser;
-    try {
-      await loadProfile();
-      showApp();
-      await loadProfiles();
-      navigate("home");
-    } catch(e) {
-      console.error(e);
-      showLogin(e.message || "Não foi possível carregar seu perfil.");
-    }
-  }
+    if (!profile) {
+      const { error: insertError } = await client
+        .from("perfis")
+        .insert({
+          user_id: user.id,
+          nome: user.email?.split("@")[0] || "Atleta",
+          papel: "atleta"
+        });
 
-  async function loadProfiles() {
-    if (!isAdmin) {
-      profiles = [profile].filter(Boolean);
+      if (insertError && insertError.code !== "23505") {
+        console.error("Não foi possível criar o perfil:", insertError);
+      }
+
+      isAdmin = false;
+      $("roleLabel").textContent = "ATLETA";
+      $("athleteName").textContent = user.email?.split("@")[0] || "Atleta";
       return;
     }
-    profiles = await query(
-      sb.from("perfis").select("user_id,nome,papel").order("nome"),
-      "Erro ao consultar atletas"
-    );
-    renderFinanceAthleteOptions();
+
+    isAdmin = profile.papel === "admin";
+    $("athleteName").textContent = profile.nome || user.email?.split("@")[0] || "Atleta";
+    $("roleLabel").textContent = isAdmin ? "ADMINISTRADOR" : "ATLETA";
+  } catch (error) {
+    console.error("Erro ao carregar perfil:", error);
+    isAdmin = false;
+    $("roleLabel").textContent = "ATLETA";
+    sectionMessage("Não foi possível carregar o perfil: " + error.message, true);
+  }
+}
+
+/* ABRIR TREINOS OU CAMPEONATOS */
+function openSection(name) {
+  currentSection = name;
+  editingTrainingId = null;
+  editingChampionshipId = null;
+
+  $("sectionArea").classList.remove("hidden");
+  $("sectionTitle").textContent = name === "treinos" ? "Treinos" : "Campeonatos";
+  $("sectionDescription").textContent = name === "treinos"
+    ? "Programação atualizada dos treinos da equipe."
+    : "Competições, detalhes e atletas convocados.";
+
+  $("adminArea").innerHTML = "";
+  $("itemsList").innerHTML = "";
+  sectionMessage("");
+
+  renderAdminForm();
+  loadSectionData();
+
+  $("sectionArea").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* FORMULÁRIOS ADMINISTRATIVOS */
+function renderAdminForm(training = null, championship = null) {
+  const area = $("adminArea");
+
+  if (!isAdmin) {
+    area.classList.add("hidden");
+    area.innerHTML = "";
+    return;
   }
 
-  function profileName(id) {
-    const p = profiles.find(x => x.user_id === id);
-    return p?.nome || p?.email || "Atleta";
+  area.classList.remove("hidden");
+
+  if (currentSection === "treinos") {
+    const t = training || {};
+
+    area.innerHTML = `<div class="item">
+      <h3>${training ? "Editar treino" : "Cadastrar treino"}</h3>
+      <form id="trainingForm">
+        <div class="form-grid">
+          <div>${field("Nome do treino", "tTitulo", t.titulo || "")}</div>
+          <div>${selectField("Categoria", "tCategoria", ["Todos","Academy masculino","Academy feminino","Adulto","Open","Coletivo","Sub-21","Outra"], t.categoria || "Todos")}</div>
+          <div>${selectField("Modalidade", "tModalidade", ["Treino","Coletivo","Jogo","Open","Preparação física"], t.modalidade || "Treino")}</div>
+          <div>${selectField("Dia da semana", "tDia", ["Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado","Domingo"], t.dia_semana || "Segunda-feira")}</div>
+          <div>${field("Horário de início", "tInicio", t.horario_inicio || "")}</div>
+          <div>${field("Horário de término (opcional)", "tFim", t.horario_fim || "", "text", false)}</div>
+          <div class="full">${field("Local", "tLocal", t.local || "Centro Esportivo João do Pulo")}</div>
+          <div class="full">
+            <div class="field">
+              <label for="tDescricao">Descrição / observações</label>
+              <textarea id="tDescricao">${esc(t.descricao || "")}</textarea>
+            </div>
+          </div>
+        </div>
+        <label class="inline-check">
+          <input id="tAtivo" type="checkbox" ${t.ativo === false ? "" : "checked"}>
+          Treino ativo e visível para atletas
+        </label>
+        <div class="actions">
+          <button class="primary" type="submit">${training ? "Salvar alterações" : "Cadastrar treino"}</button>
+          ${training ? '<button id="cancelTrainingEdit" class="secondary" type="button">Cancelar</button>' : ""}
+        </div>
+      </form>
+    </div>`;
+
+    $("trainingForm").addEventListener("submit", saveTraining);
+
+    if (training) {
+      $("cancelTrainingEdit").addEventListener("click", () => {
+        editingTrainingId = null;
+        renderAdminForm();
+      });
+    }
+  } else {
+    const c = championship || {};
+
+    area.innerHTML = `<div class="item">
+      <h3>${championship ? "Editar campeonato" : "Cadastrar campeonato"}</h3>
+      <form id="championshipForm">
+        <div class="form-grid">
+          <div>${field("Nome do campeonato", "cNome", c.nome || "")}</div>
+          <div>${field("Categoria", "cCategoria", c.categoria || "")}</div>
+          <div>${field("Data", "cData", c.data_evento || "", "date", false)}</div>
+          <div>${field("Horário", "cHorario", c.horario || "", "text", false)}</div>
+          <div class="full">${field("Local", "cLocal", c.local || "", "text", false)}</div>
+          <div class="full">
+            <div class="field">
+              <label for="cDescricao">Descrição / informações</label>
+              <textarea id="cDescricao">${esc(c.descricao || "")}</textarea>
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="primary" type="submit">${championship ? "Salvar alterações" : "Cadastrar campeonato"}</button>
+          ${championship ? '<button id="cancelChampEdit" class="secondary" type="button">Cancelar</button>' : ""}
+        </div>
+      </form>
+    </div>`;
+
+    $("championshipForm").addEventListener("submit", saveChampionship);
+
+    if (championship) {
+      $("cancelChampEdit").addEventListener("click", () => {
+        editingChampionshipId = null;
+        renderAdminForm();
+      });
+    }
+  }
+}
+
+async function loadSectionData() {
+  $("itemsList").innerHTML = '<div class="empty">Carregando...</div>';
+  sectionMessage("");
+  if (currentSection === "treinos") {
+    await loadTrainings();
+  } else {
+    await loadChampionships();
+  }
+}
+
+/* TREINOS */
+async function loadTrainings() {
+  const { data, error } = await client
+    .from("treinos")
+    .select("*")
+    .order("dia_semana")
+    .order("horario_inicio");
+
+  if (error) {
+    $("itemsList").innerHTML = "";
+    sectionMessage("Erro ao carregar treinos: " + error.message, true);
+    return;
   }
 
-  async function loadHome() {
-    const [myClasses, myCharges, allChamps] = await Promise.all([
-      sb.from("turma_atletas").select("turma_id").eq("atleta_id",user.id),
-      sb.from("mensalidades").select("id,valor,status").eq("atleta_id",user.id),
-      sb.from("campeonatos").select("id,nome,categoria,data_evento,horario,local,descricao").order("data_evento",{ascending:true})
-    ]);
-    if (myClasses.error) throw myClasses.error;
-    if (myCharges.error) throw myCharges.error;
-    if (allChamps.error) throw allChamps.error;
-    campeonatos = allChamps.data || [];
-    const paid = (myCharges.data||[]).filter(x=>x.status==="pago").reduce((a,x)=>a+Number(x.valor||0),0);
-    const pending = (myCharges.data||[]).filter(x=>x.status==="pendente").reduce((a,x)=>a+Number(x.valor||0),0);
-    $("stats").innerHTML = `
-      <div class="stat"><div class="label">Minhas turmas</div><div class="num">${myClasses.data.length}</div></div>
-      <div class="stat"><div class="label">Pagamentos registrados</div><div class="num">${money(paid)}</div></div>
-      <div class="stat"><div class="label">Valores pendentes</div><div class="num">${money(pending)}</div></div>`;
-    const upcoming = campeonatos.filter(c=>!c.data_evento || c.data_evento >= new Date().toISOString().slice(0,10)).slice(0,3);
-    $("homeChampList").innerHTML = upcoming.length ? upcoming.map(champCard).join("") : `<div class="empty">Nenhum campeonato futuro cadastrado.</div>`;
+  const rows = (data || []).filter(t => isAdmin || t.ativo !== false);
+
+  if (!rows.length) {
+    $("itemsList").innerHTML = '<div class="empty">Nenhum treino cadastrado no momento.</div>';
+    return;
   }
 
-  async function loadTreinos() {
-    let rows = [];
-    if (isAdmin) {
-      rows = await query(sb.from("treinos").select("*").order("horario_inicio"),"Erro ao consultar treinos");
-    } else {
-      const links = await query(sb.from("turma_atletas").select("turma_id").eq("atleta_id",user.id),"Erro ao consultar suas turmas");
-      const turmaIds = [...new Set((links||[]).map(x=>x.turma_id))];
-      if (turmaIds.length) {
-        const joins = await query(sb.from("turma_treinos").select("treino_id").in("turma_id",turmaIds),"Erro ao consultar treinos vinculados");
-        const treinoIds = [...new Set((joins||[]).map(x=>x.treino_id))];
-        if (treinoIds.length) rows = await query(sb.from("treinos").select("*").in("id",treinoIds).order("horario_inicio"),"Erro ao consultar treinos");
+  $("itemsList").innerHTML = rows.map(t => `
+    <article class="item">
+      <div>
+        ${t.ativo === false ? '<span class="tag">INATIVO</span>' : ""}
+        <span class="tag">${esc(t.categoria)}</span>
+        <span class="tag">${esc(t.modalidade)}</span>
+      </div>
+      <h3>${esc(t.titulo)}</h3>
+      <p><strong>${esc(t.dia_semana)}</strong> • ${esc(t.horario_inicio || "Horário a definir")}${t.horario_fim ? "–" + esc(t.horario_fim) : ""}</p>
+      <p>Local: ${esc(t.local || "A definir")}</p>
+      ${t.descricao ? `<p>${esc(t.descricao)}</p>` : ""}
+      ${isAdmin ? `<div class="actions">
+        <button class="secondary" data-edit-training="${esc(t.id)}" type="button">Editar</button>
+        <button class="danger" data-delete-training="${esc(t.id)}" type="button">Excluir</button>
+      </div>` : ""}
+    </article>`).join("");
+
+  $("itemsList").querySelectorAll("[data-edit-training]").forEach(b =>
+    b.addEventListener("click", () => editTraining(b.dataset.editTraining))
+  );
+
+  $("itemsList").querySelectorAll("[data-delete-training]").forEach(b =>
+    b.addEventListener("click", () => deleteTraining(b.dataset.deleteTraining))
+  );
+}
+
+async function saveTraining(event) {
+  event.preventDefault();
+  if (!isAdmin || !currentUser) return;
+
+  const payload = {
+    titulo: $("tTitulo").value.trim(),
+    categoria: $("tCategoria").value,
+    modalidade: $("tModalidade").value,
+    dia_semana: $("tDia").value,
+    horario_inicio: $("tInicio").value.trim(),
+    horario_fim: $("tFim").value.trim(),
+    local: $("tLocal").value.trim(),
+    descricao: $("tDescricao").value.trim(),
+    ativo: $("tAtivo").checked
+  };
+
+  if (!payload.titulo || !payload.horario_inicio) {
+    sectionMessage("Preencha o nome do treino e o horário de início.", true);
+    return;
+  }
+
+  const result = editingTrainingId
+    ? await client.from("treinos").update(payload).eq("id", editingTrainingId)
+    : await client.from("treinos").insert({ ...payload, criado_por: currentUser.id });
+
+  if (result.error) {
+    sectionMessage("Erro ao salvar treino: " + result.error.message, true);
+    return;
+  }
+
+  editingTrainingId = null;
+  renderAdminForm();
+  sectionMessage("Treino salvo com sucesso.");
+  await loadTrainings();
+}
+
+async function editTraining(id) {
+  const { data, error } = await client.from("treinos").select("*").eq("id", id).single();
+
+  if (error) {
+    sectionMessage("Não foi possível abrir o treino: " + error.message, true);
+    return;
+  }
+
+  editingTrainingId = id;
+  renderAdminForm(data);
+  $("adminArea").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function deleteTraining(id) {
+  if (!isAdmin || !confirm("Excluir este treino?")) return;
+
+  const { error } = await client.from("treinos").delete().eq("id", id);
+
+  if (error) {
+    sectionMessage("Erro ao excluir treino: " + error.message, true);
+    return;
+  }
+
+  sectionMessage("Treino excluído.");
+  await loadTrainings();
+}
+
+/* CAMPEONATOS */
+async function saveChampionship(event) {
+  event.preventDefault();
+  if (!isAdmin || !currentUser) return;
+
+  const payload = {
+    nome: $("cNome").value.trim(),
+    categoria: $("cCategoria").value.trim(),
+    data_evento: $("cData").value || null,
+    horario: $("cHorario").value.trim(),
+    local: $("cLocal").value.trim(),
+    descricao: $("cDescricao").value.trim()
+  };
+
+  if (!payload.nome || !payload.categoria) {
+    sectionMessage("Preencha o nome e a categoria do campeonato.", true);
+    return;
+  }
+
+  const result = editingChampionshipId
+    ? await client.from("campeonatos").update(payload).eq("id", editingChampionshipId)
+    : await client.from("campeonatos").insert({ ...payload, criado_por: currentUser.id });
+
+  if (result.error) {
+    sectionMessage("Erro ao salvar campeonato: " + result.error.message, true);
+    return;
+  }
+
+  editingChampionshipId = null;
+  renderAdminForm();
+  sectionMessage("Campeonato salvo com sucesso.");
+  await loadChampionships();
+}
+
+async function loadChampionships() {
+  const { data, error } = await client
+    .from("campeonatos")
+    .select("*")
+    .order("data_evento", { ascending: true, nullsFirst: false });
+
+  if (error) {
+    $("itemsList").innerHTML = "";
+    sectionMessage("Erro ao carregar campeonatos: " + error.message, true);
+    return;
+  }
+
+  if (!data || !data.length) {
+    $("itemsList").innerHTML = '<div class="empty">Nenhum campeonato cadastrado no momento.</div>';
+    return;
+  }
+
+  const cards = [];
+
+  for (const c of data) {
+    const { data: convocations, error: convError } = await client
+      .from("convocacoes")
+      .select("atleta_id")
+      .eq("campeonato_id", c.id);
+
+    let names = [];
+
+    if (!convError && convocations?.length) {
+      const ids = convocations.map(x => x.atleta_id);
+      const { data: profiles } = await client
+        .from("perfis")
+        .select("user_id,nome")
+        .in("user_id", ids);
+
+      const nameMap = new Map((profiles || []).map(p => [p.user_id, p.nome]));
+      names = ids.map(id => nameMap.get(id) || "Atleta");
+    }
+
+    cards.push(`<article class="item">
+      <div><span class="tag">${esc(c.categoria)}</span></div>
+      <h3>${esc(c.nome)}</h3>
+      <p><strong>Data:</strong> ${esc(formatDate(c.data_evento))}${c.horario ? " • " + esc(c.horario) : ""}</p>
+      <p><strong>Local:</strong> ${esc(c.local || "A definir")}</p>
+      ${c.descricao ? `<p>${esc(c.descricao)}</p>` : ""}
+      <p><strong>Convocados (${names.length}):</strong></p>
+      ${names.length ? `<p>${names.map(esc).join(", ")}</p>` : '<p class="muted">Nenhum atleta convocado ainda.</p>'}
+      ${isAdmin ? `<div class="actions">
+        <button class="secondary" data-edit-champ="${esc(c.id)}" type="button">Editar</button>
+        <button class="secondary" data-call-champ="${esc(c.id)}" type="button">Gerenciar convocados</button>
+        <button class="danger" data-delete-champ="${esc(c.id)}" type="button">Excluir</button>
+      </div>
+      <div id="callout-${esc(c.id)}"></div>` : ""}
+    </article>`);
+  }
+
+  $("itemsList").innerHTML = cards.join("");
+
+  $("itemsList").querySelectorAll("[data-edit-champ]").forEach(b =>
+    b.addEventListener("click", () => editChampionship(b.dataset.editChamp))
+  );
+
+  $("itemsList").querySelectorAll("[data-delete-champ]").forEach(b =>
+    b.addEventListener("click", () => deleteChampionship(b.dataset.deleteChamp))
+  );
+
+  $("itemsList").querySelectorAll("[data-call-champ]").forEach(b =>
+    b.addEventListener("click", () => manageConvocations(b.dataset.callChamp))
+  );
+}
+
+async function editChampionship(id) {
+  const { data, error } = await client.from("campeonatos").select("*").eq("id", id).single();
+
+  if (error) {
+    sectionMessage("Não foi possível abrir o campeonato: " + error.message, true);
+    return;
+  }
+
+  editingChampionshipId = id;
+  renderAdminForm(null, data);
+  $("adminArea").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function deleteChampionship(id) {
+  if (!isAdmin || !confirm("Excluir este campeonato e suas convocações?")) return;
+
+  const { error } = await client.from("campeonatos").delete().eq("id", id);
+
+  if (error) {
+    sectionMessage("Erro ao excluir campeonato: " + error.message, true);
+    return;
+  }
+
+  sectionMessage("Campeonato excluído.");
+  await loadChampionships();
+}
+
+/* GERENCIAMENTO DE CONVOCADOS */
+async function manageConvocations(championshipId) {
+  const target = $("callout-" + championshipId);
+  if (!target) return;
+
+  target.innerHTML = '<div class="empty">Carregando atletas...</div>';
+
+  const { data: profiles, error: profileError } = await client
+    .from("perfis")
+    .select("user_id,nome")
+    .order("nome");
+
+  if (profileError) {
+    target.innerHTML = "";
+    sectionMessage("Erro ao carregar atletas: " + profileError.message, true);
+    return;
+  }
+
+  const { data: selected, error: selectedError } = await client
+    .from("convocacoes")
+    .select("atleta_id")
+    .eq("campeonato_id", championshipId);
+
+  if (selectedError) {
+    target.innerHTML = "";
+    sectionMessage("Erro ao carregar convocações: " + selectedError.message, true);
+    return;
+  }
+
+  const selectedIds = new Set((selected || []).map(x => x.atleta_id));
+
+  target.innerHTML = `<div class="item">
+    <h3>Selecionar convocados</h3>
+    <p class="small">Marque os atletas que participarão deste campeonato.</p>
+    <form id="convocationForm">
+      ${(profiles || []).map(p => `<label class="inline-check">
+        <input type="checkbox" name="athlete" value="${esc(p.user_id)}" ${selectedIds.has(p.user_id) ? "checked" : ""}>
+        ${esc(p.nome || "Atleta")}
+      </label>`).join("") || '<p class="empty">Nenhum perfil cadastrado.</p>'}
+      <div class="actions">
+        <button class="primary" type="submit">Salvar convocação</button>
+        <button class="secondary" type="button" id="cancelConvocations">Cancelar</button>
+      </div>
+    </form>
+  </div>`;
+
+  $("cancelConvocations").addEventListener("click", () => {
+    target.innerHTML = "";
+  });
+
+  $("convocationForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const ids = [...event.currentTarget.querySelectorAll('input[name="athlete"]:checked')]
+      .map(el => el.value);
+
+    const oldIds = [...selectedIds];
+    const toAdd = ids.filter(id => !selectedIds.has(id));
+    const toRemove = oldIds.filter(id => !ids.includes(id));
+
+    if (toRemove.length) {
+      const { error } = await client
+        .from("convocacoes")
+        .delete()
+        .eq("campeonato_id", championshipId)
+        .in("atleta_id", toRemove);
+
+      if (error) {
+        sectionMessage("Erro ao remover convocações: " + error.message, true);
+        return;
       }
     }
-    treinos = rows || [];
-    if (!isAdmin) treinos = treinos.filter(t=>t.ativo !== false);
-    $("treinosList").innerHTML = treinos.length ? treinos.map(trainingCard).join("") : `<div class="empty">Nenhum treino disponível para você no momento.</div>`;
-  }
 
-  async function loadMinhasTurmas() {
-    if (isAdmin) {
-      await loadAdminTurmas();
-      $("minhasTurmasList").innerHTML = turmas.length ? turmas.map(turmaCard).join("") : `<div class="empty">Nenhuma turma cadastrada.</div>`;
-      return;
+    if (toAdd.length) {
+      const { error } = await client.from("convocacoes").insert(
+        toAdd.map(id => ({ campeonato_id: championshipId, atleta_id: id }))
+      );
+
+      if (error) {
+        sectionMessage("Erro ao adicionar convocações: " + error.message, true);
+        return;
+      }
     }
-    const links = await query(sb.from("turma_atletas").select("turma_id").eq("atleta_id",user.id),"Erro ao consultar seus vínculos");
-    const ids = (links||[]).map(x=>x.turma_id);
-    if (!ids.length) {
-      $("minhasTurmasList").innerHTML = `<div class="empty">Você ainda não foi vinculado a uma turma. Entre em contato com a equipe Spooky House.</div>`;
-      return;
-    }
-    const rows = await query(sb.from("turmas").select("*").in("id",ids).eq("ativo",true).order("nome"),"Erro ao consultar suas turmas");
-    turmas = rows || [];
-    const joins = await query(sb.from("turma_treinos").select("turma_id,treino_id").in("turma_id",ids),"Erro ao consultar treinos das turmas");
-    const trainingIds = [...new Set((joins||[]).map(x=>x.treino_id))];
-    const trainingRows = trainingIds.length ? await query(sb.from("treinos").select("*").in("id",trainingIds),"Erro ao consultar treinos") : [];
-    $("minhasTurmasList").innerHTML = turmas.length ? turmas.map(t=>{
-      const idsForClass = (joins||[]).filter(j=>j.turma_id===t.id).map(j=>j.treino_id);
-      const classTrainings = (trainingRows||[]).filter(tr=>idsForClass.includes(tr.id) && tr.ativo!==false);
-      return `<article class="item"><div class="itemtop"><div><h3>${esc(t.nome)}</h3><p>${esc(t.categoria||"Categoria não informada")}</p></div><span class="badge green">Ativa</span></div>
-        ${t.descricao?`<p>${esc(t.descricao)}</p>`:""}
-        <div class="divider"></div><strong class="small">Treinos vinculados</strong>
-        <div class="list" style="margin-top:10px">${classTrainings.length?classTrainings.map(tr=>`<div class="item"><strong>${esc(tr.titulo)}</strong><p>${trainingInfo(tr)}</p></div>`).join(""):`<p>Esta turma ainda não tem treinos vinculados.</p>`}</div></article>`;
-    }).join("") : `<div class="empty">Nenhuma turma ativa encontrada.</div>`;
-  }
 
-  function trainingInfo(t) {
-    const days = Array.isArray(t.dias_semana) ? t.dias_semana.map(dayLabel).join(", ") : (t.dia_semana ? dayLabel(t.dia_semana) : "Dias a confirmar");
-    const time = [t.horario_inicio,t.horario_fim].filter(Boolean).join("–");
-    return `${esc(days)}${time?" · "+esc(time):""}${t.local?" · "+esc(t.local):""}${t.modalidade?" · "+esc(t.modalidade):""}`;
-  }
-  function trainingCard(t) {
-    return `<article class="item"><div class="itemtop"><div><h3>${esc(t.titulo||"Treino")}</h3><p>${esc(t.categoria||"Basquete")}</p></div><span class="badge ${t.ativo===false?"red":"green"}">${t.ativo===false?"Inativo":"Ativo"}</span></div>
-      <p>${trainingInfo(t)}</p>${t.descricao?`<p>${esc(t.descricao)}</p>`:""}</article>`;
-  }
-  function turmaCard(t) {
-    return `<article class="item"><div class="itemtop"><div><h3>${esc(t.nome)}</h3><p>${esc(t.categoria||"Categoria não informada")}</p></div><span class="badge ${t.ativo?"green":"red"}">${t.ativo?"Ativa":"Inativa"}</span></div>${t.descricao?`<p>${esc(t.descricao)}</p>`:""}</article>`;
-  }
+    sectionMessage("Convocações atualizadas.");
+    await loadChampionships();
+  });
+}
 
-  async function loadCampeonatos() {
-    campeonatos = await query(sb.from("campeonatos").select("*").order("data_evento",{ascending:true}),"Erro ao consultar campeonatos") || [];
-    let myCalls = [];
-    if (!isAdmin) {
-      myCalls = await query(sb.from("convocacoes").select("campeonato_id").eq("atleta_id",user.id),"Erro ao consultar suas convocações") || [];
-    }
-    const called = new Set(myCalls.map(x=>x.campeonato_id));
-    $("campeonatosList").innerHTML = campeonatos.length ? campeonatos.map(c=>{
-      const isCalled = called.has(c.id);
-      return `${champCard(c)}${!isAdmin?`<div style="margin:-4px 0 10px 10px"><span class="badge ${isCalled?"green":""}">${isCalled?"Você foi convocado":"Sem convocação registrada"}</span></div>`:""}`;
-    }).join("") : `<div class="empty">Nenhum campeonato cadastrado.</div>`;
-  }
-  function champCard(c) {
-    const when = [dateBR(c.data_evento),c.horario].filter(Boolean).join(" · ");
-    return `<article class="item"><div class="itemtop"><div><h3>${esc(c.nome)}</h3><p>${esc(c.categoria||"Categoria não informada")}</p></div>${c.data_evento?`<span class="badge">${dateBR(c.data_evento)}</span>`:""}</div>
-      <p>${esc(when)}${c.local?" · "+esc(c.local):""}</p>${c.descricao?`<p>${esc(c.descricao)}</p>`:""}</article>`;
-  }
+/* VERIFICA SE O SUPABASE CARREGOU */
+if (!window.supabase) {
+  showMessage("O sistema de login não carregou. Verifique sua conexão com a internet e atualize a página.");
+  loginButton.disabled = true;
+  return;
+}
 
-  async function loadMeuFinanceiro() {
-    mensalidades = await query(sb.from("mensalidades").select("*").eq("atleta_id",user.id).order("vencimento",{ascending:false}),"Erro ao consultar seu financeiro") || [];
-    const pending = mensalidades.filter(x=>x.status==="pendente").reduce((s,x)=>s+Number(x.valor||0),0);
-    const paid = mensalidades.filter(x=>x.status==="pago").reduce((s,x)=>s+Number(x.valor||0),0);
-    $("meuFinanceiroResumo").innerHTML = `<div class="stat"><div class="label">Total pendente</div><div class="num">${money(pending)}</div></div><div class="stat"><div class="label">Total pago</div><div class="num">${money(paid)}</div></div><div class="stat"><div class="label">Registros</div><div class="num">${mensalidades.length}</div></div>`;
-    $("meuFinanceiroList").innerHTML = mensalidades.length ? mensalidades.map(chargeCard).join("") : `<div class="empty">Você ainda não tem mensalidades cadastradas.</div>`;
-  }
-  function chargeCard(c) {
-    const paid = c.status === "pago";
-    return `<article class="item"><div class="itemtop"><div><h3>${esc(c.descricao||"Mensalidade")}</h3><div class="money">${money(c.valor)}</div></div><span class="badge ${paid?"green":"yellow"}">${paid?"Pago":"Pendente"}</span></div>
-      <p>Vencimento: ${dateBR(c.vencimento)}</p>${paid?`<p>Pagamento registrado: ${dateBR(c.pago_em)}</p>`:""}</article>`;
-  }
+try {
+  client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+} catch (error) {
+  console.error("Erro ao iniciar Supabase:", error);
+  showMessage("Erro ao iniciar o sistema: " + error.message);
+  loginButton.disabled = true;
+  return;
+}
 
-  async function loadAdminTurmas() {
-    if (!isAdmin) return;
-    turmas = await query(sb.from("turmas").select("*").order("nome"),"Erro ao consultar turmas") || [];
-    $("adminTurmasList").innerHTML = turmas.length ? turmas.map(t=>`<article class="item"><div class="itemtop"><div><h3>${esc(t.nome)}</h3><p>${esc(t.categoria||"Categoria não informada")}</p></div><span class="badge ${t.ativo?"green":"red"}">${t.ativo?"Ativa":"Inativa"}</span></div>${t.descricao?`<p>${esc(t.descricao)}</p>`:""}
-      <div class="actions"><button class="btn smallbtn" data-edit-turma="${t.id}">Editar</button><button class="btn smallbtn" data-assign-turma="${t.id}">Atletas e treinos</button><button class="btn smallbtn" data-toggle-turma="${t.id}">${t.ativo?"Desativar":"Ativar"}</button><button class="btn danger smallbtn" data-delete-turma="${t.id}">Excluir</button></div></article>`).join("") : `<div class="empty">Nenhuma turma cadastrada. Crie a primeira acima.</div>`;
-  }
-  async function loadAdminTreinos() {
-    if (!isAdmin) return;
-    treinos = await query(sb.from("treinos").select("*").order("horario_inicio"),"Erro ao consultar treinos") || [];
-    $("adminTreinosList").innerHTML = treinos.length ? treinos.map(t=>`<article class="item"><div class="itemtop"><div><h3>${esc(t.titulo)}</h3><p>${trainingInfo(t)}</p></div><span class="badge ${t.ativo===false?"red":"green"}">${t.ativo===false?"Inativo":"Ativo"}</span></div>${t.descricao?`<p>${esc(t.descricao)}</p>`:""}
-      <div class="actions"><button class="btn smallbtn" data-edit-treino="${t.id}">Editar</button><button class="btn danger smallbtn" data-delete-treino="${t.id}">Excluir</button></div></article>`).join("") : `<div class="empty">Nenhum treino cadastrado. Crie o primeiro acima.</div>`;
-  }
-  async function loadAdminCampeonatos() {
-    if (!isAdmin) return;
-    campeonatos = await query(sb.from("campeonatos").select("*").order("data_evento",{ascending:true}),"Erro ao consultar campeonatos") || [];
-    $("adminChampList").innerHTML = campeonatos.length ? campeonatos.map(c=>`<article class="item"><div class="itemtop"><div><h3>${esc(c.nome)}</h3><p>${esc(c.categoria||"Categoria não informada")} · ${dateBR(c.data_evento)}</p></div></div><p>${esc(c.local||"Local não informado")}</p><div class="actions"><button class="btn smallbtn" data-edit-champ="${c.id}">Editar</button><button class="btn smallbtn" data-convoc-champ="${c.id}">Convocar atletas</button><button class="btn danger smallbtn" data-delete-champ="${c.id}">Excluir</button></div></article>`).join("") : `<div class="empty">Nenhum campeonato cadastrado.</div>`;
-  }
+/* LOGIN — MOSTRA O ERRO REAL */
+loginForm.addEventListener("submit", async event => {
+  event.preventDefault();
 
-  async function loadAdminFinanceiro() {
-    if (!isAdmin) return;
-    await loadProfiles();
-    mensalidades = await query(sb.from("mensalidades").select("*").order("vencimento",{ascending:false}),"Erro ao consultar cobranças") || [];
-    const pending = mensalidades.filter(x=>x.status==="pendente").reduce((s,x)=>s+Number(x.valor||0),0);
-    const paid = mensalidades.filter(x=>x.status==="pago").reduce((s,x)=>s+Number(x.valor||0),0);
-    $("adminFinanceResumo").innerHTML = `<div class="stat"><div class="label">Em aberto</div><div class="num">${money(pending)}</div></div><div class="stat"><div class="label">Pagamentos registrados</div><div class="num">${money(paid)}</div></div><div class="stat"><div class="label">Cobranças</div><div class="num">${mensalidades.length}</div></div>`;
-    renderAdminFinanceList();
-  }
-  function renderFinanceAthleteOptions() {
-    const select = $("financeAtleta");
-    if (!select) return;
-    const selected = select.value;
-    select.innerHTML = `<option value="">Selecione o atleta</option>` + profiles.filter(p=>p.papel!=="admin").map(p=>`<option value="${p.user_id}">${esc(p.nome||"Atleta sem nome")}</option>`).join("");
-    if (selected) select.value = selected;
-  }
-  function renderAdminFinanceList() {
-    const search = ($("financeSearch").value||"").toLocaleLowerCase("pt-BR");
-    const filter = $("financeFilter").value;
-    const rows = mensalidades.filter(c=>{
-      const text = `${profileName(c.atleta_id)} ${c.descricao||""}`.toLocaleLowerCase("pt-BR");
-      return (filter==="todas"||c.status===filter) && text.includes(search);
+  if (authRequestRunning) return;
+  authRequestRunning = true;
+
+  clearMessage();
+  loginButton.disabled = true;
+  loginButton.textContent = "ENTRANDO...";
+
+  const email = $("email").value.trim();
+  const password = $("password").value;
+
+  try {
+    const { data, error } = await client.auth.signInWithPassword({
+      email,
+      password
     });
-    $("adminFinanceList").innerHTML = rows.length ? rows.map(c=>{
-      const paid = c.status==="pago";
-      return `<article class="item"><div class="itemtop"><div><h3>${esc(profileName(c.atleta_id))}</h3><div class="money">${money(c.valor)}</div><p>${esc(c.descricao||"Mensalidade")}</p></div><span class="badge ${paid?"green":"yellow"}">${paid?"Pago":"Pendente"}</span></div>
-      <p>Vencimento: ${dateBR(c.vencimento)}${paid?" · Pago em: "+dateBR(c.pago_em):""}</p>
-      <div class="actions"><button class="btn smallbtn" data-edit-finance="${c.id}">Editar</button><button class="btn ${paid?"":"success"} smallbtn" data-toggle-finance="${c.id}">${paid?"Marcar pendente":"Registrar pagamento"}</button><button class="btn danger smallbtn" data-delete-finance="${c.id}">Excluir</button></div></article>`;
-    }).join("") : `<div class="empty">Nenhuma cobrança corresponde à pesquisa.</div>`;
-  }
 
-  // Login
-  $("loginForm").addEventListener("submit",async e=>{
-    e.preventDefault();
-    const email = $("loginEmail").value.trim();
-    const password = $("loginPassword").value;
-    const btn = e.submitter;
-    btn.disabled = true; btn.textContent = "Entrando...";
-    try {
-      const {data,error} = await sb.auth.signInWithPassword({email,password});
-      if (error) throw error;
-      await startSession(data.user);
-    } catch(err) { showMessage("loginMessage",err.message||"Falha no login."); }
-    finally { btn.disabled=false;btn.textContent="Entrar"; }
-  });
-  $("forgotBtn").addEventListener("click",async()=>{
-    const email = $("loginEmail").value.trim();
-    if (!email) { showMessage("loginMessage","Digite seu e-mail antes de solicitar a recuperação."); return; }
-    try {
-      const {error} = await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin});
-      if (error) throw error;
-      showMessage("loginMessage","Se o e-mail estiver cadastrado, você receberá instruções para redefinir a senha.","ok");
-    } catch(e) { showMessage("loginMessage",e.message); }
-  });
-  $("logoutBtn").addEventListener("click",async()=>{
-    await sb.auth.signOut();
-    user=null;profile=null;isAdmin=false;
-    showLogin();
-  });
+    if (error) throw error;
+    if (!data.user) throw new Error("O Supabase não retornou os dados da conta.");
 
-  document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.view)));
-  document.querySelectorAll("[data-goto]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.goto)));
+    await loadProfileAndStart(data.user);
+  } catch (error) {
+    console.error("Falha no login:", error);
 
-  // Formulário de turmas
-  function resetTurmaForm() {
-    $("turmaForm").reset();$("turmaId").value="";
-    $("turmaFormTitle").textContent="Nova turma";$("cancelTurmaEdit").classList.add("hidden");
-  }
-  $("cancelTurmaEdit").addEventListener("click",resetTurmaForm);
-  $("turmaForm").addEventListener("submit",async e=>{
-    e.preventDefault(); if(!isAdmin)return;
-    const id=$("turmaId").value;
-    const row={nome:$("turmaNome").value.trim(),categoria:$("turmaCategoria").value.trim()||null,descricao:$("turmaDescricao").value.trim()||null,ativo:$("turmaAtiva").value==="true"};
-    try {
-      if(id) await query(sb.from("turmas").update(row).eq("id",id).select(),"Erro ao atualizar turma");
-      else await query(sb.from("turmas").insert({...row,criado_por:user.id}).select(),"Erro ao criar turma");
-      toast("Turma salva com sucesso.");resetTurmaForm();await loadAdminTurmas();
-    } catch(err){fail(err,"Não foi possível salvar a turma");}
-  });
-  $("reloadTurmas").addEventListener("click",()=>loadAdminTurmas().catch(e=>fail(e)));
-  $("adminTurmasList").addEventListener("click",async e=>{
-    const b=e.target.closest("button");if(!b)return;
-    const t=turmas.find(x=>x.id===(b.dataset.editTurma||b.dataset.assignTurma||b.dataset.toggleTurma||b.dataset.deleteTurma));if(!t)return;
-    try{
-      if(b.dataset.editTurma){
-        $("turmaId").value=t.id;$("turmaNome").value=t.nome;$("turmaCategoria").value=t.categoria||"";
-        $("turmaDescricao").value=t.descricao||"";$("turmaAtiva").value=String(t.ativo);
-        $("turmaFormTitle").textContent="Editar turma";$("cancelTurmaEdit").classList.remove("hidden");
-        $("turmaForm").scrollIntoView({behavior:"smooth"});
-      }else if(b.dataset.assignTurma){await openAssignments(t);}
-      else if(b.dataset.toggleTurma){
-        await query(sb.from("turmas").update({ativo:!t.ativo}).eq("id",t.id),"Erro ao mudar situação");
-        toast("Situação da turma atualizada.");await loadAdminTurmas();
-      }else if(b.dataset.deleteTurma){
-        if(!confirm(`Excluir a turma "${t.nome}"? Os vínculos dessa turma também serão removidos.`))return;
-        await query(sb.from("turmas").delete().eq("id",t.id),"Erro ao excluir turma");
-        toast("Turma excluída.");await loadAdminTurmas();
-      }
-    }catch(err){fail(err);}
-  });
+    let text = error.message || "Erro desconhecido.";
 
-  async function openAssignments(t) {
-    currentAssignTurma=t;
-    $("turmaAssignPanel").classList.remove("hidden");
-    $("assignTitle").textContent="Vínculos: "+t.nome;
-    const [linksA,linksT] = await Promise.all([
-      query(sb.from("turma_atletas").select("atleta_id").eq("turma_id",t.id),"Erro ao consultar atletas da turma"),
-      query(sb.from("turma_treinos").select("treino_id").eq("turma_id",t.id),"Erro ao consultar treinos da turma")
-    ]);
-    assignments.athletes=(linksA||[]).map(x=>x.atleta_id);
-    assignments.trainings=(linksT||[]).map(x=>x.treino_id);
-    $("assignAthletes").innerHTML=profiles.filter(p=>p.papel!=="admin").map(p=>`<label class="checkitem"><input type="checkbox" data-assign-athlete="${p.user_id}" ${assignments.athletes.includes(p.user_id)?"checked":""}>${esc(p.nome||"Atleta")}</label>`).join("")||`<p class="muted">Nenhum atleta cadastrado.</p>`;
-    $("assignTrainings").innerHTML=treinos.map(tr=>`<label class="checkitem"><input type="checkbox" data-assign-training="${tr.id}" ${assignments.trainings.includes(tr.id)?"checked":""}>${esc(tr.titulo)}</label>`).join("")||`<p class="muted">Cadastre treinos primeiro.</p>`;
-    $("turmaAssignPanel").scrollIntoView({behavior:"smooth"});
-  }
-  $("closeAssign").addEventListener("click",()=>$("turmaAssignPanel").classList.add("hidden"));
-  $("saveAssignments").addEventListener("click",async()=>{
-    if(!currentAssignTurma||!isAdmin)return;
-    const id=currentAssignTurma.id;
-    const athleteIds=[...document.querySelectorAll("[data-assign-athlete]:checked")].map(x=>x.dataset.assignAthlete);
-    const trainingIds=[...document.querySelectorAll("[data-assign-training]:checked")].map(x=>x.dataset.assignTraining);
-    try{
-      await query(sb.from("turma_atletas").delete().eq("turma_id",id),"Erro ao atualizar vínculos");
-      await query(sb.from("turma_treinos").delete().eq("turma_id",id),"Erro ao atualizar treinos da turma");
-      if(athleteIds.length) await query(sb.from("turma_atletas").insert(athleteIds.map(atleta_id=>({turma_id:id,atleta_id}))),"Erro ao vincular atletas");
-      if(trainingIds.length) await query(sb.from("turma_treinos").insert(trainingIds.map(treino_id=>({turma_id:id,treino_id}))),"Erro ao vincular treinos");
-      toast("Vínculos atualizados.");$("turmaAssignPanel").classList.add("hidden");await loadAdminTurmas();
-    }catch(err){fail(err,"Não foi possível salvar os vínculos");}
-  });
-
-  // Formulário de treinos
-  $("diasTreino").innerHTML=DAYS.map(([key,label])=>`<label class="checkitem"><input type="checkbox" value="${key}" name="diaTreino">${label}</label>`).join("");
-  function resetTreinoForm(){
-    $("treinoForm").reset();$("treinoId").value="";$("treinoFormTitle").textContent="Novo treino";$("cancelTreinoEdit").classList.add("hidden");
-  }
-  $("cancelTreinoEdit").addEventListener("click",resetTreinoForm);
-  $("treinoForm").addEventListener("submit",async e=>{
-    e.preventDefault();if(!isAdmin)return;
-    const id=$("treinoId").value;
-    const row={
-      titulo:$("treinoTitulo").value.trim(),categoria:$("treinoCategoria").value.trim()||null,
-      modalidade:$("treinoModalidade").value.trim()||null,local:$("treinoLocal").value.trim()||null,
-      horario_inicio:$("treinoInicio").value||null,horario_fim:$("treinoFim").value||null,
-      dias_semana:[...document.querySelectorAll('input[name="diaTreino"]:checked')].map(x=>x.value),
-      descricao:$("treinoDescricao").value.trim()||null,ativo:$("treinoAtivo").value==="true"
-    };
-    try{
-      if(id) await query(sb.from("treinos").update(row).eq("id",id).select(),"Erro ao atualizar treino");
-      else await query(sb.from("treinos").insert({...row,criado_por:user.id}).select(),"Erro ao criar treino");
-      toast("Treino salvo com sucesso.");resetTreinoForm();await loadAdminTreinos();
-    }catch(err){fail(err,"Não foi possível salvar o treino. Confira se as colunas da tabela treinos correspondem ao formulário");}
-  });
-  $("reloadTreinos").addEventListener("click",()=>loadAdminTreinos().catch(e=>fail(e)));
-  $("adminTreinosList").addEventListener("click",async e=>{
-    const b=e.target.closest("button");if(!b)return;
-    const t=treinos.find(x=>x.id===(b.dataset.editTreino||b.dataset.deleteTreino));if(!t)return;
-    try{
-      if(b.dataset.editTreino){
-        $("treinoId").value=t.id;$("treinoTitulo").value=t.titulo||"";$("treinoCategoria").value=t.categoria||"";
-        $("treinoModalidade").value=t.modalidade||"";$("treinoLocal").value=t.local||"";
-        $("treinoInicio").value=t.horario_inicio||"";$("treinoFim").value=t.horario_fim||"";
-        $("treinoDescricao").value=t.descricao||"";$("treinoAtivo").value=String(t.ativo!==false);
-        document.querySelectorAll('input[name="diaTreino"]').forEach(x=>x.checked=(t.dias_semana||[]).includes(x.value)||(t.dia_semana===x.value));
-        $("treinoFormTitle").textContent="Editar treino";$("cancelTreinoEdit").classList.remove("hidden");
-        $("treinoForm").scrollIntoView({behavior:"smooth"});
-      }else if(b.dataset.deleteTreino){
-        if(!confirm(`Excluir o treino "${t.titulo}"?`))return;
-        await query(sb.from("treinos").delete().eq("id",t.id),"Erro ao excluir treino");
-        toast("Treino excluído.");await loadAdminTreinos();
-      }
-    }catch(err){fail(err);}
-  });
-
-  // Formulário de campeonatos
-  function resetChampForm(){
-    $("champForm").reset();$("champId").value="";$("champFormTitle").textContent="Novo campeonato";$("cancelChampEdit").classList.add("hidden");
-  }
-  $("cancelChampEdit").addEventListener("click",resetChampForm);
-  $("champForm").addEventListener("submit",async e=>{
-    e.preventDefault();if(!isAdmin)return;
-    const id=$("champId").value;
-    const row={nome:$("champNome").value.trim(),categoria:$("champCategoria").value.trim()||null,data_evento:$("champData").value||null,horario:$("champHora").value||null,local:$("champLocal").value.trim()||null,descricao:$("champDescricao").value.trim()||null};
-    try{
-      if(id) await query(sb.from("campeonatos").update(row).eq("id",id).select(),"Erro ao atualizar campeonato");
-      else await query(sb.from("campeonatos").insert({...row,criado_por:user.id}).select(),"Erro ao criar campeonato");
-      toast("Campeonato salvo.");resetChampForm();await loadAdminCampeonatos();
-    }catch(err){fail(err,"Não foi possível salvar o campeonato");}
-  });
-  $("reloadChamps").addEventListener("click",()=>loadAdminCampeonatos().catch(e=>fail(e)));
-  $("adminChampList").addEventListener("click",async e=>{
-    const b=e.target.closest("button");if(!b)return;
-    const c=campeonatos.find(x=>x.id===(b.dataset.editChamp||b.dataset.con convocChamp||b.dataset.deleteChamp));
-    // A seleção do campeonato é feita abaixo usando os atributos reais do botão.
-    const targetId=b.dataset.editChamp||b.dataset.convocChamp||b.dataset.deleteChamp;
-    const champ=campeonatos.find(x=>x.id===targetId);
-    if(!champ)return;
-    try{
-      if(b.dataset.editChamp){
-        $("champId").value=champ.id;$("champNome").value=champ.nome||"";$("champCategoria").value=champ.categoria||"";
-        $("champData").value=dateInput(champ.data_evento);$("champHora").value=champ.horario||"";
-        $("champLocal").value=champ.local||"";$("champDescricao").value=champ.descricao||"";
-        $("champFormTitle").textContent="Editar campeonato";$("cancelChampEdit").classList.remove("hidden");
-        $("champForm").scrollIntoView({behavior:"smooth"});
-      }else if(b.dataset.convocChamp){await openConvocations(champ);}
-      else if(b.dataset.deleteChamp){
-        if(!confirm(`Excluir o campeonato "${champ.nome}"? As convocações relacionadas serão removidas se a chave estrangeira estiver configurada com cascade.`))return;
-        await query(sb.from("campeonatos").delete().eq("id",champ.id),"Erro ao excluir campeonato");
-        toast("Campeonato excluído.");await loadAdminCampeonatos();
-      }
-    }catch(err){fail(err);}
-  });
-
-  async function openConvocations(champ){
-    currentConvChamp=champ;
-    const rows=await query(sb.from("convocacoes").select("atleta_id").eq("campeonato_id",champ.id),"Erro ao consultar convocações");
-    convocationIds=(rows||[]).map(x=>x.atleta_id);
-    $("convocationTitle").textContent="Convocados: "+champ.nome;
-    $("convocationAthletes").innerHTML=profiles.filter(p=>p.papel!=="admin").map(p=>`<label class="checkitem"><input type="checkbox" data-conv-athlete="${p.user_id}" ${convocationIds.includes(p.user_id)?"checked":""}>${esc(p.nome||"Atleta")}</label>`).join("")||`<p class="muted">Nenhum atleta cadastrado.</p>`;
-    $("convocationPanel").classList.remove("hidden");
-    $("convocationPanel").scrollIntoView({behavior:"smooth"});
-  }
-  $("closeConvocation").addEventListener("click",()=>$("convocationPanel").classList.add("hidden"));
-  $("saveConvocations").addEventListener("click",async()=>{
-    if(!isAdmin||!currentConvChamp)return;
-    const ids=[...document.querySelectorAll("[data-conv-athlete]:checked")].map(x=>x.dataset.convAthlete);
-    try{
-      await query(sb.from("convocacoes").delete().eq("campeonato_id",currentConvChamp.id),"Erro ao atualizar convocações");
-      if(ids.length) await query(sb.from("convocacoes").insert(ids.map(atleta_id=>({campeonato_id:currentConvChamp.id,atleta_id}))),"Erro ao salvar convocações");
-      toast("Convocações atualizadas.");$("convocationPanel").classList.add("hidden");await loadAdminCampeonatos();
-    }catch(err){fail(err,"Não foi possível salvar as convocações");}
-  });
-
-  // Financeiro manual
-  function resetFinanceForm(){
-    $("financeForm").reset();$("financeId").value="";$("financeFormTitle").textContent="Nova cobrança";
-    $("financeStatus").value="pendente";$("cancelFinanceEdit").classList.add("hidden");
-  }
-  $("cancelFinanceEdit").addEventListener("click",resetFinanceForm);
-  $("financeForm").addEventListener("submit",async e=>{
-    e.preventDefault();if(!isAdmin)return;
-    const id=$("financeId").value;
-    const status=$("financeStatus").value;
-    const row={
-      atleta_id:$("financeAtleta").value,
-      valor:Number($("financeValor").value),
-      vencimento:$("financeVencimento").value,
-      descricao:$("financeDescricao").value.trim()||null,
-      status,
-      pago_em:status==="pago"?new Date().toISOString():null
-    };
-    if(!row.atleta_id){toast("Selecione um atleta.",true);return;}
-    try{
-      if(id) await query(sb.from("mensalidades").update(row).eq("id",id).select(),"Erro ao atualizar cobrança");
-      else await query(sb.from("mensalidades").insert({...row,criado_por:user.id}).select(),"Erro ao criar cobrança");
-      toast("Cobrança salva.");resetFinanceForm();await loadAdminFinanceiro();
-    }catch(err){fail(err,"Não foi possível salvar a cobrança");}
-  });
-  $("reloadFinance").addEventListener("click",()=>loadAdminFinanceiro().catch(e=>fail(e)));
-  $("financeSearch").addEventListener("input",renderAdminFinanceList);
-  $("financeFilter").addEventListener("change",renderAdminFinanceList);
-  $("adminFinanceList").addEventListener("click",async e=>{
-    const b=e.target.closest("button");if(!b)return;
-    const id=b.dataset.editFinance||b.dataset.toggleFinance||b.dataset.deleteFinance;
-    const c=mensalidades.find(x=>x.id===id);if(!c)return;
-    try{
-      if(b.dataset.editFinance){
-        $("financeId").value=c.id;$("financeAtleta").value=c.atleta_id;$("financeValor").value=c.valor;
-        $("financeVencimento").value=dateInput(c.vencimento);$("financeDescricao").value=c.descricao||"";
-        $("financeStatus").value=c.status;$("financeFormTitle").textContent="Editar cobrança";
-        $("cancelFinanceEdit").classList.remove("hidden");$("financeForm").scrollIntoView({behavior:"smooth"});
-      }else if(b.dataset.toggleFinance){
-        const next=c.status==="pago"?"pendente":"pago";
-        await query(sb.from("mensalidades").update({status:next,pago_em:next==="pago"?new Date().toISOString():null}).eq("id",c.id),"Erro ao registrar pagamento");
-        toast(next==="pago"?"Pagamento registrado.":"Cobrança marcada como pendente.");await loadAdminFinanceiro();
-      }else if(b.dataset.deleteFinance){
-        if(!confirm(`Excluir a cobrança de ${profileName(c.atleta_id)} no valor de ${money(c.valor)}?`))return;
-        await query(sb.from("mensalidades").delete().eq("id",c.id),"Erro ao excluir cobrança");
-        toast("Cobrança excluída.");await loadAdminFinanceiro();
-      }
-    }catch(err){fail(err);}
-  });
-
-  // Restaurar sessão quando a página abre e acompanhar expiração.
-  sb.auth.getSession().then(({data,error})=>{
-    if(error) {showLogin(error.message);return;}
-    if(data.session) startSession(data.session.user);
-    else showLogin();
-  });
-  sb.auth.onAuthStateChange((event,session)=>{
-    if(event==="SIGNED_OUT"){
-      user=null;profile=null;isAdmin=false;showLogin();
-    }else if(event==="PASSWORD_RECOVERY"){
-      toast("Siga o link recebido por e-mail para redefinir sua senha.");
+    if (/invalid login credentials/i.test(text)) {
+      text = "E-mail ou senha incorretos. Confira os dados e tente novamente.";
+    } else if (/email not confirmed/i.test(text)) {
+      text = "Seu e-mail ainda não foi confirmado no Supabase.";
+    } else if (/fetch|network|failed to fetch/i.test(text)) {
+      text = "Não foi possível conectar ao Supabase. Verifique a internet e as configurações do projeto.";
     }
-  });
+
+    showMessage("Não foi possível entrar: " + text, "error");
+  } finally {
+    authRequestRunning = false;
+    loginButton.disabled = false;
+    loginButton.textContent = "ENTRAR";
+  }
+});
+
+/* RECUPERAÇÃO DE SENHA */
+$("forgotPassword").addEventListener("click", async () => {
+  clearMessage();
+
+  const email = $("email").value.trim();
+
+  if (!email) {
+    showMessage("Digite seu e-mail no campo acima e tente novamente.", "error");
+    $("email").focus();
+    return;
+  }
+
+  try {
+    const { error } = await client.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin
+    });
+
+    if (error) throw error;
+
+    showMessage("Se esse e-mail estiver cadastrado, você receberá as instruções de recuperação.", "success");
+  } catch (error) {
+    console.error("Erro na recuperação de senha:", error);
+    showMessage("Falha na recuperação: " + (error.message || "tente novamente."), "error");
+  }
+});
+
+/* SAIR DA CONTA */
+$("logoutButton").addEventListener("click", async () => {
+  try {
+    const { error } = await client.auth.signOut();
+    if (error) throw error;
+
+    showLogin();
+    $("sectionArea").classList.add("hidden");
+    clearMessage();
+  } catch (error) {
+    console.error("Erro ao sair:", error);
+    alert("Não foi possível sair da conta: " + (error.message || "tente novamente."));
+  }
+});
+
+/* BOTÕES DO PAINEL */
+document.querySelectorAll("[data-section]").forEach(button => {
+  button.addEventListener("click", () => openSection(button.dataset.section));
+});
+
+$("closeSection").addEventListener("click", () => {
+  $("sectionArea").classList.add("hidden");
+  currentSection = "";
+});
+
+/* RESTAURA A SESSÃO QUANDO A PÁGINA É ABERTA */
+client.auth.onAuthStateChange((event, session) => {
+  if (event === "SIGNED_OUT") {
+    showLogin();
+  }
+});
+
+/* VERIFICA SE JÁ EXISTE UMA SESSÃO */
+(async () => {
+  try {
+    const { data, error } = await client.auth.getSession();
+
+    if (error) throw error;
+
+    if (data.session?.user) {
+      await loadProfileAndStart(data.session.user);
+    } else {
+      showLogin();
+    }
+  } catch (error) {
+    console.error("Erro ao verificar sessão:", error);
+    showLogin();
+    showMessage("Não foi possível verificar sua sessão: " + (error.message || "tente entrar novamente."), "error");
+  }
+})();
 
 })();
 </script>
