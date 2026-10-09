@@ -47,7 +47,7 @@ textarea{min-height:80px;resize:vertical}
 .item{padding:15px 0;border-top:1px solid #292929}
 .item:first-child{border-top:0}
 .item h3{margin:8px 0}
-.item p{color:#bbb;font-size:14px;line-height:1.5;margin:6px 0}
+.item p{color:#bbb;font-size:14px;line-height:1.5;margin:6px 0;overflow-wrap:anywhere}
 .badge{display:inline-block;border:1px solid #444;border-radius:20px;padding:5px 9px;color:#ccc;font-size:11px;margin:3px}
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .actions button{font-size:12px}
@@ -60,10 +60,10 @@ textarea{min-height:80px;resize:vertical}
 .time-grid label:has(input:checked){background:#fff;color:#000;border-color:#fff;font-weight:bold}
 .time-grid input{position:absolute;opacity:0;width:1px;height:1px}
 .time-scroll{max-height:240px;overflow-y:auto;padding:2px}
-.time-caption{font-size:12px;color:#999;margin:7px 0}
 .inline-check{display:flex;align-items:center;gap:9px;margin:12px 0}
 .inline-check input{width:auto!important}
 hr{border:0;border-top:1px solid #292929;margin:18px 0}
+.small{font-size:12px;color:#999;line-height:1.5}
 @media(max-width:560px){.cards{grid-template-columns:1fr}.panel{padding:15px}.logo h1{font-size:36px}.time-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
 </head>
@@ -101,10 +101,11 @@ hr{border:0;border-top:1px solid #292929;margin:18px 0}
   </div>
   <div class="cards">
     <button class="card-button" data-view="treinosView"><div class="eyebrow">Minha rotina</div><h2>Treinos</h2><p>Consulte dias, horários e locais.</p></button>
-    <button class="card-button" data-view="campeonatosView"><div class="eyebrow">Calendário</div><h2>Campeonatos</h2><p>Competições e convocados.</p></button>
+    <button class="card-button" data-view="campeonatosView"><div class="eyebrow">Calendário</div><h2>Campeonatos</h2><p>Competições e convocações.</p></button>
+    <button class="card-button" data-view="minhasTurmasView"><div class="eyebrow">Minha equipe</div><h2>Minhas turmas</h2><p>Consulte as turmas em que você está inscrito.</p></button>
     <article class="card"><div class="eyebrow">Financeiro</div><h2>Mensalidade</h2><p>Consulte a administração sobre pagamentos.</p></article>
     <article class="card"><div class="eyebrow">Produtos oficiais</div><h2>Spooky Store</h2><p>Produtos oficiais Spooky House.</p></article>
-    <button id="adminCard" class="card-button hidden" data-view="adminView"><div class="eyebrow">Área restrita</div><h2>Administrar</h2><p>Gerencie treinos e campeonatos.</p></button>
+    <button id="adminCard" class="card-button hidden" data-view="adminView"><div class="eyebrow">Área restrita</div><h2>Administrar</h2><p>Gerencie treinos, campeonatos e turmas.</p></button>
   </div>
 </section>
 
@@ -118,11 +119,17 @@ hr{border:0;border-top:1px solid #292929;margin:18px 0}
   <div id="campeonatosList" class="panel">Carregando...</div>
 </section>
 
+<section id="minhasTurmasView" class="hidden">
+  <div class="section-head"><h1>Minhas turmas</h1><button class="secondary" data-back>Voltar</button></div>
+  <div id="minhasTurmasList" class="panel">Carregando...</div>
+</section>
+
 <section id="adminView" class="hidden">
   <div class="section-head"><h1>Administração</h1><button class="secondary" data-back>Voltar</button></div>
   <div class="cards">
     <button class="card-button" data-view="adminTreinosView"><h2>Gerenciar treinos</h2><p>Cadastrar, editar e excluir treinos.</p></button>
     <button class="card-button" data-view="adminCampeonatosView"><h2>Gerenciar campeonatos</h2><p>Cadastrar competições e convocar atletas.</p></button>
+    <button class="card-button" data-view="adminTurmasView"><h2>Gerenciar turmas</h2><p>Criar turmas, adicionar atletas e associar treinos.</p></button>
   </div>
 </section>
 
@@ -151,16 +158,8 @@ hr{border:0;border-top:1px solid #292929;margin:18px 0}
         <label><input type="checkbox" name="diasTreino" value="Domingo"> Domingo</label>
       </div>
     </div>
-    <div class="field">
-      <label>Horário de início</label>
-      <div class="time-scroll"><div class="time-grid" id="treinoInicioGrid"></div></div>
-      <input type="hidden" id="treinoInicio" required>
-    </div>
-    <div class="field">
-      <label>Horário de término</label>
-      <div class="time-scroll"><div class="time-grid" id="treinoFimGrid"></div></div>
-      <input type="hidden" id="treinoFim" required>
-    </div>
+    <div class="field"><label>Horário de início</label><div class="time-scroll"><div class="time-grid" id="treinoInicioGrid"></div></div><input type="hidden" id="treinoInicio"></div>
+    <div class="field"><label>Horário de término</label><div class="time-scroll"><div class="time-grid" id="treinoFimGrid"></div></div><input type="hidden" id="treinoFim"></div>
     <div class="field"><label for="treinoLocal">Local</label><input id="treinoLocal" required value="Centro Esportivo João do Pulo"></div>
     <div class="field"><label for="treinoDescricao">Observações</label><textarea id="treinoDescricao" placeholder="Informações para os atletas"></textarea></div>
     <button id="saveTreinoButton" class="primary full">SALVAR TREINO</button>
@@ -178,11 +177,7 @@ hr{border:0;border-top:1px solid #292929;margin:18px 0}
     <div class="field"><label for="campNome">Nome do campeonato</label><input id="campNome" required></div>
     <div class="field"><label for="campCategoria">Categoria</label><input id="campCategoria" required placeholder="Ex.: Sub-17, Adulto, 3x3"></div>
     <div class="field"><label for="campData">Data</label><input id="campData" type="date"></div>
-    <div class="field">
-      <label>Horário do campeonato</label>
-      <div class="time-scroll"><div class="time-grid" id="campHorarioGrid"></div></div>
-      <input type="hidden" id="campHorario" required>
-    </div>
+    <div class="field"><label>Horário do campeonato</label><div class="time-scroll"><div class="time-grid" id="campHorarioGrid"></div></div><input type="hidden" id="campHorario"></div>
     <div class="field"><label for="campLocal">Local</label><input id="campLocal"></div>
     <div class="field"><label for="campDescricao">Informações</label><textarea id="campDescricao"></textarea></div>
     <button id="saveCampButton" class="primary full">SALVAR CAMPEONATO</button>
@@ -197,6 +192,35 @@ hr{border:0;border-top:1px solid #292929;margin:18px 0}
     <p id="convocacaoMessage" class="muted"></p>
   </div>
 </section>
+
+<section id="adminTurmasView" class="hidden">
+  <div class="section-head"><h1>Gerenciar turmas</h1><button class="secondary" data-back>Voltar</button></div>
+  <form id="turmaForm" class="panel">
+    <h2 id="turmaFormTitle">Criar turma</h2>
+    <input type="hidden" id="turmaId">
+    <div class="field"><label for="turmaNome">Nome da turma</label><input id="turmaNome" required placeholder="Ex.: Academy Masculino"></div>
+    <div class="field"><label for="turmaCategoria">Categoria</label>
+      <select id="turmaCategoria">
+        <option>Academy Masculino</option><option>Academy Feminino</option><option>Adulto</option><option>Sub-13</option><option>Sub-15</option><option>Sub-17</option><option>Sub-21</option><option>Open</option><option>Coletivo</option><option>Outra</option>
+      </select>
+    </div>
+    <div class="field"><label for="turmaDescricao">Descrição</label><textarea id="turmaDescricao" placeholder="Informações sobre a turma"></textarea></div>
+    <button class="primary full" id="saveTurmaButton">SALVAR TURMA</button>
+    <button class="secondary full hidden" type="button" id="cancelTurmaEdit" style="margin-top:8px">Cancelar edição</button>
+    <p id="turmaFormMessage" class="muted"></p>
+  </form>
+  <div class="panel"><h2>Turmas cadastradas</h2><div id="adminTurmasList">Carregando...</div></div>
+  <div id="turmaManagePanel" class="panel hidden">
+    <h2 id="turmaManageTitle">Gerenciar turma</h2>
+    <p class="muted">Marque os atletas que pertencem a esta turma.</p>
+    <div id="turmaAthletesList">Carregando atletas...</div>
+    <hr>
+    <p class="muted">Selecione os treinos que os integrantes desta turma devem visualizar.</p>
+    <div id="turmaTreinosList">Carregando treinos...</div>
+    <button id="saveTurmaAssociations" class="primary full" style="margin-top:15px">SALVAR ATLETAS E TREINOS</button>
+    <p id="turmaAssociationsMessage" class="muted"></p>
+  </div>
+</section>
 </main>
 </section>
 
@@ -207,9 +231,11 @@ hr{border:0;border-top:1px solid #292929;margin:18px 0}
 
 const SUPABASE_URL = "https://mcrreffapstciqpsgvro.supabase.co";
 const SUPABASE_KEY = "sb_publishable_S798hSSxNl63S2sgDYJoog_tl-N6poI";
-
 const $ = id => document.getElementById(id);
-let db, user = null, isAdmin = false, activeCamp = null;
+
+let db, user = null, isAdmin = false;
+let activeCamp = null, activeTurma = null;
+let profilesCache = [], trainingsCache = [];
 
 const dayOrder = ["Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado","Domingo"];
 
@@ -218,572 +244,460 @@ function safe(value) {
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[c]));
 }
-function errText(prefix, error) {
+function errText(prefix,error) {
   return prefix + " " + (error?.message || "Erro desconhecido.");
 }
-function showMessage(text, type="") {
-  const el = $("message");
-  el.textContent = text;
-  el.className = "show " + type;
+function showMessage(text,type="") {
+  const el=$("message");
+  el.textContent=text;
+  el.className="show "+type;
 }
 function showLogin() {
   $("appScreen").classList.add("hidden");
   $("loginScreen").classList.remove("hidden");
 }
 function showView(id) {
-  document.querySelectorAll("main>section").forEach(section => section.classList.add("hidden"));
+  document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));
   $(id).classList.remove("hidden");
   window.scrollTo(0,0);
-  if(id === "treinosView") loadTreinos();
-  if(id === "campeonatosView") loadCampeonatos();
-  if(id === "adminTreinosView") loadAdminTreinos();
-  if(id === "adminCampeonatosView") loadAdminCampeonatos();
+  if(id==="treinosView") loadTreinos();
+  if(id==="campeonatosView") loadCampeonatos();
+  if(id==="minhasTurmasView") loadMinhasTurmas();
+  if(id==="adminTreinosView") loadAdminTreinos();
+  if(id==="adminCampeonatosView") loadAdminCampeonatos();
+  if(id==="adminTurmasView") loadAdminTurmas();
 }
-document.querySelectorAll("[data-view]").forEach(button => {
-  button.onclick = () => showView(button.dataset.view);
-});
-document.querySelectorAll("[data-back]").forEach(button => {
-  button.onclick = () => showView("homeView");
-});
+document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>showView(b.dataset.view));
+document.querySelectorAll("[data-back]").forEach(b=>b.onclick=()=>showView("homeView"));
 
 function dateBR(value) {
   if(!value) return "Data a definir";
-  const parts = value.split("-");
-  return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : value;
+  const p=String(value).split("-");
+  return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:value;
 }
 
-/* HORÁRIOS EM QUADRADOS, DE 30 EM 30 MINUTOS */
-function createTimeGrid(containerId, hiddenInputId, groupName, startHour=6, endHour=23) {
-  const container = $(containerId);
-  const hidden = $(hiddenInputId);
-  container.innerHTML = "";
-
-  for(let minutes = startHour * 60; minutes <= endHour * 60 + 30; minutes += 30) {
-    if(minutes >= 24 * 60) break;
-
-    const hours = String(Math.floor(minutes / 60)).padStart(2, "0");
-    const mins = String(minutes % 60).padStart(2, "0");
-    const value = `${hours}:${mins}`;
-
-    const label = document.createElement("label");
-    const radio = document.createElement("input");
-    radio.type = "radio";
-    radio.name = groupName;
-    radio.value = value;
-    radio.checked = hidden.value === value;
-    radio.setAttribute("aria-label", value);
-
-    radio.addEventListener("change", () => {
-      hidden.value = value;
-    });
-
-    label.append(radio, document.createTextNode(value));
-    container.appendChild(label);
+/* HORÁRIOS EM QUADRADOS: 06:00, 06:30, 07:00... ATÉ 23:30 */
+function createTimeGrid(containerId,hiddenId,groupName,startHour=6,endHour=23) {
+  const box=$(containerId),hidden=$(hiddenId);
+  box.innerHTML="";
+  for(let m=startHour*60;m<24*60;m+=30) {
+    const value=String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0");
+    const label=document.createElement("label");
+    const radio=document.createElement("input");
+    radio.type="radio";radio.name=groupName;radio.value=value;
+    radio.checked=hidden.value===value;
+    radio.addEventListener("change",()=>hidden.value=value);
+    label.append(radio,document.createTextNode(value));
+    box.appendChild(label);
   }
 }
-function setTimeGrid(containerId, hiddenId, groupName, value) {
-  $(hiddenId).value = (value || "").slice(0,5);
-  document.querySelectorAll(`input[name="${groupName}"]`).forEach(radio => {
-    radio.checked = radio.value === $(hiddenId).value;
-  });
+function setTimeGrid(hiddenId,groupName,value) {
+  $(hiddenId).value=String(value||"").slice(0,5);
+  document.querySelectorAll(`input[name="${groupName}"]`).forEach(r=>r.checked=r.value===$(hiddenId).value);
 }
-function resetTimeGrid(containerId, hiddenId, groupName) {
-  $(hiddenId).value = "";
-  document.querySelectorAll(`input[name="${groupName}"]`).forEach(radio => {
-    radio.checked = false;
-  });
+function resetTimeGrid(hiddenId,groupName) {
+  $(hiddenId).value="";
+  document.querySelectorAll(`input[name="${groupName}"]`).forEach(r=>r.checked=false);
 }
-createTimeGrid("treinoInicioGrid", "treinoInicio", "horarioInicioTreino");
-createTimeGrid("treinoFimGrid", "treinoFim", "horarioFimTreino");
-createTimeGrid("campHorarioGrid", "campHorario", "horarioCampeonato");
+createTimeGrid("treinoInicioGrid","treinoInicio","horarioInicioTreino");
+createTimeGrid("treinoFimGrid","treinoFim","horarioFimTreino");
+createTimeGrid("campHorarioGrid","campHorario","horarioCampeonato");
 
-/* LOGIN E PERFIL */
+/* LOGIN */
 async function loadProfile(authUser) {
-  user = authUser;
-  isAdmin = false;
-  let name = authUser.email?.split("@")[0] || "Atleta";
-
-  const {data, error} = await db.from("perfis")
-    .select("nome,papel")
-    .eq("user_id", authUser.id)
-    .maybeSingle();
-
-  if(error) console.error("Erro ao carregar perfil:", error);
-  if(data) {
-    name = data.nome || name;
-    isAdmin = data.papel === "admin";
-  }
-
-  $("athleteName").textContent = name;
-  $("roleBadge").textContent = isAdmin ? "ADMINISTRADOR" : "ATLETA";
-  $("adminCard").classList.toggle("hidden", !isAdmin);
+  user=authUser;isAdmin=false;
+  let name=authUser.email?.split("@")[0]||"Atleta";
+  const {data,error}=await db.from("perfis").select("nome,papel").eq("user_id",authUser.id).maybeSingle();
+  if(error) console.error("Perfil:",error);
+  if(data){name=data.nome||name;isAdmin=data.papel==="admin";}
+  $("athleteName").textContent=name;
+  $("roleBadge").textContent=isAdmin?"ADMINISTRADOR":"ATLETA";
+  $("adminCard").classList.toggle("hidden",!isAdmin);
   $("loginScreen").classList.add("hidden");
   $("appScreen").classList.remove("hidden");
   showView("homeView");
 }
-
-$("loginForm").onsubmit = async event => {
-  event.preventDefault();
-  $("loginButton").disabled = true;
+$("loginForm").onsubmit=async e=>{
+  e.preventDefault();$("loginButton").disabled=true;
   try {
-    const {data, error} = await db.auth.signInWithPassword({
-      email:$("email").value.trim(),
-      password:$("password").value
-    });
-    if(error) throw error;
+    const {data,error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});
+    if(error)throw error;
     await loadProfile(data.user);
-  } catch(error) {
-    showMessage(errText("Não foi possível entrar:", error), "error");
-  } finally {
-    $("loginButton").disabled = false;
-  }
+  } catch(error){showMessage(errText("Não foi possível entrar:",error),"error");}
+  finally{$("loginButton").disabled=false;}
 };
-
-$("forgotPassword").onclick = async () => {
-  const email = $("email").value.trim();
-  if(!email) return showMessage("Digite seu e-mail primeiro.", "error");
-  const {error} = await db.auth.resetPasswordForEmail(email, {
-    redirectTo:location.origin
-  });
-  if(error) showMessage(errText("Erro:", error), "error");
-  else showMessage("Se o e-mail estiver cadastrado, você receberá as instruções.", "success");
+$("forgotPassword").onclick=async()=>{
+  const email=$("email").value.trim();
+  if(!email)return showMessage("Digite seu e-mail primeiro.","error");
+  const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin});
+  if(error)showMessage(errText("Erro:",error),"error");
+  else showMessage("Se o e-mail estiver cadastrado, você receberá instruções.","success");
 };
-
-$("logoutButton").onclick = async () => {
-  const {error} = await db.auth.signOut();
-  if(error) alert(error.message);
-  else showLogin();
+$("logoutButton").onclick=async()=>{
+  const {error}=await db.auth.signOut();
+  if(error)alert(error.message);else showLogin();
 };
 
 /* TREINOS */
-function daysOf(training) {
-  if(Array.isArray(training.dias_semana)) return training.dias_semana;
-  if(typeof training.dias_semana === "string") {
-    try {
-      const parsed = JSON.parse(training.dias_semana);
-      if(Array.isArray(parsed)) return parsed;
-    } catch {}
-    return training.dias_semana.split(",").map(day => day.trim()).filter(Boolean);
+function daysOf(t) {
+  if(Array.isArray(t.dias_semana))return [...t.dias_semana];
+  if(typeof t.dias_semana==="string") {
+    try {const a=JSON.parse(t.dias_semana);if(Array.isArray(a))return a;}catch{}
+    return t.dias_semana.split(",").map(x=>x.trim()).filter(Boolean);
   }
-  return training.dia_semana
-    ? training.dia_semana.split(",").map(day => day.trim()).filter(Boolean)
-    : [];
+  return t.dia_semana?t.dia_semana.split(",").map(x=>x.trim()).filter(Boolean):[];
 }
-function orderedDays(training) {
-  return daysOf(training).sort((a,b) => dayOrder.indexOf(a) - dayOrder.indexOf(b)).join(", ");
+function orderedDays(t) {
+  return daysOf(t).sort((a,b)=>dayOrder.indexOf(a)-dayOrder.indexOf(b)).join(", ")||"Dias a definir";
 }
-function timeOf(training) {
-  return (training.horario_inicio || "Horário a definir") +
-    (training.horario_fim ? " às " + training.horario_fim : "");
+function timeOf(t) {
+  return (t.horario_inicio||"Horário a definir")+(t.horario_fim?" às "+String(t.horario_fim).slice(0,5):"");
 }
-
 async function loadTreinos() {
-  const box = $("treinosList");
-  box.textContent = "Carregando...";
-  const {data, error} = await db.from("treinos").select("*").eq("ativo", true);
-
-  if(error) {
-    box.textContent = errText("Erro ao carregar treinos:", error);
-    return;
+  const box=$("treinosList");box.textContent="Carregando...";
+  let query=db.from("treinos").select("*").eq("ativo",true);
+  const {data,error}=await query;
+  if(error){box.textContent=errText("Erro ao carregar treinos:",error);return;}
+  let list=data||[];
+  if(!isAdmin) {
+    const {data:links,error:linkError}=await db.from("turma_treinos").select("treino_id");
+    if(linkError){box.textContent=errText("Erro ao consultar suas turmas:",linkError);return;}
+    const linkedIds=new Set((links||[]).map(x=>x.treino_id));
+    if(linkedIds.size) list=list.filter(t=>linkedIds.has(t.id));
+    else list=[];
   }
-  data.sort((a,b) => dayOrder.indexOf(daysOf(a)[0]) - dayOrder.indexOf(daysOf(b)[0]));
-
-  if(!data.length) {
-    box.innerHTML = '<p class="muted">Nenhum treino publicado ainda.</p>';
-    return;
-  }
-
-  box.innerHTML = data.map(training => `
-    <div class="item">
-      <span class="badge">${safe(training.categoria)}</span>
-      <span class="badge">${safe(training.modalidade || "Treino")}</span>
-      <h3>${safe(training.titulo)}</h3>
-      <p><b>Dias:</b> ${safe(orderedDays(training))}</p>
-      <p><b>Horário:</b> ${safe(timeOf(training))}</p>
-      <p><b>Local:</b> ${safe(training.local)}</p>
-      ${training.descricao ? `<p>${safe(training.descricao)}</p>` : ""}
-    </div>`).join("");
+  list.sort((a,b)=>dayOrder.indexOf(daysOf(a)[0])-dayOrder.indexOf(daysOf(b)[0]));
+  if(!list.length){box.innerHTML='<p class="muted">Nenhum treino disponível para sua conta ou suas turmas.</p>';return;}
+  box.innerHTML=list.map(t=>`
+    <div class="item"><span class="badge">${safe(t.categoria)}</span><span class="badge">${safe(t.modalidade||"Treino")}</span>
+    <h3>${safe(t.titulo)}</h3><p><b>Dias:</b> ${safe(orderedDays(t))}</p>
+    <p><b>Horário:</b> ${safe(timeOf(t))}</p><p><b>Local:</b> ${safe(t.local)}</p>
+    ${t.descricao?`<p>${safe(t.descricao)}</p>`:""}</div>`).join("");
 }
-
 async function loadAdminTreinos() {
-  if(!isAdmin) return;
-  const box = $("adminTreinosList");
-  box.textContent = "Carregando...";
-  const {data, error} = await db.from("treinos").select("*");
-
-  if(error) {
-    box.textContent = errText("Erro ao carregar treinos:", error);
-    return;
-  }
-  if(!data.length) {
-    box.innerHTML = '<p class="muted">Nenhum treino cadastrado.</p>';
-    return;
-  }
-
-  box.innerHTML = data.map(training => `
-    <div class="item">
-      <span class="badge">${training.ativo ? "Publicado" : "Inativo"}</span>
-      <h3>${safe(training.titulo)}</h3>
-      <p>${safe(training.categoria)} · ${safe(orderedDays(training))}</p>
-      <p>${safe(timeOf(training))} · ${safe(training.local)}</p>
-      <div class="actions">
-        <button class="secondary" data-edit-treino="${training.id}">Editar</button>
-        <button class="secondary" data-toggle-treino="${training.id}" data-active="${training.ativo}">${training.ativo ? "Desativar" : "Publicar"}</button>
-        <button class="danger" data-delete-treino="${training.id}">Excluir</button>
-      </div>
-    </div>`).join("");
-
-  box.querySelectorAll("[data-edit-treino]").forEach(button => {
-    button.onclick = () => editTreino(data.find(t => t.id === button.dataset.editTreino));
-  });
-  box.querySelectorAll("[data-toggle-treino]").forEach(button => {
-    button.onclick = () => toggleTreino(button.dataset.toggleTreino, button.dataset.active === "true");
-  });
-  box.querySelectorAll("[data-delete-treino]").forEach(button => {
-    button.onclick = () => deleteTreino(button.dataset.deleteTreino);
-  });
+  if(!isAdmin)return;
+  const box=$("adminTreinosList");box.textContent="Carregando...";
+  const {data,error}=await db.from("treinos").select("*");
+  if(error){box.textContent=errText("Erro ao carregar treinos:",error);return;}
+  trainingsCache=data||[];
+  if(!data?.length){box.innerHTML='<p class="muted">Nenhum treino cadastrado.</p>';return;}
+  box.innerHTML=data.map(t=>`
+    <div class="item"><span class="badge">${t.ativo?"Publicado":"Inativo"}</span><h3>${safe(t.titulo)}</h3>
+    <p>${safe(t.categoria)} · ${safe(orderedDays(t))}</p><p>${safe(timeOf(t))} · ${safe(t.local)}</p>
+    <div class="actions"><button class="secondary" data-edit-treino="${t.id}">Editar</button>
+    <button class="secondary" data-toggle-treino="${t.id}" data-active="${t.ativo}">${t.ativo?"Desativar":"Publicar"}</button>
+    <button class="danger" data-delete-treino="${t.id}">Excluir</button></div></div>`).join("");
+  box.querySelectorAll("[data-edit-treino]").forEach(b=>b.onclick=()=>editTreino(data.find(t=>t.id===b.dataset.editTreino)));
+  box.querySelectorAll("[data-toggle-treino]").forEach(b=>b.onclick=()=>toggleTreino(b.dataset.toggleTreino,b.dataset.active==="true"));
+  box.querySelectorAll("[data-delete-treino]").forEach(b=>b.onclick=()=>deleteTreino(b.dataset.deleteTreino));
 }
-
-function editTreino(training) {
-  $("treinoId").value = training.id;
-  $("treinoTitulo").value = training.titulo || "";
-  $("treinoCategoria").value = training.categoria || "Todos";
-  $("treinoModalidade").value = training.modalidade || "Treino";
-
-  document.querySelectorAll('input[name="diasTreino"]').forEach(input => {
-    input.checked = daysOf(training).includes(input.value);
-  });
-
-  setTimeGrid("treinoInicioGrid", "treinoInicio", "horarioInicioTreino", training.horario_inicio);
-  setTimeGrid("treinoFimGrid", "treinoFim", "horarioFimTreino", training.horario_fim);
-
-  $("treinoLocal").value = training.local || "";
-  $("treinoDescricao").value = training.descricao || "";
-  $("treinoFormTitle").textContent = "Editar treino";
-  $("saveTreinoButton").textContent = "SALVAR ALTERAÇÕES";
-  $("cancelTreinoEdit").classList.remove("hidden");
-  $("treinoForm").scrollIntoView({behavior:"smooth"});
+function editTreino(t) {
+  $("treinoId").value=t.id;$("treinoTitulo").value=t.titulo||"";
+  $("treinoCategoria").value=t.categoria||"Todos";$("treinoModalidade").value=t.modalidade||"Treino";
+  document.querySelectorAll('input[name="diasTreino"]').forEach(i=>i.checked=daysOf(t).includes(i.value));
+  setTimeGrid("treinoInicio","horarioInicioTreino",t.horario_inicio);
+  setTimeGrid("treinoFim","horarioFimTreino",t.horario_fim);
+  $("treinoLocal").value=t.local||"";$("treinoDescricao").value=t.descricao||"";
+  $("treinoFormTitle").textContent="Editar treino";$("saveTreinoButton").textContent="SALVAR ALTERAÇÕES";
+  $("cancelTreinoEdit").classList.remove("hidden");$("treinoForm").scrollIntoView({behavior:"smooth"});
 }
-
 function resetTreino() {
-  $("treinoForm").reset();
-  $("treinoId").value = "";
-  $("treinoLocal").value = "Centro Esportivo João do Pulo";
-  resetTimeGrid("treinoInicioGrid", "treinoInicio", "horarioInicioTreino");
-  resetTimeGrid("treinoFimGrid", "treinoFim", "horarioFimTreino");
-  $("treinoFormTitle").textContent = "Cadastrar treino";
-  $("saveTreinoButton").textContent = "SALVAR TREINO";
-  $("cancelTreinoEdit").classList.add("hidden");
-  $("treinoFormMessage").textContent = "";
+  $("treinoForm").reset();$("treinoId").value="";$("treinoLocal").value="Centro Esportivo João do Pulo";
+  resetTimeGrid("treinoInicio","horarioInicioTreino");resetTimeGrid("treinoFim","horarioFimTreino");
+  $("treinoFormTitle").textContent="Cadastrar treino";$("saveTreinoButton").textContent="SALVAR TREINO";
+  $("cancelTreinoEdit").classList.add("hidden");$("treinoFormMessage").textContent="";
 }
-$("cancelTreinoEdit").onclick = resetTreino;
-
-$("treinoForm").onsubmit = async event => {
-  event.preventDefault();
-  if(!isAdmin) return alert("Somente o administrador pode alterar treinos.");
-
-  const dias = [...document.querySelectorAll('input[name="diasTreino"]:checked')].map(input => input.value);
-  if(!dias.length) {
-    $("treinoFormMessage").textContent = "Selecione pelo menos um dia da semana.";
-    return;
-  }
-  if(!$("treinoInicio").value || !$("treinoFim").value) {
-    $("treinoFormMessage").textContent = "Selecione os horários de início e término nos quadradinhos.";
-    return;
-  }
-  if($("treinoFim").value <= $("treinoInicio").value) {
-    $("treinoFormMessage").textContent = "O horário de término precisa ser posterior ao início.";
-    return;
-  }
-
-  const id = $("treinoId").value;
-  const row = {
-    titulo:$("treinoTitulo").value.trim(),
-    categoria:$("treinoCategoria").value,
-    modalidade:$("treinoModalidade").value,
-    dias_semana:dias,
-    horario_inicio:$("treinoInicio").value,
-    horario_fim:$("treinoFim").value,
-    local:$("treinoLocal").value.trim(),
-    descricao:$("treinoDescricao").value.trim(),
-    ativo:true
-  };
-
-  $("saveTreinoButton").disabled = true;
-  $("treinoFormMessage").textContent = "Salvando...";
-
+$("cancelTreinoEdit").onclick=resetTreino;
+$("treinoForm").onsubmit=async e=>{
+  e.preventDefault();if(!isAdmin)return alert("Somente o administrador pode alterar treinos.");
+  const dias=[...document.querySelectorAll('input[name="diasTreino"]:checked')].map(i=>i.value);
+  if(!dias.length)return $("treinoFormMessage").textContent="Selecione pelo menos um dia.";
+  if(!$("treinoInicio").value||!$("treinoFim").value)return $("treinoFormMessage").textContent="Selecione início e término nos quadradinhos.";
+  if($("treinoFim").value<=$("treinoInicio").value)return $("treinoFormMessage").textContent="O término deve ser posterior ao início.";
+  const id=$("treinoId").value;
+  const row={titulo:$("treinoTitulo").value.trim(),categoria:$("treinoCategoria").value,
+    modalidade:$("treinoModalidade").value,dias_semana:dias,
+    horario_inicio:$("treinoInicio").value,horario_fim:$("treinoFim").value,
+    local:$("treinoLocal").value.trim(),descricao:$("treinoDescricao").value.trim(),ativo:true};
+  $("saveTreinoButton").disabled=true;$("treinoFormMessage").textContent="Salvando...";
   try {
-    const result = id
-      ? await db.from("treinos").update(row).eq("id", id)
-      : await db.from("treinos").insert({...row, criado_por:user.id});
-
-    if(result.error) throw result.error;
-    resetTreino();
-    $("treinoFormMessage").textContent = "Treino salvo com sucesso!";
-    await loadAdminTreinos();
-  } catch(error) {
-    $("treinoFormMessage").textContent = errText("Não foi possível salvar:", error);
-  } finally {
-    $("saveTreinoButton").disabled = false;
-  }
+    const result=id?await db.from("treinos").update(row).eq("id",id):await db.from("treinos").insert({...row,criado_por:user.id});
+    if(result.error)throw result.error;
+    resetTreino();$("treinoFormMessage").textContent="Treino salvo com sucesso!";await loadAdminTreinos();
+  } catch(error){$("treinoFormMessage").textContent=errText("Não foi possível salvar:",error);}
+  finally{$("saveTreinoButton").disabled=false;}
 };
-
-async function toggleTreino(id, active) {
-  const {error} = await db.from("treinos").update({ativo:!active}).eq("id", id);
-  if(error) alert(errText("Erro:", error));
-  else loadAdminTreinos();
+async function toggleTreino(id,active) {
+  const {error}=await db.from("treinos").update({ativo:!active}).eq("id",id);
+  if(error)alert(errText("Erro:",error));else loadAdminTreinos();
 }
 async function deleteTreino(id) {
-  if(!confirm("Excluir este treino?")) return;
-  const {error} = await db.from("treinos").delete().eq("id", id);
-  if(error) alert(errText("Erro:", error));
-  else loadAdminTreinos();
+  if(!confirm("Excluir este treino?"))return;
+  const {error}=await db.from("treinos").delete().eq("id",id);
+  if(error)alert(errText("Erro:",error));else loadAdminTreinos();
 }
 
 /* CAMPEONATOS */
 async function loadCampeonatos() {
-  const box = $("campeonatosList");
-  box.textContent = "Carregando...";
-  const {data, error} = await db.from("campeonatos").select("*").order("data_evento");
-
-  if(error) {
-    box.textContent = errText("Erro ao carregar campeonatos:", error);
-    return;
-  }
-  if(!data.length) {
-    box.innerHTML = '<p class="muted">Nenhum campeonato cadastrado.</p>';
-    return;
-  }
-
-  let html = "";
-  for(const camp of data) {
-    const {data:calls, error:callError} = await db.from("convocacoes")
-      .select("atleta_id").eq("campeonato_id", camp.id);
-
-    let names = [];
-    if(!callError && calls?.length) {
-      const {data:profiles} = await db.from("perfis")
-        .select("user_id,nome").in("user_id", calls.map(item => item.atleta_id));
-      if(profiles) names = profiles.map(profile => profile.nome);
+  const box=$("campeonatosList");box.textContent="Carregando...";
+  const {data,error}=await db.from("campeonatos").select("*").order("data_evento");
+  if(error){box.textContent=errText("Erro ao carregar campeonatos:",error);return;}
+  if(!data?.length){box.innerHTML='<p class="muted">Nenhum campeonato cadastrado.</p>';return;}
+  let html="";
+  for(const c of data) {
+    const {data:calls,error:callError}=await db.from("convocacoes").select("atleta_id").eq("campeonato_id",c.id);
+    let names=[];
+    if(!callError&&calls?.length) {
+      const {data:p}=await db.from("perfis").select("user_id,nome").in("user_id",calls.map(x=>x.atleta_id));
+      if(p)names=p.map(x=>x.nome);
     }
-
-    html += `
-      <div class="item">
-        <span class="badge">${safe(camp.categoria)}</span>
-        <h3>${safe(camp.nome)}</h3>
-        <p><b>Data:</b> ${safe(dateBR(camp.data_evento))}</p>
-        ${camp.horario ? `<p><b>Horário:</b> ${safe(String(camp.horario).slice(0,5))}</p>` : ""}
-        ${camp.local ? `<p><b>Local:</b> ${safe(camp.local)}</p>` : ""}
-        ${camp.descricao ? `<p>${safe(camp.descricao)}</p>` : ""}
-        <hr><p><b>Convocados (${names.length}):</b></p>
-        ${names.length ? names.map(name => `<span class="badge">${safe(name)}</span>`).join("") : '<p class="muted">Nenhum atleta convocado ainda.</p>'}
-      </div>`;
+    html+=`<div class="item"><span class="badge">${safe(c.categoria)}</span><h3>${safe(c.nome)}</h3>
+    <p><b>Data:</b> ${safe(dateBR(c.data_evento))}</p>
+    ${c.horario?`<p><b>Horário:</b> ${safe(String(c.horario).slice(0,5))}</p>`:""}
+    ${c.local?`<p><b>Local:</b> ${safe(c.local)}</p>`:""}${c.descricao?`<p>${safe(c.descricao)}</p>`:""}
+    <hr><p><b>Convocados (${names.length}):</b></p>
+    ${names.length?names.map(n=>`<span class="badge">${safe(n)}</span>`).join(""):'<p class="muted">Nenhum atleta convocado ainda.</p>'}</div>`;
   }
-  box.innerHTML = html;
+  box.innerHTML=html;
 }
-
 async function loadAdminCampeonatos() {
-  if(!isAdmin) return;
-  const box = $("adminCampeonatosList");
-  box.textContent = "Carregando...";
-  const {data, error} = await db.from("campeonatos").select("*").order("data_evento");
-
-  if(error) {
-    box.textContent = errText("Erro ao carregar campeonatos:", error);
-    return;
-  }
-  if(!data.length) {
-    box.innerHTML = '<p class="muted">Nenhum campeonato cadastrado.</p>';
-    return;
-  }
-
-  box.innerHTML = data.map(camp => `
-    <div class="item">
-      <h3>${safe(camp.nome)}</h3>
-      <p>${safe(camp.categoria)} · ${safe(dateBR(camp.data_evento))}</p>
-      ${camp.horario ? `<p>Horário: ${safe(String(camp.horario).slice(0,5))}</p>` : ""}
-      <div class="actions">
-        <button class="secondary" data-edit-camp="${camp.id}">Editar</button>
-        <button class="secondary" data-call-camp="${camp.id}">Convocar atletas</button>
-        <button class="danger" data-delete-camp="${camp.id}">Excluir</button>
-      </div>
-    </div>`).join("");
-
-  box.querySelectorAll("[data-edit-camp]").forEach(button => {
-    button.onclick = () => editCamp(data.find(c => c.id === button.dataset.editCamp));
-  });
-  box.querySelectorAll("[data-call-camp]").forEach(button => {
-    button.onclick = () => openCalls(data.find(c => c.id === button.dataset.callCamp));
-  });
-  box.querySelectorAll("[data-delete-camp]").forEach(button => {
-    button.onclick = () => deleteCamp(button.dataset.deleteCamp);
-  });
+  if(!isAdmin)return;
+  const box=$("adminCampeonatosList");box.textContent="Carregando...";
+  const {data,error}=await db.from("campeonatos").select("*").order("data_evento");
+  if(error){box.textContent=errText("Erro ao carregar campeonatos:",error);return;}
+  if(!data?.length){box.innerHTML='<p class="muted">Nenhum campeonato cadastrado.</p>';return;}
+  box.innerHTML=data.map(c=>`<div class="item"><h3>${safe(c.nome)}</h3>
+    <p>${safe(c.categoria)} · ${safe(dateBR(c.data_evento))} ${c.horario?"· "+safe(String(c.horario).slice(0,5)):""}</p>
+    <div class="actions"><button class="secondary" data-edit-camp="${c.id}">Editar</button>
+    <button class="secondary" data-call-camp="${c.id}">Convocar atletas</button>
+    <button class="danger" data-delete-camp="${c.id}">Excluir</button></div></div>`).join("");
+  box.querySelectorAll("[data-edit-camp]").forEach(b=>b.onclick=()=>editCamp(data.find(c=>c.id===b.dataset.editCamp)));
+  box.querySelectorAll("[data-call-camp]").forEach(b=>b.onclick=()=>openCalls(data.find(c=>c.id===b.dataset.callCamp)));
+  box.querySelectorAll("[data-delete-camp]").forEach(b=>b.onclick=()=>deleteCamp(b.dataset.deleteCamp));
 }
-
-function editCamp(camp) {
-  $("campId").value = camp.id;
-  $("campNome").value = camp.nome || "";
-  $("campCategoria").value = camp.categoria || "";
-  $("campData").value = camp.data_evento || "";
-  setTimeGrid("campHorarioGrid", "campHorario", "horarioCampeonato", camp.horario);
-  $("campLocal").value = camp.local || "";
-  $("campDescricao").value = camp.descricao || "";
-  $("campFormTitle").textContent = "Editar campeonato";
-  $("saveCampButton").textContent = "SALVAR ALTERAÇÕES";
-  $("cancelCampEdit").classList.remove("hidden");
-  $("campeonatoForm").scrollIntoView({behavior:"smooth"});
+function editCamp(c) {
+  $("campId").value=c.id;$("campNome").value=c.nome||"";$("campCategoria").value=c.categoria||"";
+  $("campData").value=c.data_evento||"";setTimeGrid("campHorario","horarioCampeonato",c.horario);
+  $("campLocal").value=c.local||"";$("campDescricao").value=c.descricao||"";
+  $("campFormTitle").textContent="Editar campeonato";$("saveCampButton").textContent="SALVAR ALTERAÇÕES";
+  $("cancelCampEdit").classList.remove("hidden");$("campeonatoForm").scrollIntoView({behavior:"smooth"});
 }
-
 function resetCamp() {
-  $("campeonatoForm").reset();
-  $("campId").value = "";
-  resetTimeGrid("campHorarioGrid", "campHorario", "horarioCampeonato");
-  $("campFormTitle").textContent = "Cadastrar campeonato";
-  $("saveCampButton").textContent = "SALVAR CAMPEONATO";
-  $("cancelCampEdit").classList.add("hidden");
-  $("campFormMessage").textContent = "";
+  $("campeonatoForm").reset();$("campId").value="";
+  resetTimeGrid("campHorario","horarioCampeonato");
+  $("campFormTitle").textContent="Cadastrar campeonato";$("saveCampButton").textContent="SALVAR CAMPEONATO";
+  $("cancelCampEdit").classList.add("hidden");$("campFormMessage").textContent="";
 }
-$("cancelCampEdit").onclick = resetCamp;
-
-$("campeonatoForm").onsubmit = async event => {
-  event.preventDefault();
-  if(!isAdmin) return;
-
-  if(!$("campHorario").value) {
-    $("campFormMessage").textContent = "Selecione o horário do campeonato nos quadradinhos.";
-    return;
-  }
-
-  const id = $("campId").value;
-  const row = {
-    nome:$("campNome").value.trim(),
-    categoria:$("campCategoria").value.trim(),
-    data_evento:$("campData").value || null,
-    horario:$("campHorario").value,
-    local:$("campLocal").value.trim(),
-    descricao:$("campDescricao").value.trim()
-  };
-
-  $("saveCampButton").disabled = true;
-  $("campFormMessage").textContent = "Salvando...";
-
+$("cancelCampEdit").onclick=resetCamp;
+$("campeonatoForm").onsubmit=async e=>{
+  e.preventDefault();if(!isAdmin)return;
+  if(!$("campHorario").value)return $("campFormMessage").textContent="Selecione o horário nos quadradinhos.";
+  const id=$("campId").value;
+  const row={nome:$("campNome").value.trim(),categoria:$("campCategoria").value.trim(),
+    data_evento:$("campData").value||null,horario:$("campHorario").value,
+    local:$("campLocal").value.trim(),descricao:$("campDescricao").value.trim()};
+  $("saveCampButton").disabled=true;$("campFormMessage").textContent="Salvando...";
   try {
-    const result = id
-      ? await db.from("campeonatos").update(row).eq("id", id)
-      : await db.from("campeonatos").insert({...row, criado_por:user.id});
-
-    if(result.error) throw result.error;
-    resetCamp();
-    $("campFormMessage").textContent = "Campeonato salvo com sucesso!";
-    await loadAdminCampeonatos();
-  } catch(error) {
-    $("campFormMessage").textContent = errText("Não foi possível salvar:", error);
-  } finally {
-    $("saveCampButton").disabled = false;
-  }
+    const result=id?await db.from("campeonatos").update(row).eq("id",id):await db.from("campeonatos").insert({...row,criado_por:user.id});
+    if(result.error)throw result.error;
+    resetCamp();$("campFormMessage").textContent="Campeonato salvo com sucesso!";await loadAdminCampeonatos();
+  } catch(error){$("campFormMessage").textContent=errText("Não foi possível salvar:",error);}
+  finally{$("saveCampButton").disabled=false;}
 };
-
 async function deleteCamp(id) {
-  if(!confirm("Excluir este campeonato e suas convocações?")) return;
-  const {error} = await db.from("campeonatos").delete().eq("id", id);
-  if(error) alert(errText("Erro ao excluir:", error));
-  else {
-    $("convocacaoPanel").classList.add("hidden");
-    await loadAdminCampeonatos();
-  }
+  if(!confirm("Excluir este campeonato e suas convocações?"))return;
+  const {error}=await db.from("campeonatos").delete().eq("id",id);
+  if(error)alert(errText("Erro ao excluir:",error));
+  else{$("convocacaoPanel").classList.add("hidden");await loadAdminCampeonatos();}
 }
 
 /* CONVOCAÇÕES */
 async function openCalls(camp) {
-  activeCamp = camp;
-  $("convocacaoPanel").classList.remove("hidden");
-  $("convocacaoCampNome").textContent = camp.nome + " — " + camp.categoria;
-  $("atletasList").textContent = "Carregando...";
-  $("convocacaoMessage").textContent = "";
+  activeCamp=camp;$("convocacaoPanel").classList.remove("hidden");
+  $("convocacaoCampNome").textContent=camp.nome+" — "+camp.categoria;
+  $("atletasList").textContent="Carregando...";$("convocacaoMessage").textContent="";
   $("convocacaoPanel").scrollIntoView({behavior:"smooth"});
+  const {data:profiles,error}=await db.from("perfis").select("user_id,nome").order("nome");
+  if(error){$("atletasList").textContent=errText("Erro ao carregar atletas:",error);return;}
+  const {data:calls,error:callError}=await db.from("convocacoes").select("atleta_id").eq("campeonato_id",camp.id);
+  if(callError){$("atletasList").textContent=errText("Erro ao carregar convocações:",callError);return;}
+  const selected=new Set((calls||[]).map(x=>x.atleta_id));
+  const athletes=(profiles||[]).filter(p=>p.user_id!==user.id);
+  if(!athletes.length){$("atletasList").textContent="Nenhum perfil de atleta cadastrado.";return;}
+  $("atletasList").innerHTML=athletes.map(a=>`<label class="inline-check"><input type="checkbox" value="${safe(a.user_id)}" ${selected.has(a.user_id)?"checked":""}><span>${safe(a.nome||"Atleta")}</span></label>`).join("");
+}
+$("saveConvocacoes").onclick=async()=>{
+  if(!activeCamp)return;
+  const ids=[...$("atletasList").querySelectorAll('input[type="checkbox"]:checked')].map(i=>i.value);
+  $("saveConvocacoes").disabled=true;$("convocacaoMessage").textContent="Salvando...";
+  try {
+    const {error:de}=await db.from("convocacoes").delete().eq("campeonato_id",activeCamp.id);
+    if(de)throw de;
+    if(ids.length){const {error:ie}=await db.from("convocacoes").insert(ids.map(id=>({campeonato_id:activeCamp.id,atleta_id:id})));if(ie)throw ie;}
+    $("convocacaoMessage").textContent="Convocações salvas com sucesso!";await loadAdminCampeonatos();
+  } catch(error){$("convocacaoMessage").textContent=errText("Erro ao salvar convocações:",error);}
+  finally{$("saveConvocacoes").disabled=false;}
+};
 
-  const {data:profiles, error} = await db.from("perfis").select("user_id,nome").order("nome");
-  if(error) {
-    $("atletasList").textContent = errText("Erro ao carregar atletas:", error);
-    return;
-  }
+/* GERENCIAMENTO DE TURMAS */
+function resetTurmaForm() {
+  $("turmaForm").reset();$("turmaId").value="";
+  $("turmaFormTitle").textContent="Criar turma";$("saveTurmaButton").textContent="SALVAR TURMA";
+  $("cancelTurmaEdit").classList.add("hidden");$("turmaFormMessage").textContent="";
+}
+$("cancelTurmaEdit").onclick=resetTurmaForm;
 
-  const {data:calls, error:callError} = await db.from("convocacoes")
-    .select("atleta_id").eq("campeonato_id", camp.id);
-  if(callError) {
-    $("atletasList").textContent = errText("Erro ao carregar convocações:", callError);
-    return;
-  }
+$("turmaForm").onsubmit=async e=>{
+  e.preventDefault();
+  if(!isAdmin)return alert("Somente o administrador pode gerenciar turmas.");
+  const id=$("turmaId").value;
+  const row={nome:$("turmaNome").value.trim(),categoria:$("turmaCategoria").value,
+    descricao:$("turmaDescricao").value.trim(),ativo:true};
+  $("saveTurmaButton").disabled=true;$("turmaFormMessage").textContent="Salvando...";
+  try {
+    const result=id?await db.from("turmas").update(row).eq("id",id):await db.from("turmas").insert({...row,criado_por:user.id});
+    if(result.error)throw result.error;
+    resetTurmaForm();$("turmaFormMessage").textContent="Turma salva com sucesso!";
+    await loadAdminTurmas();
+  } catch(error){$("turmaFormMessage").textContent=errText("Não foi possível salvar a turma:",error);}
+  finally{$("saveTurmaButton").disabled=false;}
+};
 
-  const selected = new Set((calls || []).map(item => item.atleta_id));
-  const athletes = (profiles || []).filter(profile => profile.user_id !== user.id);
-
-  if(!athletes.length) {
-    $("atletasList").textContent = "Nenhum perfil de atleta cadastrado.";
-    return;
-  }
-
-  $("atletasList").innerHTML = athletes.map(athlete => `
-    <label class="inline-check">
-      <input type="checkbox" value="${safe(athlete.user_id)}" ${selected.has(athlete.user_id) ? "checked" : ""}>
-      <span>${safe(athlete.nome || "Atleta")}</span>
-    </label>`).join("");
+async function loadAdminTurmas() {
+  if(!isAdmin)return;
+  const box=$("adminTurmasList");box.textContent="Carregando...";
+  const {data,error}=await db.from("turmas").select("*").order("nome");
+  if(error){box.textContent=errText("Erro ao carregar turmas:",error);return;}
+  if(!data?.length){box.innerHTML='<p class="muted">Nenhuma turma cadastrada.</p>';return;}
+  box.innerHTML=data.map(t=>`<div class="item"><span class="badge">${t.ativo?"Ativa":"Inativa"}</span>
+    <h3>${safe(t.nome)}</h3><p>${safe(t.categoria||"Sem categoria")}</p>
+    ${t.descricao?`<p>${safe(t.descricao)}</p>`:""}
+    <div class="actions"><button class="primary" data-manage-turma="${t.id}">Gerenciar atletas e treinos</button>
+    <button class="secondary" data-edit-turma="${t.id}">Editar</button>
+    <button class="secondary" data-toggle-turma="${t.id}" data-active="${t.ativo}">${t.ativo?"Desativar":"Ativar"}</button>
+    <button class="danger" data-delete-turma="${t.id}">Excluir</button></div></div>`).join("");
+  box.querySelectorAll("[data-manage-turma]").forEach(b=>b.onclick=()=>manageTurma(data.find(t=>t.id===b.dataset.manageTurma)));
+  box.querySelectorAll("[data-edit-turma]").forEach(b=>b.onclick=()=>editTurma(data.find(t=>t.id===b.dataset.editTurma)));
+  box.querySelectorAll("[data-toggle-turma]").forEach(b=>b.onclick=()=>toggleTurma(b.dataset.toggleTurma,b.dataset.active==="true"));
+  box.querySelectorAll("[data-delete-turma]").forEach(b=>b.onclick=()=>deleteTurma(b.dataset.deleteTurma));
+}
+function editTurma(t) {
+  $("turmaId").value=t.id;$("turmaNome").value=t.nome||"";
+  $("turmaCategoria").value=t.categoria||"Outra";$("turmaDescricao").value=t.descricao||"";
+  $("turmaFormTitle").textContent="Editar turma";$("saveTurmaButton").textContent="SALVAR ALTERAÇÕES";
+  $("cancelTurmaEdit").classList.remove("hidden");$("turmaForm").scrollIntoView({behavior:"smooth"});
+}
+async function toggleTurma(id,active) {
+  const {error}=await db.from("turmas").update({ativo:!active}).eq("id",id);
+  if(error)alert(errText("Erro:",error));else loadAdminTurmas();
+}
+async function deleteTurma(id) {
+  if(!confirm("Excluir esta turma e suas associações?"))return;
+  const {error}=await db.from("turmas").delete().eq("id",id);
+  if(error)alert(errText("Erro:",error));
+  else{$("turmaManagePanel").classList.add("hidden");await loadAdminTurmas();}
 }
 
-$("saveConvocacoes").onclick = async () => {
-  if(!activeCamp) return;
-  const ids = [...$("atletasList").querySelectorAll('input[type="checkbox"]:checked')].map(input => input.value);
+async function manageTurma(turma) {
+  activeTurma=turma;
+  $("turmaManageTitle").textContent="Turma: "+turma.nome;
+  $("turmaManagePanel").classList.remove("hidden");
+  $("turmaAthletesList").textContent="Carregando atletas...";
+  $("turmaTreinosList").textContent="Carregando treinos...";
+  $("turmaAssociationsMessage").textContent="";
+  $("turmaManagePanel").scrollIntoView({behavior:"smooth"});
 
-  $("saveConvocacoes").disabled = true;
-  $("convocacaoMessage").textContent = "Salvando...";
+  const [pResult,aResult,tResult,ttResult]=await Promise.all([
+    db.from("perfis").select("user_id,nome,papel").order("nome"),
+    db.from("turma_atletas").select("atleta_id").eq("turma_id",turma.id),
+    db.from("treinos").select("id,titulo,categoria,dias_semana,dia_semana,horario_inicio,horario_fim,ativo").order("titulo"),
+    db.from("turma_treinos").select("treino_id").eq("turma_id",turma.id)
+  ]);
+  if(pResult.error){$("turmaAthletesList").textContent=errText("Erro ao carregar perfis:",pResult.error);return;}
+  if(aResult.error){$("turmaAthletesList").textContent=errText("Erro ao carregar vínculos:",aResult.error);return;}
+  if(tResult.error){$("turmaTreinosList").textContent=errText("Erro ao carregar treinos:",tResult.error);return;}
+  if(ttResult.error){$("turmaTreinosList").textContent=errText("Erro ao carregar treinos da turma:",ttResult.error);return;}
 
+  profilesCache=(pResult.data||[]).filter(p=>p.user_id!==user.id);
+  trainingsCache=tResult.data||[];
+  const selectedAthletes=new Set((aResult.data||[]).map(x=>x.atleta_id));
+  const selectedTrainings=new Set((ttResult.data||[]).map(x=>x.treino_id));
+
+  $("turmaAthletesList").innerHTML=profilesCache.length?profilesCache.map(p=>`
+    <label class="inline-check"><input type="checkbox" name="turmaAtleta" value="${safe(p.user_id)}" ${selectedAthletes.has(p.user_id)?"checked":""}>
+    <span>${safe(p.nome||"Atleta")} <span class="small">(${safe(p.papel||"atleta")})</span></span></label>`).join(""):'<p class="muted">Não há outros perfis cadastrados.</p>';
+
+  $("turmaTreinosList").innerHTML=trainingsCache.length?trainingsCache.map(t=>`
+    <label class="inline-check"><input type="checkbox" name="turmaTreino" value="${safe(t.id)}" ${selectedTrainings.has(t.id)?"checked":""}>
+    <span>${safe(t.titulo)} — ${safe(orderedDays(t))} · ${safe(timeOf(t))}${t.ativo?"":" (inativo)"}</span></label>`).join(""):'<p class="muted">Cadastre os treinos primeiro.</p>';
+}
+
+$("saveTurmaAssociations").onclick=async()=>{
+  if(!activeTurma||!isAdmin)return;
+  const athleteIds=[...$("turmaAthletesList").querySelectorAll('input[name="turmaAtleta"]:checked')].map(i=>i.value);
+  const trainingIds=[...$("turmaTreinosList").querySelectorAll('input[name="turmaTreino"]:checked')].map(i=>i.value);
+  $("saveTurmaAssociations").disabled=true;$("turmaAssociationsMessage").textContent="Salvando associações...";
   try {
-    const {error:deleteError} = await db.from("convocacoes").delete().eq("campeonato_id", activeCamp.id);
-    if(deleteError) throw deleteError;
+    const [delAthletes,delTrainings]=await Promise.all([
+      db.from("turma_atletas").delete().eq("turma_id",activeTurma.id),
+      db.from("turma_treinos").delete().eq("turma_id",activeTurma.id)
+    ]);
+    if(delAthletes.error)throw delAthletes.error;
+    if(delTrainings.error)throw delTrainings.error;
 
-    if(ids.length) {
-      const {error:insertError} = await db.from("convocacoes").insert(
-        ids.map(id => ({campeonato_id:activeCamp.id, atleta_id:id}))
-      );
-      if(insertError) throw insertError;
+    if(athleteIds.length) {
+      const {error}=await db.from("turma_atletas").insert(athleteIds.map(id=>({turma_id:activeTurma.id,atleta_id:id})));
+      if(error)throw error;
     }
-
-    $("convocacaoMessage").textContent = "Convocações salvas com sucesso!";
-    await loadAdminCampeonatos();
+    if(trainingIds.length) {
+      const {error}=await db.from("turma_treinos").insert(trainingIds.map(id=>({turma_id:activeTurma.id,treino_id:id})));
+      if(error)throw error;
+    }
+    $("turmaAssociationsMessage").textContent="Atletas e treinos associados com sucesso.";
   } catch(error) {
-    $("convocacaoMessage").textContent = errText("Erro ao salvar convocações:", error);
-  } finally {
-    $("saveConvocacoes").disabled = false;
-  }
+    $("turmaAssociationsMessage").textContent=errText("Erro ao salvar associações:",error);
+  } finally {$("saveTurmaAssociations").disabled=false;}
 };
+
+async function loadMinhasTurmas() {
+  const box=$("minhasTurmasList");box.textContent="Carregando...";
+  const {data:links,error}=await db.from("turma_atletas").select("turma_id").eq("atleta_id",user.id);
+  if(error){box.textContent=errText("Erro ao consultar suas turmas:",error);return;}
+  const ids=(links||[]).map(x=>x.turma_id);
+  if(!ids.length){box.innerHTML='<p class="muted">Você ainda não foi associado a nenhuma turma. Entre em contato com a administração.</p>';return;}
+  const {data:turmas,error:turmaError}=await db.from("turmas").select("*").in("id",ids).eq("ativo",true);
+  if(turmaError){box.textContent=errText("Erro ao carregar turmas:",turmaError);return;}
+  if(!turmas?.length){box.innerHTML='<p class="muted">Nenhuma turma ativa encontrada.</p>';return;}
+  let html="";
+  for(const t of turmas) {
+    const {data:linksTreino,error:ltError}=await db.from("turma_treinos").select("treino_id").eq("turma_id",t.id);
+    if(ltError){html+=`<div class="item"><h3>${safe(t.nome)}</h3><p>${safe(ltError.message)}</p></div>`;continue;}
+    const trainIds=(linksTreino||[]).map(x=>x.treino_id);
+    let trains=[];
+    if(trainIds.length) {
+      const {data:ts,error:tsError}=await db.from("treinos").select("*").in("id",trainIds).eq("ativo",true);
+      if(!tsError)trains=ts||[];
+    }
+    html+=`<div class="item"><span class="badge">${safe(t.categoria||"Turma")}</span><h3>${safe(t.nome)}</h3>
+      ${t.descricao?`<p>${safe(t.descricao)}</p>`:""}<hr><h3>Treinos da turma</h3>
+      ${trains.length?trains.map(tr=>`<div class="item"><b>${safe(tr.titulo)}</b><p>${safe(orderedDays(tr))}</p><p>${safe(timeOf(tr))}</p><p>${safe(tr.local)}</p>${tr.descricao?`<p>${safe(tr.descricao)}</p>`:""}</div>`).join(""):'<p class="muted">Nenhum treino foi associado a esta turma ainda.</p>'}
+    </div>`;
+  }
+  box.innerHTML=html;
+}
 
 /* INICIALIZAÇÃO */
 async function init() {
-  if(!window.supabase) {
-    showMessage("Não foi possível carregar o sistema. Verifique sua conexão.", "error");
-    return;
-  }
-
-  db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  db.auth.onAuthStateChange((event, session) => {
-    if(event === "SIGNED_OUT") {
-      user = null;
-      isAdmin = false;
-      showLogin();
-    }
+  if(!window.supabase){showMessage("Não foi possível carregar o sistema. Verifique sua conexão.","error");return;}
+  db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  db.auth.onAuthStateChange((event,session)=>{
+    if(event==="SIGNED_OUT"){user=null;isAdmin=false;showLogin();}
   });
-
-  const {data, error} = await db.auth.getSession();
-  if(error) {
-    showLogin();
-    return;
-  }
-
-  if(data.session) await loadProfile(data.session.user);
+  const {data,error}=await db.auth.getSession();
+  if(error){showLogin();return;}
+  if(data.session)await loadProfile(data.session.user);
   else showLogin();
 }
-
 init();
 })();
 </script>
