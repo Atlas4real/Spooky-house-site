@@ -1,478 +1,347 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#050505">
-  <title>Spooky House | A Casa do Basquete</title>
-
-  <style>
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      background: #050505;
-      color: #fff;
-      font-family: Arial, Helvetica, sans-serif;
-      min-height: 100vh;
-    }
-
-    button, input { font: inherit; }
-    button { cursor: pointer; }
-    .hidden { display: none !important; }
-
-    .screen {
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 24px 16px;
-    }
-
-    .container { width: 100%; max-width: 430px; }
-
-    .brand {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-
-    .brand h1 {
-      margin: 0;
-      font-size: 48px;
-      font-weight: 900;
-      letter-spacing: 7px;
-    }
-
-    .brand p {
-      color: #999;
-      font-size: 11px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-    }
-
-    .panel {
-      background: #101010;
-      border: 1px solid #292929;
-      border-radius: 14px;
-      padding: 26px;
-    }
-
-    .field { margin: 18px 0; }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      color: #bbb;
-      font-size: 12px;
-    }
-
-    input {
-      width: 100%;
-      padding: 14px;
-      border: 1px solid #353535;
-      border-radius: 8px;
-      background: #070707;
-      color: #fff;
-    }
-
-    input:focus {
-      outline: 1px solid #fff;
-    }
-
-    .primary {
-      width: 100%;
-      padding: 15px;
-      background: #fff;
-      color: #000;
-      border: 0;
-      border-radius: 8px;
-      font-weight: 800;
-    }
-
-    .primary:disabled { opacity: .5; }
-
-    .secondary {
-      background: transparent;
-      color: #fff;
-      border: 1px solid #444;
-      border-radius: 8px;
-      padding: 11px 14px;
-    }
-
-    .text-button {
-      display: block;
-      margin: 18px auto 0;
-      padding: 4px;
-      color: #aaa;
-      background: none;
-      border: 0;
-      font-size: 13px;
-    }
-
-    #message {
-      display: none;
-      margin-top: 16px;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    #message.show { display: block; }
-    #message.error { background: #290d0d; color: #ffc0c0; }
-    #message.success { background: #102817; color: #b7f5c3; }
-
-    .footnote {
-      text-align: center;
-      color: #555;
-      font-size: 10px;
-      letter-spacing: 2px;
-      margin-top: 24px;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 18px 5%;
-      border-bottom: 1px solid #292929;
-    }
-
-    .small-brand {
-      font-weight: 900;
-      letter-spacing: 4px;
-      font-size: 21px;
-    }
-
-    main {
-      width: 100%;
-      max-width: 1100px;
-      margin: auto;
-      padding: 36px 20px 60px;
-    }
-
-    .eyebrow {
-      color: #999;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-
-    .welcome h1 {
-      font-size: 32px;
-      margin: 10px 0;
-    }
-
-    .welcome p, .card p {
-      color: #999;
-      line-height: 1.6;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 30px;
-    }
-
-    .card {
-      min-height: 155px;
-      background: #101010;
-      border: 1px solid #292929;
-      border-radius: 12px;
-      padding: 22px;
-    }
-
-    .card h2 { font-size: 19px; margin: 12px 0 8px; }
-    .card p { font-size: 13px; margin-bottom: 0; }
-    .wide { grid-column: 1 / -1; }
-
-    .notice {
-      margin-top: 24px;
-      padding: 16px;
-      border: 1px solid #292929;
-      border-radius: 10px;
-      color: #aaa;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    @media (max-width: 560px) {
-      .cards { grid-template-columns: 1fr; }
-      .wide { grid-column: auto; }
-      .panel { padding: 22px; }
-      .welcome h1 { font-size: 27px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#050505">
+<title>Spooky House | A Casa do Basquete</title>
+<style>
+:root{color-scheme:dark;--bg:#050505;--panel:#101010;--line:#292929;--muted:#999}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#fff;font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.screen{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:24px 16px}
+.container{width:100%;max-width:440px}.brand{text-align:center;margin-bottom:32px}
+.brand h1{margin:0;font-size:48px;font-weight:900;letter-spacing:7px}.brand p{color:var(--muted);font-size:11px;letter-spacing:3px;text-transform:uppercase}
+.panel,.card,.section-panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+.field{margin:14px 0}label{display:block;margin-bottom:7px;color:#bbb;font-size:12px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #353535;border-radius:8px;background:#070707;color:#fff}
+textarea{min-height:88px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:1px solid #fff}
+.primary{padding:13px 16px;background:#fff;color:#000;border:0;border-radius:8px;font-weight:800}
+.primary:disabled{opacity:.5}.secondary,.danger{background:transparent;color:#fff;border:1px solid #444;border-radius:8px;padding:10px 13px}
+.danger{border-color:#793434;color:#ffc0c0}
+.text-button{display:block;margin:18px auto 0;padding:4px;color:#aaa;background:none;border:0;font-size:13px}
+#message{display:none;margin-top:16px;padding:12px;border-radius:8px;font-size:13px;line-height:1.5}
+#message.show{display:block}#message.error{background:#290d0d;color:#ffc0c0}#message.success{background:#102817;color:#b7f5c3}
+.footnote{text-align:center;color:#555;font-size:10px;letter-spacing:2px;margin-top:24px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 5%;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.small-brand{font-weight:900;letter-spacing:4px;font-size:21px}
+main{width:100%;max-width:1100px;margin:auto;padding:30px 20px 60px}
+.eyebrow{color:var(--muted);font-size:11px;letter-spacing:2px;text-transform:uppercase}
+.welcome h1{font-size:32px;margin:10px 0}.welcome p,.card p,.muted{color:var(--muted);line-height:1.6}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:26px}
+.card{min-height:145px;text-align:left;color:#fff;cursor:pointer;transition:border-color .15s}
+.card:hover{border-color:#777}.card h2{font-size:19px;margin:12px 0 8px}.card p{font-size:13px;margin:0}.wide{grid-column:1/-1}
+.section-panel{margin-top:18px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.section-head h2{margin:0 0 8px}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}
+.form-grid .full{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.item{border:1px solid #303030;border-radius:10px;padding:15px;margin-top:12px}
+.item h3{margin:0 0 7px;font-size:17px}.item p{margin:5px 0;color:#bbb;font-size:13px;line-height:1.5}
+.tag{display:inline-block;border:1px solid #444;border-radius:99px;padding:4px 8px;font-size:11px;color:#ddd;margin:0 5px 6px 0}
+.notice{margin-top:24px;padding:16px;border:1px solid var(--line);border-radius:10px;color:#aaa;font-size:13px;line-height:1.6}
+.inline-check{display:flex;align-items:center;gap:9px;margin:12px 0;color:#ccc;font-size:13px}
+.inline-check input{width:auto}.empty{color:#888;font-size:13px;padding:15px 0}.small{font-size:12px;color:#888;line-height:1.5}
+@media(max-width:560px){.cards{grid-template-columns:1fr}.wide{grid-column:auto}.panel{padding:20px}.welcome h1{font-size:27px}.form-grid{grid-template-columns:1fr}.form-grid .full{grid-column:auto}main{padding:25px 14px 45px}}
+</style>
 </head>
-
 <body>
-
-  <section id="loginScreen" class="screen">
-    <div class="container">
-
-      <div class="brand">
-        <h1>SPOOKY</h1>
-        <p>A Casa do Basquete</p>
-      </div>
-
-      <div class="panel">
-        <h2>Área do Atleta</h2>
-        <p style="color:#999;font-size:14px">
-          Entre com os dados da sua conta.
-        </p>
-
-        <form id="loginForm">
-          <div class="field">
-            <label for="email">E-mail</label>
-            <input id="email" type="email"
-              placeholder="seu@email.com"
-              autocomplete="email" required>
-          </div>
-
-          <div class="field">
-            <label for="password">Senha</label>
-            <input id="password" type="password"
-              placeholder="Sua senha"
-              autocomplete="current-password" required>
-          </div>
-
-          <button id="loginButton" class="primary" type="submit">
-            ENTRAR
-          </button>
-        </form>
-
-        <button id="forgotPassword" class="text-button" type="button">
-          Esqueci minha senha
-        </button>
-
-        <div id="message" role="status" aria-live="polite"></div>
-      </div>
-
-      <div class="footnote">
-        SPOOKY HOUSE • A CASA DO BASQUETE
-      </div>
-
+<section id="loginScreen" class="screen">
+  <div class="container">
+    <div class="brand"><h1>SPOOKY</h1><p>A Casa do Basquete</p></div>
+    <div class="panel">
+      <h2>Área do Atleta</h2>
+      <p class="muted" style="font-size:14px">Entre com os dados da sua conta.</p>
+      <form id="loginForm">
+        <div class="field"><label for="email">E-mail</label><input id="email" type="email" placeholder="seu@email.com" autocomplete="email" required></div>
+        <div class="field"><label for="password">Senha</label><input id="password" type="password" placeholder="Sua senha" autocomplete="current-password" required></div>
+        <button id="loginButton" class="primary" style="width:100%" type="submit">ENTRAR</button>
+      </form>
+      <button id="forgotPassword" class="text-button" type="button">Esqueci minha senha</button>
+      <div id="message" role="status" aria-live="polite"></div>
     </div>
-  </section>
+    <div class="footnote">SPOOKY HOUSE • A CASA DO BASQUETE</div>
+  </div>
+</section>
 
-  <section id="appScreen" class="hidden">
-
-    <header>
-      <div class="small-brand">SPOOKY</div>
-      <button id="logoutButton" class="secondary" type="button">
-        Sair da conta
-      </button>
-    </header>
-
-    <main>
-
-      <div class="welcome">
-        <div class="eyebrow">Área do atleta</div>
-        <h1>Olá, <span id="athleteName">Atleta</span>.</h1>
-        <p>Bem-vindo à Casa do Basquete.</p>
+<section id="appScreen" class="hidden">
+<header>
+  <div class="small-brand">SPOOKY</div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <span id="roleLabel" class="tag">ATLETA</span>
+    <button id="logoutButton" class="secondary" type="button">Sair da conta</button>
+  </div>
+</header>
+<main>
+  <div class="welcome">
+    <div class="eyebrow">Área do atleta</div>
+    <h1>Olá, <span id="athleteName">Atleta</span>.</h1>
+    <p>Bem-vindo à Casa do Basquete.</p>
+  </div>
+  <div class="cards">
+    <button class="card" data-section="treinos"><div class="eyebrow">Minha rotina</div><h2>Treinos</h2><p>Consulte os horários. Administradores podem gerenciar a programação.</p></button>
+    <button class="card" data-section="campeonatos"><div class="eyebrow">Calendário</div><h2>Campeonatos</h2><p>Veja as competições e a lista de convocados.</p></button>
+    <article class="card"><div class="eyebrow">Financeiro</div><h2>Mensalidade</h2><p>Informações de pagamento serão disponibilizadas futuramente.</p></article>
+    <article class="card"><div class="eyebrow">Produtos oficiais</div><h2>Spooky Store</h2><p>Catálogo e compras ainda serão conectados.</p></article>
+    <article class="card wide"><div class="eyebrow">Fique por dentro</div><h2>Avisos da equipe</h2><p>Os avisos serão conectados em uma próxima etapa.</p></article>
+  </div>
+  <div id="sectionArea" class="hidden">
+    <div class="section-panel">
+      <div class="section-head">
+        <div><div class="eyebrow">Spooky House</div><h2 id="sectionTitle">Treinos</h2></div>
+        <button id="closeSection" class="secondary" type="button">Fechar</button>
       </div>
+      <p id="sectionDescription" class="muted" style="font-size:13px"></p>
+      <div id="adminArea" class="hidden"></div>
+      <div id="itemsList"></div>
+      <div id="sectionMessage" class="small" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+  <div class="notice">As informações de treinos, campeonatos e convocações são carregadas do banco de dados da Spooky House.</div>
+</main>
+</section>
 
-      <div class="cards">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+"use strict";
 
-        <article class="card">
-          <div class="eyebrow">Minha rotina</div>
-          <h2>Treinos</h2>
-          <p>Consulte seus dias, horários e informações dos treinos.</p>
-        </article>
+const SUPABASE_URL = "https://mcrreffapstciqpsgvro.supabase.co";
+const SUPABASE_KEY = "sb_publishable_S798hSSxNl63S2sgDYJoog_tl-N6poI";
+const $ = id => document.getElementById(id);
+const loginScreen=$("loginScreen"), appScreen=$("appScreen"), loginForm=$("loginForm"), loginButton=$("loginButton"), message=$("message");
+let client=null, currentUser=null, isAdmin=false, currentSection="", editingTrainingId=null, editingChampionshipId=null;
 
-        <article class="card">
-          <div class="eyebrow">Calendário</div>
-          <h2>Campeonatos</h2>
-          <p>Veja os próximos jogos e informações das competições.</p>
-        </article>
+const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+function showMessage(text,type){message.textContent=text;message.className="show "+(type||"");}
+function clearMessage(){message.textContent="";message.className="";}
+function sectionMessage(text,isError=false){$("sectionMessage").textContent=text;$("sectionMessage").style.color=isError?"#ffc0c0":"#aaa";}
+function showLogin(){appScreen.classList.add("hidden");loginScreen.classList.remove("hidden");currentUser=null;isAdmin=false;}
+function showAppShell(user){currentUser=user;loginScreen.classList.add("hidden");appScreen.classList.remove("hidden");$("athleteName").textContent=user.email?user.email.split("@")[0]:"Atleta";}
+function formatDate(value){if(!value)return "Data a definir";const parts=String(value).slice(0,10).split("-");return parts.length===3?`${parts[2]}/${parts[1]}/${parts[0]}`:value;}
+function field(label,id,value="",type="text",required=true){return `<div class="field"><label for="${id}">${label}</label><input id="${id}" type="${type}" value="${esc(value)}" ${required?"required":""}></div>`;}
+function selectField(label,id,options,value=""){return `<div class="field"><label for="${id}">${label}</label><select id="${id}" required>${options.map(o=>`<option value="${esc(o)}" ${o===value?"selected":""}>${esc(o||"Selecione")}</option>`).join("")}</select></div>`;}
 
-        <article class="card">
-          <div class="eyebrow">Financeiro</div>
-          <h2>Mensalidade</h2>
-          <p>Consulte futuramente as informações de pagamento.</p>
-        </article>
+async function loadProfileAndStart(user){
+  showAppShell(user);
+  try{
+    const {data:profile,error}=await client.from("perfis").select("nome,papel").eq("user_id",user.id).maybeSingle();
+    if(error)throw error;
+    if(!profile){
+      const {error:insertError}=await client.from("perfis").insert({user_id:user.id,nome:user.email?.split("@")[0]||"Atleta",papel:"atleta"});
+      if(insertError && insertError.code!=="23505")throw insertError;
+    }
+    const {data:confirmed,error:confirmError}=await client.from("perfis").select("nome,papel").eq("user_id",user.id).maybeSingle();
+    if(confirmError)throw confirmError;
+    isAdmin=confirmed?.papel==="admin";
+    $("athleteName").textContent=confirmed?.nome||user.email?.split("@")[0]||"Atleta";
+    $("roleLabel").textContent=isAdmin?"ADMINISTRADOR":"ATLETA";
+  }catch(error){
+    console.error("Falha ao carregar perfil:",error);
+    isAdmin=false;$("roleLabel").textContent="ATLETA";
+    alert("Sua sessão está ativa, mas não foi possível carregar seu perfil. Verifique a tabela public.perfis e as políticas de acesso.");
+  }
+}
 
-        <article class="card">
-          <div class="eyebrow">Produtos oficiais</div>
-          <h2>Spooky Store</h2>
-          <p>Conheça os produtos oficiais da Spooky House.</p>
-        </article>
+function openSection(name){
+  currentSection=name;editingTrainingId=null;editingChampionshipId=null;
+  $("sectionArea").classList.remove("hidden");
+  $("sectionTitle").textContent=name==="treinos"?"Treinos":"Campeonatos";
+  $("sectionDescription").textContent=name==="treinos"?"Programação atualizada dos treinos da equipe.":"Competições, detalhes e atletas convocados.";
+  $("adminArea").innerHTML="";$("itemsList").innerHTML="";sectionMessage("");
+  renderAdminForm();loadSectionData();
+  $("sectionArea").scrollIntoView({behavior:"smooth",block:"start"});
+}
 
-        <article class="card wide">
-          <div class="eyebrow">Fique por dentro</div>
-          <h2>Avisos da equipe</h2>
-          <p>Comunicados e informações importantes para os atletas.</p>
-        </article>
+function renderAdminForm(training=null,championship=null){
+  const area=$("adminArea");
+  if(!isAdmin){area.classList.add("hidden");area.innerHTML="";return;}
+  area.classList.remove("hidden");
 
+  if(currentSection==="treinos"){
+    const t=training||{};
+    area.innerHTML=`<div class="item"><h3>${training?"Editar treino":"Cadastrar treino"}</h3><form id="trainingForm">
+      <div class="form-grid">
+        <div>${field("Nome do treino","tTitulo",t.titulo||"")}</div>
+        <div>${selectField("Categoria","tCategoria",["Todos","Academy masculino","Academy feminino","Adulto","Open","Coletivo","Sub-21","Outra"],t.categoria||"Todos")}</div>
+        <div>${selectField("Modalidade","tModalidade",["Treino","Coletivo","Jogo","Open","Preparação física"],t.modalidade||"Treino")}</div>
+        <div>${selectField("Dia da semana","tDia",["Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado","Domingo"],t.dia_semana||"")}</div>
+        <div>${field("Horário de início (ex.: 19:00)","tInicio",t.horario_inicio||"")}</div>
+        <div>${field("Horário de término (opcional)","tFim",t.horario_fim||"","text",false)}</div>
+        <div class="full">${field("Local","tLocal",t.local||"Centro Esportivo João do Pulo")}</div>
+        <div class="full"><div class="field"><label for="tDescricao">Descrição / observações</label><textarea id="tDescricao">${esc(t.descricao||"")}</textarea></div></div>
       </div>
-
-      <div class="notice">
-        Bem-vindo à Spooky House. As informações de treinos,
-        campeonatos, mensalidades e avisos serão conectadas ao banco
-        de dados nas próximas etapas.
+      <label class="inline-check"><input id="tAtivo" type="checkbox" ${t.ativo===false?"":"checked"}> Treino ativo e visível para atletas</label>
+      <div class="actions"><button class="primary" type="submit">${training?"Salvar alterações":"Cadastrar treino"}</button>${training?'<button id="cancelTrainingEdit" class="secondary" type="button">Cancelar</button>':""}</div>
+    </form></div>`;
+    $("trainingForm").addEventListener("submit",saveTraining);
+    if(training)$("cancelTrainingEdit").addEventListener("click",()=>{editingTrainingId=null;renderAdminForm();});
+  }else{
+    const c=championship||{};
+    area.innerHTML=`<div class="item"><h3>${championship?"Editar campeonato":"Cadastrar campeonato"}</h3><form id="championshipForm">
+      <div class="form-grid">
+        <div>${field("Nome do campeonato","cNome",c.nome||"")}</div>
+        <div>${field("Categoria","cCategoria",c.categoria||"")}</div>
+        <div>${field("Data","cData",c.data_evento||"","date",false)}</div>
+        <div>${field("Horário","cHorario",c.horario||"","text",false)}</div>
+        <div class="full">${field("Local","cLocal",c.local||"","text",false)}</div>
+        <div class="full"><div class="field"><label for="cDescricao">Descrição / informações</label><textarea id="cDescricao">${esc(c.descricao||"")}</textarea></div></div>
       </div>
+      <div class="actions"><button class="primary" type="submit">${championship?"Salvar alterações":"Cadastrar campeonato"}</button>${championship?'<button id="cancelChampEdit" class="secondary" type="button">Cancelar</button>':""}</div>
+    </form></div>`;
+    $("championshipForm").addEventListener("submit",saveChampionship);
+    if(championship)$("cancelChampEdit").addEventListener("click",()=>{editingChampionshipId=null;renderAdminForm();});
+  }
+}
 
-    </main>
-  </section>
+async function loadSectionData(){
+  $("itemsList").innerHTML='<div class="empty">Carregando...</div>';sectionMessage("");
+  if(currentSection==="treinos")await loadTrainings();else await loadChampionships();
+}
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+async function loadTrainings(){
+  const {data,error}=await client.from("treinos").select("*").order("dia_semana").order("horario_inicio");
+  if(error){$("itemsList").innerHTML="";sectionMessage("Não foi possível carregar os treinos: "+error.message,true);return;}
+  const rows=(data||[]).filter(t=>isAdmin||t.ativo!==false);
+  if(!rows.length){$("itemsList").innerHTML='<div class="empty">Nenhum treino cadastrado no momento.</div>';return;}
+  $("itemsList").innerHTML=rows.map(t=>`<article class="item"><div>${!t.ativo?'<span class="tag">INATIVO</span>':""}<span class="tag">${esc(t.categoria)}</span><span class="tag">${esc(t.modalidade)}</span></div><h3>${esc(t.titulo)}</h3><p><strong>${esc(t.dia_semana)}</strong> • ${esc(t.horario_inicio)}${t.horario_fim?"–"+esc(t.horario_fim):""}</p><p>Local: ${esc(t.local||"A definir")}</p>${t.descricao?`<p>${esc(t.descricao)}</p>`:""}${isAdmin?`<div class="actions"><button class="secondary" data-edit-training="${t.id}">Editar</button><button class="danger" data-delete-training="${t.id}">Excluir</button></div>`:""}</article>`).join("");
+  $("itemsList").querySelectorAll("[data-edit-training]").forEach(b=>b.addEventListener("click",()=>editTraining(b.dataset.editTraining)));
+  $("itemsList").querySelectorAll("[data-delete-training]").forEach(b=>b.addEventListener("click",()=>deleteTraining(b.dataset.deleteTraining)));
+}
 
-  <script>
-    (() => {
-      "use strict";
+async function saveTraining(event){
+  event.preventDefault();if(!isAdmin||!currentUser)return;
+  const payload={titulo:$("tTitulo").value.trim(),categoria:$("tCategoria").value,modalidade:$("tModalidade").value,dia_semana:$("tDia").value,horario_inicio:$("tInicio").value.trim(),horario_fim:$("tFim").value.trim(),local:$("tLocal").value.trim(),descricao:$("tDescricao").value.trim(),ativo:$("tAtivo").checked};
+  if(!payload.titulo||!payload.horario_inicio){sectionMessage("Preencha o nome do treino e o horário de início.",true);return;}
+  const result=editingTrainingId?await client.from("treinos").update(payload).eq("id",editingTrainingId):await client.from("treinos").insert({...payload,criado_por:currentUser.id});
+  if(result.error){sectionMessage("Erro ao salvar treino: "+result.error.message,true);return;}
+  editingTrainingId=null;renderAdminForm();sectionMessage("Treino salvo com sucesso.");await loadTrainings();
+}
 
-      const SUPABASE_URL =
-        "https://mcrreffapstciqpsgvro.supabase.co";
+async function editTraining(id){
+  const {data,error}=await client.from("treinos").select("*").eq("id",id).single();
+  if(error){sectionMessage("Não foi possível abrir o treino: "+error.message,true);return;}
+  editingTrainingId=id;renderAdminForm(data);$("adminArea").scrollIntoView({behavior:"smooth",block:"start"});
+}
+async function deleteTraining(id){
+  if(!isAdmin||!confirm("Excluir este treino?"))return;
+  const {error}=await client.from("treinos").delete().eq("id",id);
+  if(error){sectionMessage("Erro ao excluir treino: "+error.message,true);return;}
+  sectionMessage("Treino excluído.");await loadTrainings();
+}
 
-      const SUPABASE_KEY =
-        "sb_publishable_S798hSSxNl63S2sgDYJoog_tl-N6poI";
+async function saveChampionship(event){
+  event.preventDefault();if(!isAdmin||!currentUser)return;
+  const payload={nome:$("cNome").value.trim(),categoria:$("cCategoria").value.trim(),data_evento:$("cData").value||null,horario:$("cHorario").value.trim(),local:$("cLocal").value.trim(),descricao:$("cDescricao").value.trim()};
+  if(!payload.nome||!payload.categoria){sectionMessage("Preencha o nome e a categoria do campeonato.",true);return;}
+  const result=editingChampionshipId?await client.from("campeonatos").update(payload).eq("id",editingChampionshipId):await client.from("campeonatos").insert({...payload,criado_por:currentUser.id});
+  if(result.error){sectionMessage("Erro ao salvar campeonato: "+result.error.message,true);return;}
+  editingChampionshipId=null;renderAdminForm();sectionMessage("Campeonato salvo com sucesso.");await loadChampionships();
+}
 
-      const $ = id => document.getElementById(id);
+async function loadChampionships(){
+  const {data,error}=await client.from("campeonatos").select("*").order("data_evento",{ascending:true,nullsFirst:false});
+  if(error){$("itemsList").innerHTML="";sectionMessage("Não foi possível carregar os campeonatos: "+error.message,true);return;}
+  if(!data?.length){$("itemsList").innerHTML='<div class="empty">Nenhum campeonato cadastrado no momento.</div>';return;}
+  const cards=[];
+  for(const c of data){
+    const {data:convocations,error:convError}=await client.from("convocacoes").select("atleta_id").eq("campeonato_id",c.id);
+    let names=[];
+    if(!convError&&convocations?.length){
+      const ids=convocations.map(x=>x.atleta_id);
+      const {data:profiles}=await client.from("perfis").select("user_id,nome").in("user_id",ids);
+      const nameMap=new Map((profiles||[]).map(p=>[p.user_id,p.nome]));
+      names=ids.map(id=>nameMap.get(id)||"Atleta");
+    }
+    cards.push(`<article class="item"><div><span class="tag">${esc(c.categoria)}</span></div><h3>${esc(c.nome)}</h3><p><strong>Data:</strong> ${esc(formatDate(c.data_evento))}${c.horario?" • "+esc(c.horario):""}</p><p><strong>Local:</strong> ${esc(c.local||"A definir")}</p>${c.descricao?`<p>${esc(c.descricao)}</p>`:""}<p><strong>Convocados (${names.length}):</strong></p>${names.length?`<p>${names.map(esc).join(", ")}</p>`:'<p class="muted">Nenhum atleta convocado ainda.</p>'}${isAdmin?`<div class="actions"><button class="secondary" data-edit-champ="${c.id}">Editar</button><button class="secondary" data-call-champ="${c.id}">Gerenciar convocados</button><button class="danger" data-delete-champ="${c.id}">Excluir</button></div><div id="callout-${c.id}"></div>`:""}</article>`);
+  }
+  $("itemsList").innerHTML=cards.join("");
+  $("itemsList").querySelectorAll("[data-edit-champ]").forEach(b=>b.addEventListener("click",()=>editChampionship(b.dataset.editChamp)));
+  $("itemsList").querySelectorAll("[data-delete-champ]").forEach(b=>b.addEventListener("click",()=>deleteChampionship(b.dataset.deleteChamp)));
+  $("itemsList").querySelectorAll("[data-call-champ]").forEach(b=>b.addEventListener("click",()=>manageConvocations(b.dataset.callChamp)));
+}
 
-      const loginScreen = $("loginScreen");
-      const appScreen = $("appScreen");
-      const loginForm = $("loginForm");
-      const loginButton = $("loginButton");
-      const message = $("message");
+async function editChampionship(id){
+  const {data,error}=await client.from("campeonatos").select("*").eq("id",id).single();
+  if(error){sectionMessage("Não foi possível abrir o campeonato: "+error.message,true);return;}
+  editingChampionshipId=id;renderAdminForm(null,data);$("adminArea").scrollIntoView({behavior:"smooth",block:"start"});
+}
+async function deleteChampionship(id){
+  if(!isAdmin||!confirm("Excluir este campeonato e suas convocações?"))return;
+  const {error}=await client.from("campeonatos").delete().eq("id",id);
+  if(error){sectionMessage("Erro ao excluir campeonato: "+error.message,true);return;}
+  sectionMessage("Campeonato excluído.");await loadChampionships();
+}
 
-      function showMessage(text, type) {
-        message.textContent = text;
-        message.className = "show " + (type || "");
-      }
+async function manageConvocations(championshipId){
+  const target=$("callout-"+championshipId);target.innerHTML='<div class="empty">Carregando atletas...</div>';
+  const {data:profiles,error:pError}=await client.from("perfis").select("user_id,nome").order("nome");
+  if(pError){target.innerHTML="";sectionMessage("Erro ao carregar atletas: "+pError.message,true);return;}
+  const {data:selected,error:sError}=await client.from("convocacoes").select("atleta_id").eq("campeonato_id",championshipId);
+  if(sError){target.innerHTML="";sectionMessage("Erro ao carregar convocações: "+sError.message,true);return;}
+  const selectedIds=new Set((selected||[]).map(x=>x.atleta_id));
+  target.innerHTML=`<div class="item"><h3>Selecionar convocados</h3><p class="small">Marque os atletas que devem aparecer na lista de convocados deste campeonato.</p><form id="convocationForm">${(profiles||[]).map(p=>`<label class="inline-check"><input type="checkbox" name="athlete" value="${p.user_id}" ${selectedIds.has(p.user_id)?"checked":""}> ${esc(p.nome||"Atleta")}</label>`).join("")||'<p class="empty">Nenhum perfil cadastrado.</p>'}<div class="actions"><button class="primary" type="submit">Salvar convocação</button><button class="secondary" type="button" id="cancelConvocations">Cancelar</button></div></form></div>`;
+  $("cancelConvocations").addEventListener("click",()=>target.innerHTML="");
+  $("convocationForm").addEventListener("submit",async event=>{
+    event.preventDefault();
+    const ids=[...event.currentTarget.querySelectorAll('input[name="athlete"]:checked')].map(el=>el.value);
+    const oldIds=[...selectedIds];
+    const toAdd=ids.filter(id=>!selectedIds.has(id)),toRemove=oldIds.filter(id=>!ids.includes(id));
+    if(toRemove.length){
+      const {error}=await client.from("convocacoes").delete().eq("campeonato_id",championshipId).in("atleta_id",toRemove);
+      if(error){sectionMessage("Erro ao remover convocações: "+error.message,true);return;}
+    }
+    if(toAdd.length){
+      const {error}=await client.from("convocacoes").insert(toAdd.map(id=>({campeonato_id:championshipId,atleta_id:id})));
+      if(error){sectionMessage("Erro ao adicionar convocações: "+error.message,true);return;}
+    }
+    sectionMessage("Convocações atualizadas.");await loadChampionships();
+  });
+}
 
-      function clearMessage() {
-        message.textContent = "";
-        message.className = "";
-      }
+if(!window.supabase){showMessage("Não foi possível carregar o login. Atualize a página e tente novamente.","error");return;}
+client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-      function showApp(user) {
-        loginScreen.classList.add("hidden");
-        appScreen.classList.remove("hidden");
+loginForm.addEventListener("submit",async event=>{
+  event.preventDefault();clearMessage();loginButton.disabled=true;loginButton.textContent="ENTRANDO...";
+  try{
+    const {data,error}=await client.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});
+    if(error)throw error;await loadProfileAndStart(data.user);
+  }catch(error){console.error("Falha no login:",error);showMessage("Não foi possível entrar. Confira seu e-mail e senha.","error");}
+  finally{loginButton.disabled=false;loginButton.textContent="ENTRAR";}
+});
 
-        $("athleteName").textContent =
-          user && user.email
-            ? user.email.split("@")[0]
-            : "Atleta";
-      }
+$("forgotPassword").addEventListener("click",async()=>{
+  clearMessage();const email=$("email").value.trim();
+  if(!email){showMessage("Digite seu e-mail primeiro.","error");return;}
+  try{
+    const {error}=await client.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});
+    if(error)throw error;
+    showMessage("Se esse e-mail estiver cadastrado, você receberá as instruções de recuperação.","success");
+  }catch(error){console.error(error);showMessage("Não foi possível solicitar a recuperação. Tente novamente.","error");}
+});
 
-      function showLogin() {
-        appScreen.classList.add("hidden");
-        loginScreen.classList.remove("hidden");
-      }
+$("logoutButton").addEventListener("click",async()=>{
+  try{
+    const {error}=await client.auth.signOut();if(error)throw error;
+    showLogin();$("sectionArea").classList.add("hidden");clearMessage();
+  }catch(error){console.error(error);alert("Não foi possível sair da conta. Tente novamente.");}
+});
 
-      if (!window.supabase) {
-        showMessage(
-          "Não foi possível carregar o login. Atualize a página e tente novamente.",
-          "error"
-        );
-        return;
-      }
+document.querySelectorAll("[data-section]").forEach(button=>button.addEventListener("click",()=>openSection(button.dataset.section)));
+$("closeSection").addEventListener("click",()=>{$("sectionArea").classList.add("hidden");currentSection="";});
 
-      const client = window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-      );
-
-      loginForm.addEventListener("submit", async event => {
-        event.preventDefault();
-        clearMessage();
-
-        loginButton.disabled = true;
-        loginButton.textContent = "ENTRANDO...";
-
-        try {
-          const { data, error } =
-            await client.auth.signInWithPassword({
-              email: $("email").value.trim(),
-              password: $("password").value
-            });
-
-          if (error) throw error;
-          showApp(data.user);
-
-        } catch (error) {
-          console.error("Falha no login:", error);
-          showMessage(
-            "Não foi possível entrar. Confira seu e-mail e senha.",
-            "error"
-          );
-
-        } finally {
-          loginButton.disabled = false;
-          loginButton.textContent = "ENTRAR";
-        }
-      });
-
-      $("forgotPassword").addEventListener("click", async () => {
-        clearMessage();
-
-        const email = $("email").value.trim();
-
-        if (!email) {
-          showMessage("Digite seu e-mail primeiro.", "error");
-          return;
-        }
-
-        try {
-          const { error } =
-            await client.auth.resetPasswordForEmail(email, {
-              redirectTo: window.location.origin
-            });
-
-          if (error) throw error;
-
-          showMessage(
-            "Se esse e-mail estiver cadastrado, você receberá as instruções de recuperação.",
-            "success"
-          );
-
-        } catch (error) {
-          console.error("Falha na recuperação:", error);
-          showMessage(
-            "Não foi possível solicitar a recuperação. Tente novamente.",
-            "error"
-          );
-        }
-      });
-
-      $("logoutButton").addEventListener("click", async () => {
-        try {
-          const { error } = await client.auth.signOut();
-          if (error) throw error;
-          showLogin();
-          clearMessage();
-
-        } catch (error) {
-          console.error("Falha ao sair:", error);
-          alert("Não foi possível sair da conta. Tente novamente.");
-        }
-      });
-
-      client.auth.onAuthStateChange((_event, session) => {
-        if (session && session.user) {
-          showApp(session.user);
-        } else {
-          showLogin();
-        }
-      });
-
-      client.auth.getSession().then(({ data, error }) => {
-        if (error) {
-          console.error("Falha ao verificar sessão:", error);
-          showLogin();
-          return;
-        }
-
-        if (data.session) {
-          showApp(data.session.user);
-        } else {
-          showLogin();
-        }
-      });
-    })();
-  </script>
-
+client.auth.onAuthStateChange((event,session)=>{
+  if(event==="SIGNED_OUT"||!session){showLogin();return;}
+  if(session.user)setTimeout(()=>loadProfileAndStart(session.user),0);
+});
+client.auth.getSession().then(async({data,error})=>{
+  if(error){console.error(error);showLogin();return;}
+  if(data.session)await loadProfileAndStart(data.session.user);else showLogin();
+});
+})();
+</script>
 </body>
 </html>
+
