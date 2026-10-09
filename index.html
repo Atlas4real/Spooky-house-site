@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -40,8 +41,8 @@ main{width:100%;max-width:1100px;margin:auto;padding:30px 20px 60px}
 .welcome h1{font-size:32px;margin:10px 0}
 .welcome p,.card p,.muted{color:var(--muted);line-height:1.6}
 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:26px}
-.card{min-height:145px;text-align:left;color:#fff;transition:border-color .15s}
-button.card:hover{border-color:#777}
+.card{display:block;width:100%;min-height:145px;text-align:left;color:#fff;transition:border-color .15s;text-decoration:none}
+button.card:hover,.card-link:hover{border-color:#777}
 .card h2{font-size:19px;margin:12px 0 8px}
 .card p{font-size:13px;margin:0}
 .wide{grid-column:1/-1}
@@ -60,14 +61,17 @@ button.card:hover{border-color:#777}
 .inline-check input{width:auto}
 .empty{color:#888;font-size:13px;padding:15px 0}
 .small{font-size:12px;color:#888;line-height:1.5}
+.status-paid{color:#9be5ac}
+.status-pending{color:#ffd27d}
+.status-late{color:#ff9999}
 @media(max-width:560px){
- .cards{grid-template-columns:1fr}
- .wide{grid-column:auto}
- .panel{padding:20px}
- .welcome h1{font-size:27px}
- .form-grid{grid-template-columns:1fr}
- .form-grid .full{grid-column:auto}
- main{padding:25px 14px 45px}
+  .cards{grid-template-columns:1fr}
+  .wide{grid-column:auto}
+  .panel{padding:20px}
+  .welcome h1{font-size:27px}
+  .form-grid{grid-template-columns:1fr}
+  .form-grid .full{grid-column:auto}
+  main{padding:25px 14px 45px}
 }
 </style>
 </head>
@@ -120,23 +124,26 @@ button.card:hover{border-color:#777}
       <button class="card" data-section="treinos" type="button">
         <div class="eyebrow">Minha rotina</div>
         <h2>Treinos</h2>
-        <p>Consulte os horários. Administradores podem gerenciar a programação.</p>
+        <p>Consulte os horários e as informações dos treinos.</p>
       </button>
+
       <button class="card" data-section="campeonatos" type="button">
         <div class="eyebrow">Calendário</div>
         <h2>Campeonatos</h2>
         <p>Veja as competições e os atletas convocados.</p>
       </button>
-      <a class="card" href="https://www.instagram.com/spooky4house/" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
+
+      <button class="card" data-section="financeiro" type="button">
+        <div class="eyebrow">Financeiro</div>
+        <h2>Mensalidade</h2>
+        <p>Consulte cobranças, vencimentos e histórico de pagamentos.</p>
+      </button>
+
+      <a class="card" href="https://www.instagram.com/spooky4house/" target="_blank" rel="noopener noreferrer">
         <div class="eyebrow">Produtos oficiais</div>
         <h2>Spooky House</h2>
         <p>Acesse o Instagram oficial da equipe.</p>
       </a>
-      <article class="card">
-        <div class="eyebrow">Financeiro</div>
-        <h2>Mensalidade</h2>
-        <p>Para consultar ou gerenciar mensalidades, é necessário conectar o módulo financeiro ao banco de dados.</p>
-      </article>
     </div>
 
     <div id="sectionArea" class="hidden">
@@ -156,7 +163,7 @@ button.card:hover{border-color:#777}
     </div>
 
     <div class="notice">
-      As informações de treinos, campeonatos e convocações são carregadas do banco de dados da Spooky House.
+      Acesso individual para atletas e administração da Spooky House.
     </div>
   </main>
 </section>
@@ -166,16 +173,10 @@ button.card:hover{border-color:#777}
 (() => {
 "use strict";
 
-/* CONFIGURAÇÃO SUPABASE */
 const SUPABASE_URL = "https://mcrreffapstciqpsgvro.supabase.co";
 const SUPABASE_KEY = "sb_publishable_S798hSSxNl63S2sgDYJoog_tl-N6poI";
 
 const $ = id => document.getElementById(id);
-const loginScreen = $("loginScreen");
-const appScreen = $("appScreen");
-const loginForm = $("loginForm");
-const loginButton = $("loginButton");
-const message = $("message");
 
 let client = null;
 let currentUser = null;
@@ -183,7 +184,7 @@ let isAdmin = false;
 let currentSection = "";
 let editingTrainingId = null;
 let editingChampionshipId = null;
-let authRequestRunning = false;
+let profilesCache = [];
 
 const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
   "&":"&amp;",
@@ -194,13 +195,13 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
 }[ch]));
 
 function showMessage(text, type = "error") {
-  message.textContent = text;
-  message.className = "show " + type;
+  $("message").textContent = text;
+  $("message").className = "show " + type;
 }
 
 function clearMessage() {
-  message.textContent = "";
-  message.className = "";
+  $("message").textContent = "";
+  $("message").className = "";
 }
 
 function sectionMessage(text, isError = false) {
@@ -209,17 +210,16 @@ function sectionMessage(text, isError = false) {
 }
 
 function showLogin() {
-  appScreen.classList.add("hidden");
-  loginScreen.classList.remove("hidden");
+  $("appScreen").classList.add("hidden");
+  $("loginScreen").classList.remove("hidden");
   currentUser = null;
   isAdmin = false;
-  $("roleLabel").textContent = "ATLETA";
 }
 
 function showAppShell(user) {
   currentUser = user;
-  loginScreen.classList.add("hidden");
-  appScreen.classList.remove("hidden");
+  $("loginScreen").classList.add("hidden");
+  $("appScreen").classList.remove("hidden");
   $("athleteName").textContent = user.email ? user.email.split("@")[0] : "Atleta";
 }
 
@@ -227,6 +227,13 @@ function formatDate(value) {
   if (!value) return "Data a definir";
   const parts = String(value).slice(0, 10).split("-");
   return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : value;
+}
+
+function money(value) {
+  return Number(value || 0).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
 }
 
 function field(label, id, value = "", type = "text", required = true) {
@@ -245,7 +252,7 @@ function selectField(label, id, options, value = "") {
   </div>`;
 }
 
-/* CARREGA O PERFIL DA CONTA */
+/* PERFIL E PERMISSÕES */
 async function loadProfileAndStart(user) {
   showAppShell(user);
 
@@ -259,22 +266,7 @@ async function loadProfileAndStart(user) {
     if (error) throw error;
 
     if (!profile) {
-      const { error: insertError } = await client
-        .from("perfis")
-        .insert({
-          user_id: user.id,
-          nome: user.email?.split("@")[0] || "Atleta",
-          papel: "atleta"
-        });
-
-      if (insertError && insertError.code !== "23505") {
-        console.error("Não foi possível criar o perfil:", insertError);
-      }
-
-      isAdmin = false;
-      $("roleLabel").textContent = "ATLETA";
-      $("athleteName").textContent = user.email?.split("@")[0] || "Atleta";
-      return;
+      throw new Error("Perfil não encontrado na tabela perfis.");
     }
 
     isAdmin = profile.papel === "admin";
@@ -284,33 +276,42 @@ async function loadProfileAndStart(user) {
     console.error("Erro ao carregar perfil:", error);
     isAdmin = false;
     $("roleLabel").textContent = "ATLETA";
-    sectionMessage("Não foi possível carregar o perfil: " + error.message, true);
+    alert("Sua conta entrou, mas não foi possível carregar o perfil. Verifique se ela existe em public.perfis e se o campo papel está correto.");
   }
 }
 
-/* ABRIR TREINOS OU CAMPEONATOS */
+/* NAVEGAÇÃO */
 function openSection(name) {
   currentSection = name;
   editingTrainingId = null;
   editingChampionshipId = null;
 
   $("sectionArea").classList.remove("hidden");
-  $("sectionTitle").textContent = name === "treinos" ? "Treinos" : "Campeonatos";
-  $("sectionDescription").textContent = name === "treinos"
-    ? "Programação atualizada dos treinos da equipe."
-    : "Competições, detalhes e atletas convocados.";
+  $("sectionTitle").textContent =
+    name === "treinos" ? "Treinos" :
+    name === "campeonatos" ? "Campeonatos" : "Financeiro";
+
+  $("sectionDescription").textContent =
+    name === "treinos" ? "Programação dos treinos da equipe." :
+    name === "campeonatos" ? "Competições e convocações." :
+    "Mensalidades, vencimentos e pagamentos.";
 
   $("adminArea").innerHTML = "";
   $("itemsList").innerHTML = "";
   sectionMessage("");
 
-  renderAdminForm();
-  loadSectionData();
+  if (name === "financeiro") {
+    renderFinanceForm();
+    loadFinance();
+  } else {
+    renderAdminForm();
+    loadSectionData();
+  }
 
   $("sectionArea").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-/* FORMULÁRIOS ADMINISTRATIVOS */
+/* FORMULÁRIOS DE TREINO E CAMPEONATO */
 function renderAdminForm(training = null, championship = null) {
   const area = $("adminArea");
 
@@ -334,7 +335,7 @@ function renderAdminForm(training = null, championship = null) {
           <div>${selectField("Modalidade", "tModalidade", ["Treino","Coletivo","Jogo","Open","Preparação física"], t.modalidade || "Treino")}</div>
           <div>${selectField("Dia da semana", "tDia", ["Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado","Domingo"], t.dia_semana || "Segunda-feira")}</div>
           <div>${field("Horário de início", "tInicio", t.horario_inicio || "")}</div>
-          <div>${field("Horário de término (opcional)", "tFim", t.horario_fim || "", "text", false)}</div>
+          <div>${field("Horário de término", "tFim", t.horario_fim || "", "text", false)}</div>
           <div class="full">${field("Local", "tLocal", t.local || "Centro Esportivo João do Pulo")}</div>
           <div class="full">
             <div class="field">
@@ -355,7 +356,6 @@ function renderAdminForm(training = null, championship = null) {
     </div>`;
 
     $("trainingForm").addEventListener("submit", saveTraining);
-
     if (training) {
       $("cancelTrainingEdit").addEventListener("click", () => {
         editingTrainingId = null;
@@ -389,7 +389,6 @@ function renderAdminForm(training = null, championship = null) {
     </div>`;
 
     $("championshipForm").addEventListener("submit", saveChampionship);
-
     if (championship) {
       $("cancelChampEdit").addEventListener("click", () => {
         editingChampionshipId = null;
@@ -402,11 +401,8 @@ function renderAdminForm(training = null, championship = null) {
 async function loadSectionData() {
   $("itemsList").innerHTML = '<div class="empty">Carregando...</div>';
   sectionMessage("");
-  if (currentSection === "treinos") {
-    await loadTrainings();
-  } else {
-    await loadChampionships();
-  }
+  if (currentSection === "treinos") await loadTrainings();
+  else await loadChampionships();
 }
 
 /* TREINOS */
@@ -426,7 +422,7 @@ async function loadTrainings() {
   const rows = (data || []).filter(t => isAdmin || t.ativo !== false);
 
   if (!rows.length) {
-    $("itemsList").innerHTML = '<div class="empty">Nenhum treino cadastrado no momento.</div>';
+    $("itemsList").innerHTML = '<div class="empty">Nenhum treino cadastrado.</div>';
     return;
   }
 
@@ -438,7 +434,7 @@ async function loadTrainings() {
         <span class="tag">${esc(t.modalidade)}</span>
       </div>
       <h3>${esc(t.titulo)}</h3>
-      <p><strong>${esc(t.dia_semana)}</strong> • ${esc(t.horario_inicio || "Horário a definir")}${t.horario_fim ? "–" + esc(t.horario_fim) : ""}</p>
+      <p><strong>${esc(t.dia_semana)}</strong> • ${esc(t.horario_inicio || "A definir")}${t.horario_fim ? "–" + esc(t.horario_fim) : ""}</p>
       <p>Local: ${esc(t.local || "A definir")}</p>
       ${t.descricao ? `<p>${esc(t.descricao)}</p>` : ""}
       ${isAdmin ? `<div class="actions">
@@ -450,7 +446,6 @@ async function loadTrainings() {
   $("itemsList").querySelectorAll("[data-edit-training]").forEach(b =>
     b.addEventListener("click", () => editTraining(b.dataset.editTraining))
   );
-
   $("itemsList").querySelectorAll("[data-delete-training]").forEach(b =>
     b.addEventListener("click", () => deleteTraining(b.dataset.deleteTraining))
   );
@@ -494,27 +489,21 @@ async function saveTraining(event) {
 
 async function editTraining(id) {
   const { data, error } = await client.from("treinos").select("*").eq("id", id).single();
-
   if (error) {
-    sectionMessage("Não foi possível abrir o treino: " + error.message, true);
+    sectionMessage("Erro ao abrir treino: " + error.message, true);
     return;
   }
-
   editingTrainingId = id;
   renderAdminForm(data);
-  $("adminArea").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 async function deleteTraining(id) {
   if (!isAdmin || !confirm("Excluir este treino?")) return;
-
   const { error } = await client.from("treinos").delete().eq("id", id);
-
   if (error) {
     sectionMessage("Erro ao excluir treino: " + error.message, true);
     return;
   }
-
   sectionMessage("Treino excluído.");
   await loadTrainings();
 }
@@ -534,7 +523,7 @@ async function saveChampionship(event) {
   };
 
   if (!payload.nome || !payload.categoria) {
-    sectionMessage("Preencha o nome e a categoria do campeonato.", true);
+    sectionMessage("Preencha o nome e a categoria.", true);
     return;
   }
 
@@ -549,7 +538,7 @@ async function saveChampionship(event) {
 
   editingChampionshipId = null;
   renderAdminForm();
-  sectionMessage("Campeonato salvo com sucesso.");
+  sectionMessage("Campeonato salvo.");
   await loadChampionships();
 }
 
@@ -566,7 +555,7 @@ async function loadChampionships() {
   }
 
   if (!data || !data.length) {
-    $("itemsList").innerHTML = '<div class="empty">Nenhum campeonato cadastrado no momento.</div>';
+    $("itemsList").innerHTML = '<div class="empty">Nenhum campeonato cadastrado.</div>';
     return;
   }
 
@@ -579,7 +568,6 @@ async function loadChampionships() {
       .eq("campeonato_id", c.id);
 
     let names = [];
-
     if (!convError && convocations?.length) {
       const ids = convocations.map(x => x.atleta_id);
       const { data: profiles } = await client
@@ -587,24 +575,23 @@ async function loadChampionships() {
         .select("user_id,nome")
         .in("user_id", ids);
 
-      const nameMap = new Map((profiles || []).map(p => [p.user_id, p.nome]));
-      names = ids.map(id => nameMap.get(id) || "Atleta");
+      const map = new Map((profiles || []).map(p => [p.user_id, p.nome]));
+      names = ids.map(id => map.get(id) || "Atleta");
     }
 
     cards.push(`<article class="item">
-      <div><span class="tag">${esc(c.categoria)}</span></div>
+      <span class="tag">${esc(c.categoria)}</span>
       <h3>${esc(c.nome)}</h3>
       <p><strong>Data:</strong> ${esc(formatDate(c.data_evento))}${c.horario ? " • " + esc(c.horario) : ""}</p>
       <p><strong>Local:</strong> ${esc(c.local || "A definir")}</p>
       ${c.descricao ? `<p>${esc(c.descricao)}</p>` : ""}
       <p><strong>Convocados (${names.length}):</strong></p>
-      ${names.length ? `<p>${names.map(esc).join(", ")}</p>` : '<p class="muted">Nenhum atleta convocado ainda.</p>'}
+      ${names.length ? `<p>${names.map(esc).join(", ")}</p>` : '<p class="muted">Nenhum atleta convocado.</p>'}
       ${isAdmin ? `<div class="actions">
         <button class="secondary" data-edit-champ="${esc(c.id)}" type="button">Editar</button>
         <button class="secondary" data-call-champ="${esc(c.id)}" type="button">Gerenciar convocados</button>
         <button class="danger" data-delete-champ="${esc(c.id)}" type="button">Excluir</button>
-      </div>
-      <div id="callout-${esc(c.id)}"></div>` : ""}
+      </div><div id="callout-${esc(c.id)}"></div>` : ""}
     </article>`);
   }
 
@@ -613,11 +600,9 @@ async function loadChampionships() {
   $("itemsList").querySelectorAll("[data-edit-champ]").forEach(b =>
     b.addEventListener("click", () => editChampionship(b.dataset.editChamp))
   );
-
   $("itemsList").querySelectorAll("[data-delete-champ]").forEach(b =>
     b.addEventListener("click", () => deleteChampionship(b.dataset.deleteChamp))
   );
-
   $("itemsList").querySelectorAll("[data-call-champ]").forEach(b =>
     b.addEventListener("click", () => manageConvocations(b.dataset.callChamp))
   );
@@ -625,53 +610,40 @@ async function loadChampionships() {
 
 async function editChampionship(id) {
   const { data, error } = await client.from("campeonatos").select("*").eq("id", id).single();
-
   if (error) {
-    sectionMessage("Não foi possível abrir o campeonato: " + error.message, true);
+    sectionMessage("Erro ao abrir campeonato: " + error.message, true);
     return;
   }
-
   editingChampionshipId = id;
   renderAdminForm(null, data);
-  $("adminArea").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 async function deleteChampionship(id) {
-  if (!isAdmin || !confirm("Excluir este campeonato e suas convocações?")) return;
-
+  if (!isAdmin || !confirm("Excluir este campeonato?")) return;
   const { error } = await client.from("campeonatos").delete().eq("id", id);
-
   if (error) {
     sectionMessage("Erro ao excluir campeonato: " + error.message, true);
     return;
   }
-
   sectionMessage("Campeonato excluído.");
   await loadChampionships();
 }
 
-/* GERENCIAMENTO DE CONVOCADOS */
 async function manageConvocations(championshipId) {
   const target = $("callout-" + championshipId);
-  if (!target) return;
-
   target.innerHTML = '<div class="empty">Carregando atletas...</div>';
 
-  const { data: profiles, error: profileError } = await client
-    .from("perfis")
-    .select("user_id,nome")
-    .order("nome");
+  const { data: profiles, error } = await client
+    .from("perfis").select("user_id,nome").order("nome");
 
-  if (profileError) {
+  if (error) {
     target.innerHTML = "";
-    sectionMessage("Erro ao carregar atletas: " + profileError.message, true);
+    sectionMessage("Erro ao carregar atletas: " + error.message, true);
     return;
   }
 
   const { data: selected, error: selectedError } = await client
-    .from("convocacoes")
-    .select("atleta_id")
-    .eq("campeonato_id", championshipId);
+    .from("convocacoes").select("atleta_id").eq("campeonato_id", championshipId);
 
   if (selectedError) {
     target.innerHTML = "";
@@ -683,12 +655,11 @@ async function manageConvocations(championshipId) {
 
   target.innerHTML = `<div class="item">
     <h3>Selecionar convocados</h3>
-    <p class="small">Marque os atletas que participarão deste campeonato.</p>
     <form id="convocationForm">
       ${(profiles || []).map(p => `<label class="inline-check">
         <input type="checkbox" name="athlete" value="${esc(p.user_id)}" ${selectedIds.has(p.user_id) ? "checked" : ""}>
         ${esc(p.nome || "Atleta")}
-      </label>`).join("") || '<p class="empty">Nenhum perfil cadastrado.</p>'}
+      </label>`).join("")}
       <div class="actions">
         <button class="primary" type="submit">Salvar convocação</button>
         <button class="secondary" type="button" id="cancelConvocations">Cancelar</button>
@@ -696,29 +667,20 @@ async function manageConvocations(championshipId) {
     </form>
   </div>`;
 
-  $("cancelConvocations").addEventListener("click", () => {
-    target.innerHTML = "";
-  });
+  $("cancelConvocations").addEventListener("click", () => target.innerHTML = "");
 
   $("convocationForm").addEventListener("submit", async event => {
     event.preventDefault();
-
-    const ids = [...event.currentTarget.querySelectorAll('input[name="athlete"]:checked')]
-      .map(el => el.value);
-
+    const ids = [...event.currentTarget.querySelectorAll('input[name="athlete"]:checked')].map(el => el.value);
     const oldIds = [...selectedIds];
     const toAdd = ids.filter(id => !selectedIds.has(id));
     const toRemove = oldIds.filter(id => !ids.includes(id));
 
     if (toRemove.length) {
-      const { error } = await client
-        .from("convocacoes")
-        .delete()
-        .eq("campeonato_id", championshipId)
-        .in("atleta_id", toRemove);
-
+      const { error } = await client.from("convocacoes")
+        .delete().eq("campeonato_id", championshipId).in("atleta_id", toRemove);
       if (error) {
-        sectionMessage("Erro ao remover convocações: " + error.message, true);
+        sectionMessage("Erro ao remover convocação: " + error.message, true);
         return;
       }
     }
@@ -727,9 +689,8 @@ async function manageConvocations(championshipId) {
       const { error } = await client.from("convocacoes").insert(
         toAdd.map(id => ({ campeonato_id: championshipId, atleta_id: id }))
       );
-
       if (error) {
-        sectionMessage("Erro ao adicionar convocações: " + error.message, true);
+        sectionMessage("Erro ao adicionar convocação: " + error.message, true);
         return;
       }
     }
@@ -739,75 +700,265 @@ async function manageConvocations(championshipId) {
   });
 }
 
-/* VERIFICA SE O SUPABASE CARREGOU */
+/* FINANCEIRO */
+function renderFinanceForm() {
+  const area = $("adminArea");
+
+  if (!isAdmin) {
+    area.classList.add("hidden");
+    area.innerHTML = "";
+    return;
+  }
+
+  area.classList.remove("hidden");
+  area.innerHTML = `<div class="item">
+    <h3>Registrar mensalidade</h3>
+    <form id="financeForm">
+      <div class="field">
+        <label for="financeAthlete">Atleta</label>
+        <select id="financeAthlete" required>
+          <option value="">Carregando atletas...</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="financeValue">Valor (R$)</label>
+        <input id="financeValue" type="number" min="0.01" step="0.01" placeholder="99,00" required>
+      </div>
+      <div class="field">
+        <label for="financeDue">Vencimento</label>
+        <input id="financeDue" type="date" required>
+      </div>
+      <div class="field">
+        <label for="financeDescription">Descrição</label>
+        <input id="financeDescription" type="text" placeholder="Mensalidade de outubro">
+      </div>
+      <button class="primary" type="submit">Registrar cobrança</button>
+    </form>
+  </div>`;
+
+  loadFinanceAthletes();
+
+  $("financeForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const atleta_id = $("financeAthlete").value;
+    const valor = Number($("financeValue").value);
+    const vencimento = $("financeDue").value;
+    const descricao = $("financeDescription").value.trim();
+
+    if (!atleta_id || valor <= 0 || !vencimento) {
+      sectionMessage("Preencha atleta, valor e vencimento corretamente.", true);
+      return;
+    }
+
+    const { error } = await client.from("mensalidades").insert({
+      atleta_id,
+      valor,
+      vencimento,
+      descricao: descricao || null,
+      criado_por: currentUser.id,
+      status: "pendente"
+    });
+
+    if (error) {
+      sectionMessage("Erro ao registrar cobrança: " + error.message, true);
+      return;
+    }
+
+    $("financeForm").reset();
+    sectionMessage("Mensalidade registrada com sucesso.");
+    await loadFinance();
+  });
+}
+
+async function loadFinanceAthletes() {
+  const select = $("financeAthlete");
+
+  const { data, error } = await client
+    .from("perfis")
+    .select("user_id,nome")
+    .order("nome");
+
+  if (error) {
+    select.innerHTML = '<option value="">Erro ao carregar atletas</option>';
+    sectionMessage("Erro ao carregar atletas: " + error.message, true);
+    return;
+  }
+
+  profilesCache = data || [];
+
+  select.innerHTML =
+    '<option value="">Selecione o atleta</option>' +
+    profilesCache.map(p =>
+      `<option value="${esc(p.user_id)}">${esc(p.nome || "Atleta")}</option>`
+    ).join("");
+}
+
+async function loadFinance() {
+  $("itemsList").innerHTML = '<div class="empty">Carregando mensalidades...</div>';
+
+  let query = client
+    .from("mensalidades")
+    .select("*")
+    .order("vencimento", { ascending: false });
+
+  if (!isAdmin) {
+    query = query.eq("atleta_id", currentUser.id);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    $("itemsList").innerHTML = "";
+    sectionMessage("Erro ao carregar mensalidades: " + error.message, true);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    $("itemsList").innerHTML = '<div class="empty">Nenhuma mensalidade registrada.</div>';
+    return;
+  }
+
+  if (isAdmin && profilesCache.length === 0) {
+    const { data: profiles } = await client.from("perfis").select("user_id,nome");
+    profilesCache = profiles || [];
+  }
+
+  const profileMap = new Map(profilesCache.map(p => [p.user_id, p.nome]));
+  const today = new Date().toISOString().slice(0, 10);
+
+  let totalPending = 0;
+  let totalPaid = 0;
+
+  data.forEach(m => {
+    if (m.status === "pago") totalPaid += Number(m.valor);
+    else totalPending += Number(m.valor);
+  });
+
+  const summary = `<div class="item">
+    <h3>Resumo financeiro</h3>
+    <p>Em aberto: <strong>${money(totalPending)}</strong></p>
+    <p>Pagamentos registrados: <strong>${money(totalPaid)}</strong></p>
+  </div>`;
+
+  const cards = data.map(m => {
+    const overdue = m.status === "pendente" && m.vencimento < today;
+    const status = m.status === "pago" ? "PAGO" : overdue ? "ATRASADO" : "PENDENTE";
+    const statusClass = m.status === "pago" ? "status-paid" : overdue ? "status-late" : "status-pending";
+    const name = profileMap.get(m.atleta_id) || "Atleta";
+
+    return `<article class="item">
+      ${isAdmin ? `<span class="tag">${esc(name)}</span>` : ""}
+      <span class="tag ${statusClass}">${status}</span>
+      <h3>${money(m.valor)}</h3>
+      <p><strong>Vencimento:</strong> ${formatDate(m.vencimento)}</p>
+      <p>${esc(m.descricao || "Mensalidade Spooky House")}</p>
+      ${m.status === "pago" ? `<p class="status-paid">Pagamento registrado${m.pago_em ? " em " + formatDate(m.pago_em) : ""}.</p>` : ""}
+      ${isAdmin ? `<div class="actions">
+        ${m.status !== "pago" ? `<button class="primary" data-pay="${esc(m.id)}" type="button">Marcar como pago</button>` :
+        `<button class="secondary" data-pending="${esc(m.id)}" type="button">Marcar pendente</button>`}
+        <button class="danger" data-delete-bill="${esc(m.id)}" type="button">Excluir cobrança</button>
+      </div>` : ""}
+    </article>`;
+  });
+
+  $("itemsList").innerHTML = (isAdmin ? summary : "") + cards.join("");
+
+  $("itemsList").querySelectorAll("[data-pay]").forEach(button =>
+    button.addEventListener("click", () => updateBill(button.dataset.pay, "pago"))
+  );
+
+  $("itemsList").querySelectorAll("[data-pending]").forEach(button =>
+    button.addEventListener("click", () => updateBill(button.dataset.pending, "pendente"))
+  );
+
+  $("itemsList").querySelectorAll("[data-delete-bill]").forEach(button =>
+    button.addEventListener("click", () => deleteBill(button.dataset.deleteBill))
+  );
+}
+
+async function updateBill(id, status) {
+  if (!isAdmin) return;
+
+  const { error } = await client
+    .from("mensalidades")
+    .update({
+      status,
+      pago_em: status === "pago" ? new Date().toISOString() : null
+    })
+    .eq("id", id);
+
+  if (error) {
+    sectionMessage("Erro ao atualizar pagamento: " + error.message, true);
+    return;
+  }
+
+  sectionMessage("Pagamento atualizado.");
+  await loadFinance();
+}
+
+async function deleteBill(id) {
+  if (!isAdmin || !confirm("Excluir esta cobrança?")) return;
+
+  const { error } = await client
+    .from("mensalidades")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    sectionMessage("Erro ao excluir cobrança: " + error.message, true);
+    return;
+  }
+
+  sectionMessage("Cobrança excluída.");
+  await loadFinance();
+}
+
+/* INICIALIZAÇÃO DO SUPABASE */
 if (!window.supabase) {
-  showMessage("O sistema de login não carregou. Verifique sua conexão com a internet e atualize a página.");
-  loginButton.disabled = true;
+  showMessage("O sistema de login não carregou. Verifique sua conexão e atualize a página.", "error");
   return;
 }
 
-try {
-  client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-} catch (error) {
-  console.error("Erro ao iniciar Supabase:", error);
-  showMessage("Erro ao iniciar o sistema: " + error.message);
-  loginButton.disabled = true;
-  return;
-}
+client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* LOGIN — MOSTRA O ERRO REAL */
-loginForm.addEventListener("submit", async event => {
+/* LOGIN */
+$("loginForm").addEventListener("submit", async event => {
   event.preventDefault();
-
-  if (authRequestRunning) return;
-  authRequestRunning = true;
-
   clearMessage();
-  loginButton.disabled = true;
-  loginButton.textContent = "ENTRANDO...";
 
-  const email = $("email").value.trim();
-  const password = $("password").value;
+  const button = $("loginButton");
+  button.disabled = true;
+  button.textContent = "ENTRANDO...";
 
   try {
     const { data, error } = await client.auth.signInWithPassword({
-      email,
-      password
+      email: $("email").value.trim(),
+      password: $("password").value
     });
 
     if (error) throw error;
-    if (!data.user) throw new Error("O Supabase não retornou os dados da conta.");
-
     await loadProfileAndStart(data.user);
   } catch (error) {
-    console.error("Falha no login:", error);
+    console.error("Erro de login:", error);
+    let msg = error.message || "Erro desconhecido.";
 
-    let text = error.message || "Erro desconhecido.";
-
-    if (/invalid login credentials/i.test(text)) {
-      text = "E-mail ou senha incorretos. Confira os dados e tente novamente.";
-    } else if (/email not confirmed/i.test(text)) {
-      text = "Seu e-mail ainda não foi confirmado no Supabase.";
-    } else if (/fetch|network|failed to fetch/i.test(text)) {
-      text = "Não foi possível conectar ao Supabase. Verifique a internet e as configurações do projeto.";
-    }
-
-    showMessage("Não foi possível entrar: " + text, "error");
+    if (/invalid login credentials/i.test(msg)) msg = "E-mail ou senha incorretos.";
+    if (/email not confirmed/i.test(msg)) msg = "Seu e-mail ainda não foi confirmado.";
+    showMessage("Não foi possível entrar: " + msg, "error");
   } finally {
-    authRequestRunning = false;
-    loginButton.disabled = false;
-    loginButton.textContent = "ENTRAR";
+    button.disabled = false;
+    button.textContent = "ENTRAR";
   }
 });
 
-/* RECUPERAÇÃO DE SENHA */
+/* RECUPERAR SENHA */
 $("forgotPassword").addEventListener("click", async () => {
   clearMessage();
-
   const email = $("email").value.trim();
 
   if (!email) {
-    showMessage("Digite seu e-mail no campo acima e tente novamente.", "error");
+    showMessage("Digite seu e-mail primeiro.", "error");
     $("email").focus();
     return;
   }
@@ -816,29 +967,26 @@ $("forgotPassword").addEventListener("click", async () => {
     const { error } = await client.auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin
     });
-
     if (error) throw error;
 
     showMessage("Se esse e-mail estiver cadastrado, você receberá as instruções de recuperação.", "success");
   } catch (error) {
-    console.error("Erro na recuperação de senha:", error);
-    showMessage("Falha na recuperação: " + (error.message || "tente novamente."), "error");
+    showMessage("Erro na recuperação de senha: " + error.message, "error");
   }
 });
 
-/* SAIR DA CONTA */
+/* SAIR */
 $("logoutButton").addEventListener("click", async () => {
-  try {
-    const { error } = await client.auth.signOut();
-    if (error) throw error;
+  const { error } = await client.auth.signOut();
 
-    showLogin();
-    $("sectionArea").classList.add("hidden");
-    clearMessage();
-  } catch (error) {
-    console.error("Erro ao sair:", error);
-    alert("Não foi possível sair da conta: " + (error.message || "tente novamente."));
+  if (error) {
+    alert("Não foi possível sair: " + error.message);
+    return;
   }
+
+  showLogin();
+  $("sectionArea").classList.add("hidden");
+  clearMessage();
 });
 
 /* BOTÕES DO PAINEL */
@@ -851,18 +999,10 @@ $("closeSection").addEventListener("click", () => {
   currentSection = "";
 });
 
-/* RESTAURA A SESSÃO QUANDO A PÁGINA É ABERTA */
-client.auth.onAuthStateChange((event, session) => {
-  if (event === "SIGNED_OUT") {
-    showLogin();
-  }
-});
-
-/* VERIFICA SE JÁ EXISTE UMA SESSÃO */
+/* RESTAURA SESSÃO */
 (async () => {
   try {
     const { data, error } = await client.auth.getSession();
-
     if (error) throw error;
 
     if (data.session?.user) {
@@ -871,11 +1011,15 @@ client.auth.onAuthStateChange((event, session) => {
       showLogin();
     }
   } catch (error) {
-    console.error("Erro ao verificar sessão:", error);
+    console.error("Erro ao restaurar sessão:", error);
     showLogin();
-    showMessage("Não foi possível verificar sua sessão: " + (error.message || "tente entrar novamente."), "error");
+    showMessage("Não foi possível verificar sua sessão. Entre novamente.", "error");
   }
 })();
+
+client.auth.onAuthStateChange((event, session) => {
+  if (event === "SIGNED_OUT") showLogin();
+});
 
 })();
 </script>
