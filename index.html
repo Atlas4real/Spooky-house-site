@@ -3,481 +3,726 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Spooky House | A Casa do Basquete</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{color-scheme:dark;--bg:#070707;--panel:#121212;--line:#303030;--muted:#aaa}
+:root{--bg:#080808;--card:#141414;--line:#292929;--white:#fff;--muted:#aaa;--accent:#e8e8e8}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:#fff;font:15px Arial,sans-serif}
-button,input,select{font:inherit}
+body{margin:0;background:var(--bg);color:var(--white);font-family:Arial,Helvetica,sans-serif}
+button,input,select,textarea{font:inherit}
 button{cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+header{padding:20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-weight:900;font-size:24px;letter-spacing:2px}
+.brand span{display:block;font-size:10px;letter-spacing:4px;color:var(--muted);margin-top:5px}
+main{max-width:1100px;margin:auto;padding:22px}
+h1{font-size:27px;margin:0 0 8px}
+h2{font-size:19px;margin:0 0 15px}
+h3{font-size:15px;margin:0 0 12px}
+p{line-height:1.5}
+.muted{color:var(--muted);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+input,select,textarea{width:100%;padding:12px;background:#090909;color:#fff;border:1px solid #383838;border-radius:7px;margin:5px 0 12px}
+label{display:block;font-size:12px;color:#ccc}
+button,.btn{background:#fff;color:#000;border:0;border-radius:7px;padding:11px 15px;font-weight:700}
+button.secondary{background:#222;color:#fff;border:1px solid #444}
+button.danger{background:#641f1f;color:#fff}
+button.small{font-size:12px;padding:8px 10px;margin:3px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+nav{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
+nav button{background:#1c1c1c;color:#fff;border:1px solid #333}
+nav button.active{background:#fff;color:#000}
 .hidden{display:none!important}
-header{padding:18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);gap:12px}
-.logo{font-size:24px;font-weight:900;letter-spacing:4px}
-main{max-width:1000px;margin:auto;padding:22px 15px 50px}
-.box,.card,.item{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:14px}
-.auth{max-width:440px;margin:8vh auto;padding:18px}
-h1,h2,h3{margin-top:0}
-p{color:var(--muted);line-height:1.5}
-label{display:block;font-size:13px;color:#ccc;margin:13px 0 6px}
-input,select{width:100%;padding:12px;border-radius:7px;border:1px solid #444;background:#080808;color:white}
-button{padding:11px 14px;border-radius:7px;border:1px solid #555;background:#171717;color:white}
-.primary{background:white;color:black;font-weight:bold;border-color:white}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.card{text-align:left;color:white;min-height:110px}
-.card h3{margin:10px 0}
-.muted{font-size:13px;color:var(--muted)}
-.msg{padding:12px;margin-top:12px;border-radius:7px;background:#202020;line-height:1.5}
-.item h3{margin-bottom:7px}
-.item p{margin:6px 0;font-size:14px}
-.badge{display:inline-block;border:1px solid #555;border-radius:20px;padding:5px 8px;font-size:11px;margin:0 5px 6px 0}
-@media(max-width:600px){.grid{grid-template-columns:1fr}header{flex-wrap:wrap}.auth{margin-top:3vh}}
+.item{padding:13px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.tag{display:inline-block;padding:5px 8px;border-radius:5px;background:#292929;font-size:11px;margin:3px 0}
+.tag.paid{background:#173b26;color:#a7f2bc}
+.tag.pending{background:#4a3514;color:#ffdc91}
+.notice{padding:12px;border-radius:7px;background:#202020;margin:12px 0;white-space:pre-wrap;font-size:13px}
+.error{color:#ff8b8b}
+.success{color:#a7f2bc}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:10px 7px;border-bottom:1px solid #333;vertical-align:top}
+.tablewrap{overflow-x:auto}
+footer{text-align:center;color:#777;padding:30px;font-size:12px}
+a{color:#fff}
+@media(max-width:600px){main{padding:13px}header{padding:15px}.card{padding:14px}h1{font-size:23px}}
 </style>
 </head>
 <body>
+<header>
+  <div class="brand">SPOOKY HOUSE<span>A CASA DO BASQUETE</span></div>
+  <div id="headerActions" class="actions"></div>
+</header>
 
-<section id="authScreen" class="auth">
-  <div style="text-align:center;margin-bottom:25px">
-    <div class="logo" style="font-size:40px">SPOOKY</div>
-    <p>A CASA DO BASQUETE</p>
-  </div>
-  <div class="box">
-    <div id="loginArea">
-      <h2>Entrar</h2>
+<main>
+  <section id="authSection">
+    <div class="card">
+      <h1>Bem-vindo à Spooky House</h1>
+      <p class="muted">Basquete, evolução e comunidade.</p>
+      <nav>
+        <button id="loginTab" class="active" onclick="showAuth('login')">Entrar</button>
+        <button id="signupTab" onclick="showAuth('signup')">Criar conta</button>
+      </nav>
       <form id="loginForm">
         <label>E-mail</label>
         <input id="loginEmail" type="email" autocomplete="email" required>
         <label>Senha</label>
         <input id="loginPassword" type="password" autocomplete="current-password" required>
-        <div class="actions">
-          <button class="primary" style="width:100%" type="submit">ENTRAR</button>
-        </div>
+        <button type="submit">Entrar</button>
       </form>
-      <div class="actions">
-        <button id="showSignup" type="button">Criar minha conta</button>
-        <button id="forgot" type="button">Esqueci a senha</button>
-      </div>
-    </div>
-
-    <div id="signupArea" class="hidden">
-      <h2>Cadastro de atleta</h2>
-      <p>Crie sua conta para acessar a área do atleta.</p>
-      <form id="signupForm">
+      <form id="signupForm" class="hidden">
         <label>Nome completo</label>
-        <input id="signupName" maxlength="100" required>
-        <label>Telefone / WhatsApp</label>
-        <input id="signupPhone" type="tel" maxlength="30" required>
-        <label>Nome do responsável (se menor de idade)</label>
+        <input id="signupName" required maxlength="100">
+        <label>Telefone</label>
+        <input id="signupPhone" type="tel" placeholder="(11) 99999-9999">
+        <label>Nome do responsável (se aplicável)</label>
         <input id="signupResponsible" maxlength="100">
         <label>E-mail</label>
         <input id="signupEmail" type="email" autocomplete="email" required>
-        <label>Crie uma senha (mínimo de 8 caracteres)</label>
-        <input id="signupPassword" type="password" minlength="8" autocomplete="new-password" required>
-        <div class="actions">
-          <button class="primary" type="submit">CRIAR CONTA</button>
-          <button id="backLogin" type="button">Voltar</button>
-        </div>
+        <label>Crie uma senha</label>
+        <input id="signupPassword" type="password" minlength="6" autocomplete="new-password" required>
+        <button type="submit">Cadastrar atleta</button>
+        <p class="muted">Após o cadastro, a administração poderá atribuir sua turma.</p>
       </form>
+      <div id="authMessage" class="notice hidden"></div>
     </div>
-    <div id="authMessage" class="msg hidden" role="status"></div>
-  </div>
-  <p style="text-align:center;font-size:11px">SPOOKY HOUSE • A CASA DO BASQUETE</p>
-</section>
+  </section>
 
-<section id="appScreen" class="hidden">
-  <header>
-    <div class="logo">SPOOKY</div>
-    <div>
-      <span id="roleBadge" class="badge">ATLETA</span>
-      <button id="logout">Sair</button>
+  <section id="appSection" class="hidden">
+    <div class="card">
+      <h1 id="welcome">Painel</h1>
+      <p id="accountInfo" class="muted"></p>
     </div>
-  </header>
-  <main>
-    <h1>Olá, <span id="userName">Atleta</span>.</h1>
-    <p>Bem-vindo à Casa do Basquete.</p>
+    <nav id="mainNav"></nav>
+    <div id="pageContent"></div>
+  </section>
+</main>
 
-    <div id="adminDashboard" class="box hidden">
-      <h2>Painel do administrador</h2>
-      <div class="grid">
-        <button class="card" data-page="atletas"><h3>Atletas e turmas</h3><p>Consultar atletas e definir suas turmas.</p></button>
-        <button class="card" data-page="financeiro"><h3>Mensalidades</h3><p>Criar cobranças e registrar pagamentos.</p></button>
-        <button class="card" data-page="treinos"><h3>Treinos</h3><p>Consultar a programação.</p></button>
-        <button class="card" data-page="campeonatos"><h3>Campeonatos</h3><p>Consultar as competições.</p></button>
-      </div>
-    </div>
+<footer>Spooky House · A Casa do Basquete</footer>
 
-    <div id="athleteDashboard" class="box">
-      <div class="grid">
-        <button class="card" data-page="minha-turma"><h3>Minha turma</h3><p>Veja a turma definida pela equipe.</p></button>
-        <button class="card" data-page="minhas-mensalidades"><h3>Minhas mensalidades</h3><p>Consulte valores e vencimentos.</p></button>
-        <button class="card" data-page="treinos"><h3>Treinos</h3><p>Consulte os horários.</p></button>
-        <button class="card" data-page="campeonatos"><h3>Campeonatos</h3><p>Consulte as competições.</p></button>
-      </div>
-    </div>
-
-    <section id="content" class="box hidden">
-      <div class="actions" style="justify-content:space-between">
-        <h2 id="pageTitle">Área</h2>
-        <button id="closePage">Fechar</button>
-      </div>
-      <div id="pageMessage" class="msg hidden"></div>
-      <div id="pageForm"></div>
-      <div id="pageList"></div>
-    </section>
-  </main>
-</section>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-(() => {
-"use strict";
-
 const SUPABASE_URL = "https://mcrreffapstciqpsgvro.supabase.co";
 const SUPABASE_KEY = "sb_publishable_S798hSSxNl63S2sgDYJoog_tl-N6poI";
-const $ = id => document.getElementById(id);
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let user = null;
-let profile = null;
-let admin = false;
-let page = "";
+let currentUser = null;
+let currentProfile = null;
+let isAdmin = false;
+let currentPage = "inicio";
+let athletesCache = [];
+let billsCache = [];
 
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({
+const $ = id => document.getElementById(id);
+const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[c]));
 
-function message(id, text) {
-  $(id).textContent = text;
-  $(id).classList.remove("hidden");
-}
-function hide(id) { $(id).classList.add("hidden"); }
-
-function authMessage(text) { message("authMessage", text); }
-function pageMessage(text) { message("pageMessage", text); }
-
 function money(value) {
   return Number(value || 0).toLocaleString("pt-BR", {
-    style:"currency", currency:"BRL"
+    style:"currency",currency:"BRL"
   });
 }
+
 function dateBR(value) {
   if (!value) return "Não informado";
-  const a = value.slice(0,10).split("-");
-  return a.length === 3 ? `${a[2]}/${a[1]}/${a[0]}` : value;
-}
-function input(label,id,type="text",required=true,value="") {
-  return `<label for="${id}">${label}</label>
-  <input id="${id}" type="${type}" value="${esc(value)}"
-  ${required?"required":""}>`;
-}
-function select(label,id,options,value="") {
-  return `<label for="${id}">${label}</label><select id="${id}">
-  ${options.map(o=>`<option value="${esc(o)}" ${o===value?"selected":""}>${esc(o||"Selecione")}</option>`).join("")}
-  </select>`;
+  const parts = String(value).slice(0,10).split("-");
+  return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : value;
 }
 
-$("showSignup").onclick = () => {
-  hide("loginArea");
-  $("signupArea").classList.remove("hidden");
-  hide("authMessage");
-};
-$("backLogin").onclick = () => {
-  hide("signupArea");
-  $("loginArea").classList.remove("hidden");
-  hide("authMessage");
-};
+function message(id, text, type="") {
+  const el = $(id);
+  el.textContent = text;
+  el.className = "notice " + type;
+  el.classList.remove("hidden");
+}
 
-$("signupForm").onsubmit = async e => {
-  e.preventDefault();
-  const btn = e.submitter;
-  btn.disabled = true;
-  try {
-    const nome = $("signupName").value.trim();
-    const telefone = $("signupPhone").value.trim();
-    const responsavel = $("signupResponsible").value.trim();
-    const email = $("signupEmail").value.trim();
-    const password = $("signupPassword").value;
+function hideMessage(id) {
+  $(id).classList.add("hidden");
+}
 
-    const {data,error} = await db.auth.signUp({
-      email,
-      password,
-      options:{
-        data:{nome,telefone,responsavel},
-        emailRedirectTo:location.origin
-      }
-    });
-    if (error) throw error;
+function showAuth(mode) {
+  $("loginForm").classList.toggle("hidden", mode !== "login");
+  $("signupForm").classList.toggle("hidden", mode !== "signup");
+  $("loginTab").classList.toggle("active", mode === "login");
+  $("signupTab").classList.toggle("active", mode === "signup");
+  hideMessage("authMessage");
+}
 
-    if (data.session) {
-      await start(data.user);
-      return;
-    }
-    authMessage("Cadastro iniciado! Se o Supabase pedir confirmação por e-mail, confirme seu endereço antes de entrar. Depois faça login.");
-  } catch(err) {
-    authMessage("Erro no cadastro: " + err.message);
-  } finally {
-    btn.disabled = false;
+function setBusy(button, busy, text="Processando...") {
+  if (!button) return;
+  if (busy) {
+    button.dataset.oldText = button.textContent;
+    button.textContent = text;
+    button.disabled = true;
+  } else {
+    button.textContent = button.dataset.oldText || button.textContent;
+    button.disabled = false;
   }
-};
+}
 
-$("loginForm").onsubmit = async e => {
-  e.preventDefault();
-  const btn = e.submitter;
-  btn.disabled = true;
+$("loginForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const button = event.submitter;
+  setBusy(button,true);
+  hideMessage("authMessage");
   try {
-    const {data,error} = await db.auth.signInWithPassword({
+    const {error} = await db.auth.signInWithPassword({
       email:$("loginEmail").value.trim(),
       password:$("loginPassword").value
     });
     if (error) throw error;
-    await start(data.user);
-  } catch(err) {
-    authMessage("Não foi possível entrar. Confira e-mail e senha. " + err.message);
+    await startApp();
+  } catch (error) {
+    message("authMessage", error.message || "Não foi possível entrar.", "error");
   } finally {
-    btn.disabled = false;
+    setBusy(button,false);
   }
-};
+});
 
-$("forgot").onclick = async () => {
-  const email = $("loginEmail").value.trim();
-  if (!email) return authMessage("Digite seu e-mail no campo de login.");
-  const {error} = await db.auth.resetPasswordForEmail(email, {
-    redirectTo:location.origin
-  });
-  authMessage(error ? error.message : "Se o e-mail estiver cadastrado, você receberá as instruções.");
-};
+$("signupForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const button = event.submitter;
+  setBusy(button,true);
+  hideMessage("authMessage");
+  try {
+    const name = $("signupName").value.trim();
+    const phone = $("signupPhone").value.trim();
+    const responsible = $("signupResponsible").value.trim();
 
-async function start(authUser) {
-  user = authUser;
-  const {data:p,error} = await db.from("perfis")
-    .select("user_id,nome,papel,telefone,responsavel,turma")
-    .eq("user_id",user.id).maybeSingle();
+    const {data,error} = await db.auth.signUp({
+      email:$("signupEmail").value.trim(),
+      password:$("signupPassword").value,
+      options:{
+        data:{nome:name,telefone:phone,responsavel:responsible}
+      }
+    });
 
-  if (error || !p) {
-    alert("Não consegui carregar seu perfil. Confira o SQL de configuração do Supabase.");
+    if (error) throw error;
+
+    if (data.session) {
+      message("authMessage","Cadastro realizado! Entrando na sua conta.","success");
+      await startApp();
+    } else {
+      message("authMessage",
+        "Cadastro enviado! Confira seu e-mail para confirmar a conta, se solicitado. Depois, entre pelo login.",
+        "success");
+      showAuth("login");
+    }
+  } catch (error) {
+    message("authMessage", error.message || "Não foi possível cadastrar.", "error");
+  } finally {
+    setBusy(button,false);
+  }
+});
+
+async function startApp() {
+  const {data:{user},error} = await db.auth.getUser();
+  if (error || !user) {
+    showLoggedOut();
     return;
   }
 
-  profile = p;
-  admin = p.papel === "admin";
+  currentUser = user;
 
-  hide("authScreen");
-  $("appScreen").classList.remove("hidden");
-  $("userName").textContent = p.nome || user.email;
-  $("roleBadge").textContent = admin ? "ADMINISTRADOR" : "ATLETA";
-  $("adminDashboard").classList.toggle("hidden",!admin);
-  $("athleteDashboard").classList.toggle("hidden",admin);
+  const {data:profile,error:profileError} = await db
+    .from("perfis")
+    .select("*")
+    .eq("user_id",user.id)
+    .maybeSingle();
+
+  if (profileError) {
+    message("authMessage","Erro ao carregar perfil: "+profileError.message,"error");
+    return;
+  }
+
+  if (!profile) {
+    message("authMessage",
+      "Sua conta existe, mas o perfil não foi criado. Verifique o gatilho de cadastro no SQL do Supabase.",
+      "error");
+    return;
+  }
+
+  currentProfile = profile;
+  isAdmin = profile.papel === "admin";
+
+  $("authSection").classList.add("hidden");
+  $("appSection").classList.remove("hidden");
+  $("welcome").textContent = "Olá, " + (profile.nome || user.email || "atleta");
+  $("accountInfo").textContent = isAdmin
+    ? "Administrador · Acesso completo ao gerenciamento"
+    : "Atleta · Spooky House";
+
+  $("headerActions").innerHTML =
+    `<button class="secondary" onclick="logout()">Sair</button>`;
+
+  buildNavigation();
+  await navigate(isAdmin ? "inicio" : "inicio");
 }
 
-$("logout").onclick = async () => {
-  await db.auth.signOut();
-  location.reload();
-};
-
-document.querySelectorAll("[data-page]").forEach(b => {
-  b.onclick = () => openPage(b.dataset.page);
-});
-$("closePage").onclick = () => hide("content");
-
-function openPage(name) {
-  page = name;
-  $("content").classList.remove("hidden");
-  $("pageForm").innerHTML = "";
-  $("pageList").innerHTML = "";
-  hide("pageMessage");
-
-  const titles = {
-    atletas:"Atletas e turmas",
-    financeiro:"Mensalidades",
-    "minha-turma":"Minha turma",
-    "minhas-mensalidades":"Minhas mensalidades",
-    treinos:"Treinos",
-    campeonatos:"Campeonatos"
-  };
-  $("pageTitle").textContent = titles[name] || "Área";
-
-  if (name === "atletas" && admin) loadAthletes();
-  else if (name === "financeiro" && admin) loadBills(true);
-  else if (name === "minhas-mensalidades" && !admin) loadBills(false);
-  else if (name === "minha-turma" && !admin) loadMyTeam();
-  else if (name === "treinos") loadSimple("treinos");
-  else if (name === "campeonatos") loadSimple("campeonatos");
-  else pageMessage("Área não disponível para esta conta.");
+function showLoggedOut() {
+  currentUser = null;
+  currentProfile = null;
+  isAdmin = false;
+  $("authSection").classList.remove("hidden");
+  $("appSection").classList.add("hidden");
+  $("headerActions").innerHTML = "";
 }
 
-async function loadAthletes() {
-  $("pageForm").innerHTML = `
-    <h3>Turmas disponíveis</h3>
-    <p class="muted">Edite o campo de turma de cada atleta. Você pode usar os nomes abaixo ou cadastrar uma nova turma digitando outro nome.</p>
-    <p class="muted">Academy Masculina • Academy Feminina • Adulto • Open • Sub-21</p>`;
-  const {data,error} = await db.from("perfis")
-    .select("user_id,nome,telefone,responsavel,turma")
-    .order("nome");
-  if (error) return pageMessage("Erro ao carregar atletas: " + error.message);
-
-  $("pageList").innerHTML = (data||[]).map(a => `
-    <div class="item">
-      <h3>${esc(a.nome||"Atleta")}</h3>
-      <p>Telefone: ${esc(a.telefone||"Não informado")}</p>
-      <p>Responsável: ${esc(a.responsavel||"Não informado")}</p>
-      <p>Turma atual: ${esc(a.turma||"Sem turma definida")}</p>
-      <form data-team-form="${a.user_id}">
-        <label>Definir / alterar turma</label>
-        <input name="turma" value="${esc(a.turma||"")}" placeholder="Ex.: Academy Masculina">
-        <button class="primary" type="submit">Salvar turma</button>
-      </form>
-    </div>`).join("") || "<p>Nenhum atleta cadastrado.</p>";
-
-  $("pageList").querySelectorAll("[data-team-form]").forEach(form => {
-    form.onsubmit = async e => {
-      e.preventDefault();
-      const turma = new FormData(form).get("turma").trim();
-      const {error} = await db.from("perfis")
-        .update({turma:turma||null})
-        .eq("user_id",form.dataset.teamForm);
-      if (error) return pageMessage("Erro ao salvar turma: " + error.message);
-      pageMessage("Turma atualizada.");
-      loadAthletes();
-    };
-  });
+async function logout() {
+  const {error} = await db.auth.signOut();
+  if (error) alert(error.message);
+  else showLoggedOut();
 }
 
-async function loadBills(forAdmin) {
-  if (forAdmin) {
-    const {data:athletes,error:aError} = await db.from("perfis")
-      .select("user_id,nome").order("nome");
-    if (aError) return pageMessage("Erro ao carregar atletas: " + aError.message);
+function buildNavigation() {
+  const pages = [
+    ["inicio","Início"],
+    ["turma","Minha turma"],
+    ["mensalidades","Mensalidades"],
+    ["treinos","Treinos"],
+    ["campeonatos","Campeonatos"]
+  ];
+  if (isAdmin) {
+    pages.push(
+      ["atletas","Atletas"],
+      ["adminmensalidades","Gerenciar mensalidades"],
+      ["admintreinos","Cadastrar treino"],
+      ["admincampeonatos","Cadastrar campeonato"]
+    );
+  }
+  $("mainNav").innerHTML = pages.map(([id,label]) =>
+    `<button class="${id===currentPage?"active":""}" onclick="navigate('${id}')">${label}</button>`
+  ).join("");
+}
 
-    $("pageForm").innerHTML = `
-      <h3>Cadastrar mensalidade</h3>
-      <form id="billForm">
-        ${select("Atleta","billAthlete",(athletes||[]).map(a=>a.user_id+"|"+a.nome))}
-        ${input("Valor em reais","billValue","number",true)}
-        ${input("Data de vencimento","billDue","date",true)}
-        ${input("Descrição","billDesc","text",false)}
-        <button class="primary" type="submit">Cadastrar cobrança</button>
-      </form>`;
-    const sel = $("billAthlete");
-    [...sel.options].forEach(o => {
-      if(o.value) o.textContent = o.value.split("|").slice(1).join("|");
-    });
+async function navigate(page) {
+  if (!isAdmin && page.startsWith("admin") || !isAdmin && page==="atletas") {
+    page = "inicio";
+  }
+  currentPage = page;
+  buildNavigation();
+  const content = $("pageContent");
+  content.innerHTML = `<div class="card">Carregando...</div>`;
 
-    $("billForm").onsubmit = async e => {
-      e.preventDefault();
-      const athleteId = $("billAthlete").value.split("|")[0];
-      const value = Number($("billValue").value);
-      const vencimento = $("billDue").value;
-      const descricao = $("billDesc").value.trim();
-      if (!athleteId || !vencimento || value < 0) {
-        return pageMessage("Confira atleta, valor e vencimento.");
-      }
-      const {error} = await db.from("mensalidades").insert({
-        atleta_id:athleteId,
-        valor:value,
-        vencimento,
-        descricao:descricao||null,
-        criado_por:user.id,
-        status:"pendente"
-      });
-      if (error) return pageMessage("Erro ao cadastrar: " + error.message);
-      pageMessage("Mensalidade cadastrada.");
-      $("billForm").reset();
-      showBillList(true);
-    };
-    await showBillList(true);
-  } else {
-    await showBillList(false);
+  try {
+    if (page==="inicio") return renderHome();
+    if (page==="turma") return renderMyClass();
+    if (page==="mensalidades") return renderMyBills();
+    if (page==="treinos") return renderTrainings();
+    if (page==="campeonatos") return renderChampionships();
+    if (page==="atletas") return renderAthletes();
+    if (page==="adminmensalidades") return renderAdminBills();
+    if (page==="admintreinos") return renderAdminTrainings();
+    if (page==="admincampeonatos") return renderAdminChampionships();
+  } catch (error) {
+    content.innerHTML = `<div class="card error">Erro: ${esc(error.message)}</div>`;
   }
 }
 
-async function showBillList(forAdmin) {
-  let query = db.from("mensalidades")
-    .select("id,atleta_id,valor,vencimento,status,descricao,pago_em")
-    .order("vencimento",{ascending:true});
-  if (!forAdmin) query = query.eq("atleta_id",user.id);
-  const {data,error} = await query;
-  if (error) return pageMessage("Erro ao carregar mensalidades: " + error.message);
-
-  let names = {};
-  if (forAdmin && data?.length) {
-    const ids = [...new Set(data.map(b=>b.atleta_id))];
-    const result = await db.from("perfis").select("user_id,nome").in("user_id",ids);
-    (result.data||[]).forEach(p=>names[p.user_id]=p.nome);
-  }
-
-  $("pageList").innerHTML = (data||[]).map(b => `
-    <div class="item">
-      <h3>${esc(forAdmin ? (names[b.atleta_id]||"Atleta") : "Minha mensalidade")}</h3>
-      <p><strong>Valor:</strong> ${money(b.valor)}</p>
-      <p><strong>Vencimento:</strong> ${dateBR(b.vencimento)}</p>
-      <p><strong>Status:</strong> ${esc(b.status==="pago"?"PAGO":"PENDENTE")}</p>
-      <p>${esc(b.descricao||"Mensalidade")}</p>
-      ${b.pago_em?`<p>Pagamento registrado: ${dateBR(b.pago_em.slice(0,10))}</p>`:""}
-      ${forAdmin?`<div class="actions">
-        <button data-paid="${b.id}" data-status="${b.status==="pago"?"pendente":"pago"}">${b.status==="pago"?"Voltar para pendente":"Marcar como paga"}</button>
-        <button data-delete-bill="${b.id}">Excluir</button>
-      </div>`:""}
-    </div>`).join("") || "<p>Nenhuma mensalidade cadastrada.</p>";
-
-  $("pageList").querySelectorAll("[data-paid]").forEach(btn=>{
-    btn.onclick = async () => {
-      const status = btn.dataset.status;
-      const {error} = await db.from("mensalidades").update({
-        status,
-        pago_em:status==="pago"?new Date().toISOString():null
-      }).eq("id",btn.dataset.paid);
-      if(error) return pageMessage("Erro ao atualizar: "+error.message);
-      await showBillList(true);
-    };
-  });
-  $("pageList").querySelectorAll("[data-delete-bill]").forEach(btn=>{
-    btn.onclick = async () => {
-      if(!confirm("Excluir esta mensalidade?")) return;
-      const {error} = await db.from("mensalidades").delete().eq("id",btn.dataset.deleteBill);
-      if(error) return pageMessage("Erro ao excluir: "+error.message);
-      await showBillList(true);
-    };
-  });
-}
-
-async function loadMyTeam() {
-  $("pageList").innerHTML = `
-    <div class="item">
-      <h3>Minha turma</h3>
-      <p>${esc(profile.turma||"Sua turma ainda não foi definida. Aguarde a equipe da Spooky House.")}</p>
-      <p>Para alterar sua turma, entre em contato com a administração.</p>
+function renderHome() {
+  $("pageContent").innerHTML = `
+    <div class="grid">
+      <div class="card">
+        <h2>🏀 Spooky House</h2>
+        <p>Bem-vindo à Casa do Basquete.</p>
+        <p class="muted">Acompanhe seus treinos, sua turma e suas mensalidades por aqui.</p>
+        <a href="https://www.instagram.com/spooky4house/" target="_blank" rel="noopener">Instagram oficial</a>
+      </div>
+      <div class="card">
+        <h2>Minha conta</h2>
+        <p>${esc(currentProfile.nome || "Atleta")}</p>
+        <p class="muted">${esc(currentUser.email || "")}</p>
+        <span class="tag">${isAdmin ? "Administrador" : "Atleta"}</span>
+      </div>
     </div>`;
 }
 
-async function loadSimple(table) {
-  const {data,error} = await db.from(table).select("*");
-  if(error) return pageMessage("Erro ao carregar: "+error.message);
-  if(!data?.length) {
-    $("pageList").innerHTML = "<p>Nenhum registro cadastrado.</p>";
-    return;
-  }
-  $("pageList").innerHTML = data.map(row => {
-    const title = row.titulo || row.nome || "Informação";
-    const detail = [
-      row.categoria,
-      row.dia_semana,
-      row.horario_inicio,
-      row.horario,
-      row.local,
-      row.descricao
-    ].filter(Boolean).map(esc).join(" • ");
-    return `<div class="item"><h3>${esc(title)}</h3><p>${detail}</p></div>`;
-  }).join("");
+function renderMyClass() {
+  $("pageContent").innerHTML = `
+    <div class="card">
+      <h2>Minha turma</h2>
+      <p>${currentProfile.turma
+        ? `<span class="tag">${esc(currentProfile.turma)}</span>`
+        : "Você ainda não foi atribuído a uma turma."}</p>
+      <p class="muted">A administração é responsável por definir ou alterar sua turma.</p>
+    </div>`;
 }
 
-db.auth.onAuthStateChange((event,session)=>{
-  if(event==="SIGNED_OUT") location.reload();
+async function renderMyBills() {
+  const {data,error} = await db.from("mensalidades")
+    .select("*").eq("atleta_id",currentUser.id).order("vencimento",{ascending:false});
+  if (error) throw error;
+
+  $("pageContent").innerHTML = `
+    <div class="card">
+      <h2>Minhas mensalidades</h2>
+      ${data.length ? data.map(bill => billHTML(bill,false)).join("") :
+        `<p class="muted">Nenhuma mensalidade cadastrada.</p>`}
+    </div>`;
+}
+
+function billHTML(bill,admin) {
+  return `<div class="item">
+    <div class="actions" style="justify-content:space-between">
+      <strong>${money(bill.valor)}</strong>
+      <span class="tag ${bill.status==="pago"?"paid":"pending"}">
+        ${bill.status==="pago"?"PAGO":"PENDENTE"}
+      </span>
+    </div>
+    <p class="muted">Vencimento: ${dateBR(bill.vencimento)}</p>
+    ${bill.descricao ? `<p>${esc(bill.descricao)}</p>`:""}
+    ${bill.pago_em ? `<p class="muted">Registrado como pago em ${dateBR(bill.pago_em)}</p>`:""}
+    ${admin ? `<div class="actions">
+      <button class="small" onclick="toggleBill('${bill.id}','${bill.status}')">
+        ${bill.status==="pago"?"Marcar pendente":"Marcar pago"}
+      </button>
+      <button class="small danger" onclick="deleteBill('${bill.id}')">Excluir</button>
+    </div>`:""}
+  </div>`;
+}
+
+async function renderAthletes() {
+  const {data,error} = await db.from("perfis")
+    .select("user_id,nome,telefone,responsavel,turma,papel")
+    .order("nome");
+  if (error) throw error;
+
+  athletesCache = data || [];
+  $("pageContent").innerHTML = `
+    <div class="card">
+      <h2>Atletas cadastrados</h2>
+      <p class="muted">Selecione a turma de cada atleta e salve a alteração.</p>
+      ${athletesCache.length ? athletesCache.map(a => `
+        <div class="item">
+          <strong>${esc(a.nome || "Sem nome")}</strong>
+          ${a.papel==="admin" ? `<span class="tag">ADMIN</span>`:""}
+          <p class="muted">${esc(a.telefone || "Sem telefone")} · ${esc(a.responsavel || "Sem responsável")}</p>
+          <label>Turma</label>
+          <input id="turma-${a.user_id}" value="${esc(a.turma || "")}" placeholder="Ex.: Academy Masculino">
+          <button class="small" onclick="saveClass('${a.user_id}')">Salvar turma</button>
+        </div>`).join("") : `<p>Nenhum perfil encontrado.</p>`}
+    </div>`;
+}
+
+async function saveClass(userId) {
+  const turma = $(`turma-${userId}`).value.trim() || null;
+  const {error} = await db.from("perfis").update({turma}).eq("user_id",userId);
+  if (error) return alert("Não foi possível salvar: "+error.message);
+  alert("Turma atualizada!");
+  await renderAthletes();
+}
+
+async function renderAdminBills() {
+  const [athletesResult,billsResult] = await Promise.all([
+    db.from("perfis").select("user_id,nome,turma").order("nome"),
+    db.from("mensalidades").select("*").order("vencimento",{ascending:false})
+  ]);
+
+  if (athletesResult.error) throw athletesResult.error;
+  if (billsResult.error) throw billsResult.error;
+
+  athletesCache = athletesResult.data || [];
+  billsCache = billsResult.data || [];
+
+  const athleteOptions = athletesCache.map(a =>
+    `<option value="${a.user_id}">${esc(a.nome || "Atleta")} ${a.turma?"— "+esc(a.turma):""}</option>`
+  ).join("");
+
+  $("pageContent").innerHTML = `
+    <div class="card">
+      <h2>Cadastrar mensalidade</h2>
+      <form id="billForm">
+        <label>Atleta</label>
+        <select id="billAthlete" required>
+          <option value="">Selecione um atleta</option>${athleteOptions}
+        </select>
+        <label>Valor em reais</label>
+        <input id="billValue" type="number" min="0" step="0.01" placeholder="Ex.: 99,00" required>
+        <label>Data de vencimento</label>
+        <input id="billDue" type="date" required>
+        <label>Descrição (opcional)</label>
+        <input id="billDescription" maxlength="200" placeholder="Ex.: Mensalidade de outubro">
+        <button type="submit">Cadastrar mensalidade</button>
+      </form>
+      <div id="billMessage" class="notice hidden"></div>
+    </div>
+    <div class="card">
+      <h2>Mensalidades cadastradas</h2>
+      ${billsCache.length ? billsCache.map(b => {
+        const athlete = athletesCache.find(a => a.user_id===b.atleta_id);
+        return `<div class="item">
+          <strong>${esc(athlete?.nome || "Atleta")}</strong>
+          ${billHTML(b,true)}
+        </div>`;
+      }).join("") : `<p class="muted">Nenhuma mensalidade cadastrada.</p>`}
+    </div>`;
+
+  $("billForm").addEventListener("submit",createBill);
+}
+
+async function createBill(event) {
+  event.preventDefault();
+  const atleta_id = $("billAthlete").value;
+  const valor = Number($("billValue").value);
+  const vencimento = $("billDue").value;
+  const descricao = $("billDescription").value.trim() || null;
+
+  if (!atleta_id || !vencimento || !Number.isFinite(valor) || valor < 0) {
+    return message("billMessage","Confira o atleta, o valor e o vencimento.","error");
+  }
+
+  const {error} = await db.from("mensalidades").insert({
+    atleta_id,valor,vencimento,descricao,
+    status:"pendente",criado_por:currentUser.id
+  });
+
+  if (error) return message("billMessage","Erro ao cadastrar: "+error.message,"error");
+  alert("Mensalidade cadastrada!");
+  await renderAdminBills();
+}
+
+async function toggleBill(id,status) {
+  const nextStatus = status==="pago" ? "pendente" : "pago";
+  const update = {
+    status:nextStatus,
+    pago_em:nextStatus==="pago" ? new Date().toISOString() : null
+  };
+  const {error} = await db.from("mensalidades").update(update).eq("id",id);
+  if (error) return alert("Erro ao atualizar: "+error.message);
+  await renderAdminBills();
+}
+
+async function deleteBill(id) {
+  if (!confirm("Tem certeza de que deseja excluir esta mensalidade?")) return;
+  const {error} = await db.from("mensalidades").delete().eq("id",id);
+  if (error) return alert("Erro ao excluir: "+error.message);
+  await renderAdminBills();
+}
+
+async function renderTrainings() {
+  const {data,error} = await db.from("treinos")
+    .select("*").eq("ativo",true).order("dia_semana");
+  if (error) throw error;
+
+  $("pageContent").innerHTML = `
+    <div class="card">
+      <h2>Treinos</h2>
+      ${data.length ? data.map(t => `
+        <div class="item">
+          <h3>${esc(t.titulo)}</h3>
+          <span class="tag">${esc(t.categoria || "Todos")}</span>
+          <span class="tag">${esc(t.modalidade || "Treino")}</span>
+          <p>${esc(t.dia_semana || "Dia a confirmar")} · ${esc(t.horario_inicio || "Horário a confirmar")}${t.horario_fim?" – "+esc(t.horario_fim):""}</p>
+          <p class="muted">${esc(t.local || "Local a confirmar")}</p>
+          ${t.descricao?`<p>${esc(t.descricao)}</p>`:""}
+        </div>`).join("") : `<p class="muted">Nenhum treino publicado.</p>`}
+    </div>`;
+}
+
+async function renderChampionships() {
+  const {data,error} = await db.from("campeonatos")
+    .select("*").order("data_evento",{ascending:true});
+  if (error) throw error;
+
+  $("pageContent").innerHTML = `
+    <div class="card">
+      <h2>Campeonatos</h2>
+      ${data.length ? data.map(c => `
+        <div class="item">
+          <h3>${esc(c.nome)}</h3>
+          ${c.categoria?`<span class="tag">${esc(c.categoria)}</span>`:""}
+          <p>${dateBR(c.data_evento)} ${c.horario?"· "+esc(c.horario):""}</p>
+          <p class="muted">${esc(c.local || "Local a confirmar")}</p>
+          ${c.descricao?`<p>${esc(c.descricao)}</p>`:""}
+          ${isAdmin?`<button class="small" onclick="manageCallups('${c.id}')">Gerenciar convocações</button>`:""}
+        </div>`).join("") : `<p class="muted">Nenhum campeonato publicado.</p>`}
+      ${isAdmin?`<div id="callupArea"></div>`:""}
+    </div>`;
+}
+
+async function manageCallups(championshipId) {
+  const [{data:athletes,error:e1},{data:called,error:e2}] = await Promise.all([
+    db.from("perfis").select("user_id,nome,turma").order("nome"),
+    db.from("convocacoes").select("atleta_id").eq("campeonato_id",championshipId)
+  ]);
+  if (e1 || e2) return alert((e1 || e2).message);
+
+  const selected = new Set((called || []).map(c => c.atleta_id));
+  $("callupArea").innerHTML = `
+    <div class="card">
+      <h3>Convocar atletas</h3>
+      ${(athletes || []).map(a => `
+        <label>
+          <input type="checkbox" style="width:auto" id="call-${a.user_id}"
+            ${selected.has(a.user_id)?"checked":""}>
+          ${esc(a.nome || "Atleta")} ${a.turma?"— "+esc(a.turma):""}
+        </label>`).join("")}
+      <button onclick="saveCallups('${championshipId}')">Salvar convocações</button>
+    </div>`;
+}
+
+async function saveCallups(championshipId) {
+  const selected = athletesCache.length ? athletesCache : await getAthletes();
+  const toSave = selected.filter(a => {
+    const el = $("call-"+a.user_id);
+    return el && el.checked;
+  }).map(a => ({campeonato_id:championshipId,atleta_id:a.user_id}));
+
+  const {error:deleteError} = await db.from("convocacoes")
+    .delete().eq("campeonato_id",championshipId);
+  if (deleteError) return alert(deleteError.message);
+
+  if (toSave.length) {
+    const {error} = await db.from("convocacoes").insert(toSave);
+    if (error) return alert(error.message);
+  }
+  alert("Convocações salvas!");
+}
+
+async function getAthletes() {
+  const {data,error} = await db.from("perfis")
+    .select("user_id,nome,turma").order("nome");
+  if (error) throw error;
+  athletesCache = data || [];
+  return athletesCache;
+}
+
+async function renderAdminTrainings() {
+  const {data,error} = await db.from("treinos").select("*").order("dia_semana");
+  if (error) throw error;
+
+  $("pageContent").innerHTML = `
+    <div class="card">
+      <h2>Cadastrar treino</h2>
+      <form id="trainingForm">
+        <label>Título do treino</label><input id="trTitle" required>
+        <label>Categoria/turma</label><input id="trCategory" placeholder="Ex.: Academy Masculino">
+        <label>Modalidade</label>
+        <select id="trMode">
+          <option>Treino</option><option>Coletivo</option><option>Open</option><option>Academy</option><option>Individual</option>
+        </select>
+        <label>Dia da semana</label>
+        <select id="trDay">
+          <option>Segunda-feira</option><option>Terça-feira</option><option>Quarta-feira</option><option>Quinta-feira</option><option>Sexta-feira</option><option>Sábado</option><option>Domingo</option>
+        </select>
+        <label>Horário de início</label><input id="trStart" placeholder="19:00">
+        <label>Horário de término</label><input id="trEnd" placeholder="20:30">
+        <label>Local</label><input id="trPlace" value="Centro Esportivo João do Pulo">
+        <label>Descrição</label><textarea id="trDesc" rows="3"></textarea>
+        <button type="submit">Publicar treino</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>Treinos cadastrados</h2>
+      ${data.length?data.map(t=>`
+        <div class="item">
+          <strong>${esc(t.titulo)}</strong>
+          <p class="muted">${esc(t.dia_semana || "")} · ${esc(t.horario_inicio || "")}</p>
+          <button class="small secondary" onclick="toggleTraining('${t.id}',${!t.ativo})">${t.ativo?"Desativar":"Ativar"}</button>
+          <button class="small danger" onclick="deleteTraining('${t.id}')">Excluir</button>
+        </div>`).join(""):"<p class='muted'>Nenhum treino cadastrado.</p>"}
+    </div>`;
+
+  $("trainingForm").addEventListener("submit",createTraining);
+}
+
+async function createTraining(event) {
+  event.preventDefault();
+  const row = {
+    titulo:$("trTitle").value.trim(),
+    categoria:$("trCategory").value.trim() || "Todos",
+    modalidade:$("trMode").value,
+    dia_semana:$("trDay").value,
+    horario_inicio:$("trStart").value.trim(),
+    horario_fim:$("trEnd").value.trim(),
+    local:$("trPlace").value.trim(),
+    descricao:$("trDesc").value.trim(),
+    ativo:true,
+    criado_por:currentUser.id
+  };
+  const {error} = await db.from("treinos").insert(row);
+  if (error) return alert("Erro ao publicar treino: "+error.message);
+  alert("Treino publicado!");
+  await renderAdminTrainings();
+}
+
+async function toggleTraining(id,ativo) {
+  const {error} = await db.from("treinos").update({ativo}).eq("id",id);
+  if (error) return alert(error.message);
+  await renderAdminTrainings();
+}
+
+async function deleteTraining(id) {
+  if (!confirm("Excluir este treino?")) return;
+  const {error} = await db.from("treinos").delete().eq("id",id);
+  if (error) return alert(error.message);
+  await renderAdminTrainings();
+}
+
+async function renderAdminChampionships() {
+  const {data,error} = await db.from("campeonatos").select("*").order("data_evento");
+  if (error) throw error;
+
+  $("pageContent").innerHTML = `
+    <div class="card">
+      <h2>Cadastrar campeonato</h2>
+      <form id="champForm">
+        <label>Nome do campeonato</label><input id="chName" required>
+        <label>Categoria</label><input id="chCategory" placeholder="Ex.: Sub-21">
+        <label>Data</label><input id="chDate" type="date">
+        <label>Horário</label><input id="chTime" placeholder="09:00">
+        <label>Local</label><input id="chPlace">
+        <label>Descrição</label><textarea id="chDesc" rows="3"></textarea>
+        <button type="submit">Publicar campeonato</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2>Campeonatos cadastrados</h2>
+      ${data.length?data.map(c=>`
+        <div class="item">
+          <strong>${esc(c.nome)}</strong>
+          <p class="muted">${dateBR(c.data_evento)} · ${esc(c.local || "")}</p>
+          <button class="small danger" onclick="deleteChampionship('${c.id}')">Excluir</button>
+        </div>`).join(""):"<p class='muted'>Nenhum campeonato cadastrado.</p>"}
+    </div>`;
+
+  $("champForm").addEventListener("submit",createChampionship);
+}
+
+async function createChampionship(event) {
+  event.preventDefault();
+  const row = {
+    nome:$("chName").value.trim(),
+    categoria:$("chCategory").value.trim() || null,
+    data_evento:$("chDate").value || null,
+    horario:$("chTime").value.trim() || null,
+    local:$("chPlace").value.trim() || null,
+    descricao:$("chDesc").value.trim() || null,
+    criado_por:currentUser.id
+  };
+  const {error} = await db.from("campeonatos").insert(row);
+  if (error) return alert("Erro ao publicar campeonato: "+error.message);
+  alert("Campeonato publicado!");
+  await renderAdminChampionships();
+}
+
+async function deleteChampionship(id) {
+  if (!confirm("Excluir este campeonato e suas convocações?")) return;
+  const {error} = await db.from("campeonatos").delete().eq("id",id);
+  if (error) return alert(error.message);
+  await renderAdminChampionships();
+}
+
+db.auth.onAuthStateChange((event,session) => {
+  if (event==="SIGNED_OUT") showLoggedOut();
 });
-db.auth.getSession().then(({data,error})=>{
-  if(error) console.error(error);
-  if(data?.session) start(data.session.user);
-});
+
+(async function init() {
+  const {data:{session}} = await db.auth.getSession();
+  if (session) await startApp();
 })();
 </script>
 </body>
