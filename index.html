@@ -1,23 +1,478 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spooky House</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050505">
+  <title>Spooky House | A Casa do Basquete</title>
+
   <style>
+    * { box-sizing: border-box; }
+
     body {
-      background: #000;
+      margin: 0;
+      background: #050505;
       color: #fff;
-      font-family: Arial, sans-serif;
+      font-family: Arial, Helvetica, sans-serif;
+      min-height: 100vh;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .hidden { display: none !important; }
+
+    .screen {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px 16px;
+    }
+
+    .container { width: 100%; max-width: 430px; }
+
+    .brand {
       text-align: center;
-      padding: 80px 20px;
+      margin-bottom: 32px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 48px;
+      font-weight: 900;
+      letter-spacing: 7px;
+    }
+
+    .brand p {
+      color: #999;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    .panel {
+      background: #101010;
+      border: 1px solid #292929;
+      border-radius: 14px;
+      padding: 26px;
+    }
+
+    .field { margin: 18px 0; }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #bbb;
+      font-size: 12px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #353535;
+      border-radius: 8px;
+      background: #070707;
+      color: #fff;
+    }
+
+    input:focus {
+      outline: 1px solid #fff;
+    }
+
+    .primary {
+      width: 100%;
+      padding: 15px;
+      background: #fff;
+      color: #000;
+      border: 0;
+      border-radius: 8px;
+      font-weight: 800;
+    }
+
+    .primary:disabled { opacity: .5; }
+
+    .secondary {
+      background: transparent;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 11px 14px;
+    }
+
+    .text-button {
+      display: block;
+      margin: 18px auto 0;
+      padding: 4px;
+      color: #aaa;
+      background: none;
+      border: 0;
+      font-size: 13px;
+    }
+
+    #message {
+      display: none;
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    #message.show { display: block; }
+    #message.error { background: #290d0d; color: #ffc0c0; }
+    #message.success { background: #102817; color: #b7f5c3; }
+
+    .footnote {
+      text-align: center;
+      color: #555;
+      font-size: 10px;
+      letter-spacing: 2px;
+      margin-top: 24px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 5%;
+      border-bottom: 1px solid #292929;
+    }
+
+    .small-brand {
+      font-weight: 900;
+      letter-spacing: 4px;
+      font-size: 21px;
+    }
+
+    main {
+      width: 100%;
+      max-width: 1100px;
+      margin: auto;
+      padding: 36px 20px 60px;
+    }
+
+    .eyebrow {
+      color: #999;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .welcome h1 {
+      font-size: 32px;
+      margin: 10px 0;
+    }
+
+    .welcome p, .card p {
+      color: #999;
+      line-height: 1.6;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 30px;
+    }
+
+    .card {
+      min-height: 155px;
+      background: #101010;
+      border: 1px solid #292929;
+      border-radius: 12px;
+      padding: 22px;
+    }
+
+    .card h2 { font-size: 19px; margin: 12px 0 8px; }
+    .card p { font-size: 13px; margin-bottom: 0; }
+    .wide { grid-column: 1 / -1; }
+
+    .notice {
+      margin-top: 24px;
+      padding: 16px;
+      border: 1px solid #292929;
+      border-radius: 10px;
+      color: #aaa;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 560px) {
+      .cards { grid-template-columns: 1fr; }
+      .wide { grid-column: auto; }
+      .panel { padding: 22px; }
+      .welcome h1 { font-size: 27px; }
     }
   </style>
 </head>
+
 <body>
-  <h1>SPOOKY HOUSE</h1>
-  <p>A Casa do Basquete</p>
-  <h2>O SITE ESTÁ FUNCIONANDO!</h2>
+
+  <section id="loginScreen" class="screen">
+    <div class="container">
+
+      <div class="brand">
+        <h1>SPOOKY</h1>
+        <p>A Casa do Basquete</p>
+      </div>
+
+      <div class="panel">
+        <h2>Área do Atleta</h2>
+        <p style="color:#999;font-size:14px">
+          Entre com os dados da sua conta.
+        </p>
+
+        <form id="loginForm">
+          <div class="field">
+            <label for="email">E-mail</label>
+            <input id="email" type="email"
+              placeholder="seu@email.com"
+              autocomplete="email" required>
+          </div>
+
+          <div class="field">
+            <label for="password">Senha</label>
+            <input id="password" type="password"
+              placeholder="Sua senha"
+              autocomplete="current-password" required>
+          </div>
+
+          <button id="loginButton" class="primary" type="submit">
+            ENTRAR
+          </button>
+        </form>
+
+        <button id="forgotPassword" class="text-button" type="button">
+          Esqueci minha senha
+        </button>
+
+        <div id="message" role="status" aria-live="polite"></div>
+      </div>
+
+      <div class="footnote">
+        SPOOKY HOUSE • A CASA DO BASQUETE
+      </div>
+
+    </div>
+  </section>
+
+  <section id="appScreen" class="hidden">
+
+    <header>
+      <div class="small-brand">SPOOKY</div>
+      <button id="logoutButton" class="secondary" type="button">
+        Sair da conta
+      </button>
+    </header>
+
+    <main>
+
+      <div class="welcome">
+        <div class="eyebrow">Área do atleta</div>
+        <h1>Olá, <span id="athleteName">Atleta</span>.</h1>
+        <p>Bem-vindo à Casa do Basquete.</p>
+      </div>
+
+      <div class="cards">
+
+        <article class="card">
+          <div class="eyebrow">Minha rotina</div>
+          <h2>Treinos</h2>
+          <p>Consulte seus dias, horários e informações dos treinos.</p>
+        </article>
+
+        <article class="card">
+          <div class="eyebrow">Calendário</div>
+          <h2>Campeonatos</h2>
+          <p>Veja os próximos jogos e informações das competições.</p>
+        </article>
+
+        <article class="card">
+          <div class="eyebrow">Financeiro</div>
+          <h2>Mensalidade</h2>
+          <p>Consulte futuramente as informações de pagamento.</p>
+        </article>
+
+        <article class="card">
+          <div class="eyebrow">Produtos oficiais</div>
+          <h2>Spooky Store</h2>
+          <p>Conheça os produtos oficiais da Spooky House.</p>
+        </article>
+
+        <article class="card wide">
+          <div class="eyebrow">Fique por dentro</div>
+          <h2>Avisos da equipe</h2>
+          <p>Comunicados e informações importantes para os atletas.</p>
+        </article>
+
+      </div>
+
+      <div class="notice">
+        Bem-vindo à Spooky House. As informações de treinos,
+        campeonatos, mensalidades e avisos serão conectadas ao banco
+        de dados nas próximas etapas.
+      </div>
+
+    </main>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const SUPABASE_URL =
+        "https://mcrreffapstciqpsgvro.supabase.co";
+
+      const SUPABASE_KEY =
+        "sb_publishable_S798hSSxNl63S2sgDYJoog_tl-N6poI";
+
+      const $ = id => document.getElementById(id);
+
+      const loginScreen = $("loginScreen");
+      const appScreen = $("appScreen");
+      const loginForm = $("loginForm");
+      const loginButton = $("loginButton");
+      const message = $("message");
+
+      function showMessage(text, type) {
+        message.textContent = text;
+        message.className = "show " + (type || "");
+      }
+
+      function clearMessage() {
+        message.textContent = "";
+        message.className = "";
+      }
+
+      function showApp(user) {
+        loginScreen.classList.add("hidden");
+        appScreen.classList.remove("hidden");
+
+        $("athleteName").textContent =
+          user && user.email
+            ? user.email.split("@")[0]
+            : "Atleta";
+      }
+
+      function showLogin() {
+        appScreen.classList.add("hidden");
+        loginScreen.classList.remove("hidden");
+      }
+
+      if (!window.supabase) {
+        showMessage(
+          "Não foi possível carregar o login. Atualize a página e tente novamente.",
+          "error"
+        );
+        return;
+      }
+
+      const client = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+      loginForm.addEventListener("submit", async event => {
+        event.preventDefault();
+        clearMessage();
+
+        loginButton.disabled = true;
+        loginButton.textContent = "ENTRANDO...";
+
+        try {
+          const { data, error } =
+            await client.auth.signInWithPassword({
+              email: $("email").value.trim(),
+              password: $("password").value
+            });
+
+          if (error) throw error;
+          showApp(data.user);
+
+        } catch (error) {
+          console.error("Falha no login:", error);
+          showMessage(
+            "Não foi possível entrar. Confira seu e-mail e senha.",
+            "error"
+          );
+
+        } finally {
+          loginButton.disabled = false;
+          loginButton.textContent = "ENTRAR";
+        }
+      });
+
+      $("forgotPassword").addEventListener("click", async () => {
+        clearMessage();
+
+        const email = $("email").value.trim();
+
+        if (!email) {
+          showMessage("Digite seu e-mail primeiro.", "error");
+          return;
+        }
+
+        try {
+          const { error } =
+            await client.auth.resetPasswordForEmail(email, {
+              redirectTo: window.location.origin
+            });
+
+          if (error) throw error;
+
+          showMessage(
+            "Se esse e-mail estiver cadastrado, você receberá as instruções de recuperação.",
+            "success"
+          );
+
+        } catch (error) {
+          console.error("Falha na recuperação:", error);
+          showMessage(
+            "Não foi possível solicitar a recuperação. Tente novamente.",
+            "error"
+          );
+        }
+      });
+
+      $("logoutButton").addEventListener("click", async () => {
+        try {
+          const { error } = await client.auth.signOut();
+          if (error) throw error;
+          showLogin();
+          clearMessage();
+
+        } catch (error) {
+          console.error("Falha ao sair:", error);
+          alert("Não foi possível sair da conta. Tente novamente.");
+        }
+      });
+
+      client.auth.onAuthStateChange((_event, session) => {
+        if (session && session.user) {
+          showApp(session.user);
+        } else {
+          showLogin();
+        }
+      });
+
+      client.auth.getSession().then(({ data, error }) => {
+        if (error) {
+          console.error("Falha ao verificar sessão:", error);
+          showLogin();
+          return;
+        }
+
+        if (data.session) {
+          showApp(data.session.user);
+        } else {
+          showLogin();
+        }
+      });
+    })();
+  </script>
+
 </body>
 </html>
