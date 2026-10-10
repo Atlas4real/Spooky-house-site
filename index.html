@@ -1,1059 +1,2605 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#080808">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spooky House | A Casa do Basquete</title>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root {
-      color-scheme: dark;
       --bg: #080808;
       --panel: #121212;
-      --panel2: #191919;
-      --line: #303030;
-      --text: #f7f7f7;
-      --muted: #a5a5a5;
-      --white: #fff;
-      --danger: #ff6262;
-      --success: #78e0a0;
-      --radius: 14px;
+      --panel-2: #191919;
+      --border: #2a2a2a;
+      --text: #f5f5f5;
+      --muted: #a3a3a3;
+      --white: #ffffff;
+      --danger: #e5484d;
+      --success: #36b37e;
+      --radius: 12px;
     }
-    * { box-sizing: border-box; }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      margin: 0; background: var(--bg); color: var(--text);
-      font: 15px/1.5 Arial, Helvetica, sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
     }
-    button, input, select, textarea { font: inherit; }
-    button { cursor: pointer; }
-    .hidden { display: none !important; }
-    .muted { color: var(--muted); }
-    .small { font-size: 12px; }
-    .wrap { width: min(1120px, 100%); margin: auto; padding: 20px; }
-    header {
-      border-bottom: 1px solid var(--line); background: #0b0b0b;
-      position: sticky; top: 0; z-index: 10;
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
     }
-    .top {
-      width: min(1120px, 100%); margin: auto; padding: 14px 20px;
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+
+    button {
+      cursor: pointer;
     }
-    .brand { font-weight: 900; letter-spacing: 2px; font-size: 19px; }
-    .brand span { display: block; font-size: 10px; letter-spacing: 3px; color: #aaa; }
-    .top-right { display: flex; align-items: center; gap: 10px; }
-    .hero { padding: 28px 0 18px; }
-    h1 { font-size: clamp(28px, 5vw, 44px); line-height: 1.05; margin: 0 0 10px; }
-    h2 { font-size: 21px; margin: 0 0 14px; }
-    h3 { font-size: 16px; margin: 0 0 10px; }
-    p { margin: 6px 0 12px; }
-    .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; }
-    .span-12 { grid-column: span 12; }
-    .span-8 { grid-column: span 8; }
-    .span-6 { grid-column: span 6; }
-    .span-4 { grid-column: span 4; }
-    .panel {
-      background: var(--panel); border: 1px solid var(--line);
-      border-radius: var(--radius); padding: 18px; min-width: 0;
+
+    .hidden {
+      display: none !important;
     }
-    .stack { display: grid; gap: 12px; }
-    .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .container {
+      width: min(1200px, 100%);
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      margin: 0 0 16px;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      background: #090909;
+      color: var(--text);
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 12px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #fff;
+    }
+
     .btn {
-      border: 1px solid var(--line); border-radius: 9px; padding: 10px 14px;
-      background: var(--panel2); color: var(--text); font-weight: 700;
+      background: #fff;
+      color: #080808;
+      border: 1px solid #fff;
+      border-radius: 8px;
+      padding: 11px 15px;
+      font-weight: 800;
     }
-    .btn.primary { background: var(--white); color: #000; border-color: var(--white); }
-    .btn.danger { color: #fff; border-color: #733434; background: #351919; }
-    .btn:disabled { opacity: .5; cursor: not-allowed; }
-    input, select, textarea {
-      width: 100%; background: #090909; color: var(--text);
-      border: 1px solid #383838; border-radius: 9px; padding: 11px 12px;
-      min-width: 0;
+
+    .btn:hover {
+      opacity: .88;
     }
-    textarea { min-height: 84px; resize: vertical; }
-    label { display: block; color: #d5d5d5; font-size: 13px; margin-bottom: 5px; }
-    .field { display: grid; gap: 5px; }
-    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-    .form-grid .full { grid-column: 1 / -1; }
-    .item {
-      border: 1px solid var(--line); border-radius: 10px; padding: 13px;
-      background: #0c0c0c; display: grid; gap: 8px;
+
+    .btn-secondary {
+      background: transparent;
+      color: #fff;
+      border-color: #444;
     }
-    .item-title { font-weight: 800; overflow-wrap: anywhere; }
-    .pill {
-      display: inline-block; border: 1px solid #414141; border-radius: 999px;
-      padding: 3px 9px; color: #ddd; font-size: 11px;
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+      border-color: var(--danger);
     }
-    .pill.good { color: var(--success); border-color: #315d40; }
-    .pill.bad { color: #ffb1b1; border-color: #633535; }
+
+    .btn-small {
+      padding: 7px 10px;
+      font-size: 12px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      padding: 16px;
+      border-radius: var(--radius);
+    }
+
+    .stat-value {
+      font-size: 27px;
+      font-weight: 900;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .topbar {
+      border-bottom: 1px solid var(--border);
+      background: #0b0b0b;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-inner {
+      width: min(1200px, 100%);
+      margin: auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .brand {
+      font-weight: 900;
+      letter-spacing: 1px;
+      font-size: 19px;
+    }
+
+    .brand span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 3px;
+      margin-top: 4px;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .tab-btn {
+      background: #141414;
+      color: #ccc;
+      border: 1px solid #303030;
+      border-radius: 8px;
+      padding: 10px 13px;
+    }
+
+    .tab-btn.active {
+      background: #fff;
+      color: #000;
+      border-color: #fff;
+      font-weight: 800;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 500px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .clickable-name {
+      color: #fff;
+      text-decoration: underline;
+      text-decoration-color: #555;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .clickable-name:hover {
+      text-decoration-color: #fff;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 8px;
+      border: 1px solid #383838;
+      border-radius: 20px;
+      font-size: 11px;
+      color: #ddd;
+    }
+
+    .badge-success {
+      border-color: #246b4a;
+      color: #75e0ac;
+    }
+
+    .badge-danger {
+      border-color: #713337;
+      color: #ff9da1;
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 25px 12px;
+    }
+
     .notice {
-      padding: 12px 14px; border: 1px solid var(--line);
-      border-radius: 10px; margin: 12px 0; overflow-wrap: anywhere;
+      border: 1px solid #333;
+      border-radius: 8px;
+      background: #111;
+      padding: 12px;
+      margin-bottom: 14px;
+      color: #ddd;
+      font-size: 13px;
     }
-    .notice.error { border-color: #723737; color: #ffc1c1; background: #241111; }
-    .notice.ok { border-color: #315d40; color: #b8f2c9; background: #101d14; }
-    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
-    .tabs button.active { background: #fff; color: #000; }
-    .empty { color: var(--muted); padding: 12px 0; }
-    .divider { border: 0; border-top: 1px solid var(--line); margin: 14px 0; }
-    .auth { width: min(460px, 100%); margin: 6vh auto; }
-    .auth .panel { padding: 24px; }
-    .auth-brand { font-size: 28px; font-weight: 900; letter-spacing: 3px; }
-    .auth-brand small { display: block; font-size: 11px; color: #aaa; letter-spacing: 4px; }
-    .section { margin: 22px 0; }
-    .stat { font-size: 27px; font-weight: 900; }
-    footer { padding: 24px 0; color: #777; text-align: center; font-size: 12px; }
-    @media(max-width: 760px) {
-      .span-8, .span-6, .span-4 { grid-column: span 12; }
-      .form-grid { grid-template-columns: 1fr; }
-      .form-grid .full { grid-column: auto; }
-      .top { align-items: flex-start; }
-      .top-right { flex-direction: column; align-items: flex-end; }
-      .wrap { padding: 14px; }
-      .panel { padding: 14px; }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .avatar {
+      width: 62px;
+      height: 62px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #fff;
+      color: #000;
+      font-size: 22px;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+
+    .rank-position {
+      font-size: 26px;
+      font-weight: 900;
+    }
+
+    .attendance-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .attendance-row:last-child {
+      border-bottom: 0;
+    }
+
+    .check-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .check-label input {
+      width: 18px;
+      height: 18px;
+    }
+
+    .message {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .message.error {
+      background: #2b1113;
+      color: #ffb3b6;
+      border: 1px solid #6b292e;
+    }
+
+    .message.success {
+      background: #10251b;
+      color: #a8f0c8;
+      border: 1px solid #245c40;
+    }
+
+    @media (max-width: 700px) {
+      .container {
+        padding: 13px;
+      }
+
+      .topbar-inner {
+        padding: 12px 13px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-value {
+        font-size: 23px;
+      }
+
+      .brand {
+        font-size: 16px;
+      }
+
+      .profile-header {
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
+
 <body>
-  <header>
-    <div class="top">
-      <div class="brand">SPOOKY HOUSE<span>A CASA DO BASQUETE</span></div>
-      <div class="top-right">
-        <span id="userLabel" class="small muted"></span>
-        <button id="logoutBtn" class="btn hidden" type="button">Sair</button>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        SPOOKY HOUSE
+        <span>A CASA DO BASQUETE</span>
+      </div>
+
+      <div class="actions">
+        <span id="usuario-logado" class="muted"></span>
+        <button id="btn-sair" class="btn btn-secondary btn-small hidden" onclick="sair()">
+          Sair
+        </button>
       </div>
     </div>
   </header>
 
-  <main class="wrap">
-    <section id="authScreen" class="auth">
-      <div class="panel stack">
-        <div class="auth-brand">SPOOKY HOUSE<small>A CASA DO BASQUETE</small></div>
-        <p class="muted">Entre na sua conta ou faça seu cadastro para acompanhar treinos, convocações e mensalidades.</p>
-        <div id="authMessage"></div>
-        <div class="tabs">
-          <button class="btn active" id="loginTab" type="button">Entrar</button>
-          <button class="btn" id="signupTab" type="button">Criar conta</button>
-          <button class="btn" id="resetTab" type="button">Recuperar senha</button>
+  <main class="container">
+    <section id="tela-login" class="card">
+      <h1 class="section-title">Acesse sua conta</h1>
+      <p class="muted">Entre para acessar os treinos e as informações da Spooky House.</p>
+
+      <form id="form-login">
+        <div class="field">
+          <label for="login-email">E-mail</label>
+          <input id="login-email" type="email" autocomplete="email" required>
         </div>
 
-        <form id="loginForm" class="stack">
-          <div class="field"><label for="loginEmail">E-mail</label><input id="loginEmail" type="email" autocomplete="email" required></div>
-          <div class="field"><label for="loginPassword">Senha</label><input id="loginPassword" type="password" autocomplete="current-password" required></div>
-          <button class="btn primary" type="submit">Entrar na Spooky</button>
-        </form>
+        <div class="field">
+          <label for="login-senha">Senha</label>
+          <input id="login-senha" type="password" autocomplete="current-password" required>
+        </div>
 
-        <form id="signupForm" class="stack hidden">
-          <div class="field"><label for="signupName">Nome completo</label><input id="signupName" required maxlength="120" autocomplete="name"></div>
-          <div class="field"><label for="signupPhone">Telefone</label><input id="signupPhone" maxlength="30" autocomplete="tel"></div>
-          <div class="field"><label for="signupResponsible">Nome do responsável (se aplicável)</label><input id="signupResponsible" maxlength="120"></div>
-          <div class="field"><label for="signupEmail">E-mail</label><input id="signupEmail" type="email" required autocomplete="email"></div>
-          <div class="field"><label for="signupPassword">Senha (mínimo de 6 caracteres)</label><input id="signupPassword" type="password" required minlength="6" autocomplete="new-password"></div>
-          <button class="btn primary" type="submit">Criar conta de atleta</button>
-          <p class="small muted">O cadastro cria uma conta de atleta. A função de administrador deve ser concedida com segurança no banco.</p>
-        </form>
+        <div class="actions">
+          <button class="btn" type="submit">Entrar</button>
+          <button class="btn btn-secondary" type="button" onclick="mostrarCadastro()">
+            Criar conta
+          </button>
+          <button class="btn btn-secondary" type="button" onclick="recuperarSenha()">
+            Esqueci minha senha
+          </button>
+        </div>
+      </form>
 
-        <form id="resetForm" class="stack hidden">
-          <div class="field"><label for="resetEmail">E-mail cadastrado</label><input id="resetEmail" type="email" required autocomplete="email"></div>
-          <button class="btn primary" type="submit">Enviar link de recuperação</button>
-        </form>
-      </div>
+      <div id="login-mensagem"></div>
     </section>
 
-    <section id="appScreen" class="hidden">
-      <div class="hero">
-        <p class="muted">PAINEL DO ATLETA</p>
-        <h1 id="welcomeTitle">Bem-vindo à Spooky.</h1>
-        <p class="muted" id="welcomeSub">Sua casa dentro e fora da quadra.</p>
-      </div>
+    <section id="tela-cadastro" class="card hidden">
+      <h1 class="section-title">Criar conta</h1>
 
-      <div id="globalMessage"></div>
-      <div id="loadErrors" class="hidden"></div>
+      <form id="form-cadastro">
+        <div class="field">
+          <label for="cadastro-nome">Nome completo</label>
+          <input id="cadastro-nome" type="text" required>
+        </div>
 
-      <div class="grid">
-        <div class="panel span-4">
-          <div class="muted small">MINHAS TURMAS</div>
-          <div class="stat" id="statTurmas">—</div>
+        <div class="field">
+          <label for="cadastro-email">E-mail</label>
+          <input id="cadastro-email" type="email" autocomplete="email" required>
         </div>
-        <div class="panel span-4">
-          <div class="muted small">TREINOS CADASTRADOS</div>
-          <div class="stat" id="statTreinos">—</div>
-        </div>
-        <div class="panel span-4">
-          <div class="muted small">MENSALIDADES PENDENTES</div>
-          <div class="stat" id="statPendentes">—</div>
-        </div>
-      </div>
 
-      <nav class="tabs" id="mainTabs">
-        <button class="btn active" data-tab="inicio" type="button">Visão geral</button>
-        <button class="btn" data-tab="treinos" type="button">Treinos</button>
-        <button class="btn" data-tab="campeonatos" type="button">Campeonatos</button>
-        <button class="btn" data-tab="mensalidades" type="button">Mensalidades</button>
-        <button class="btn hidden" id="adminTab" data-tab="admin" type="button">Administração</button>
+        <div class="field">
+          <label for="cadastro-telefone">Telefone</label>
+          <input id="cadastro-telefone" type="tel">
+        </div>
+
+        <div class="field">
+          <label for="cadastro-senha">Senha</label>
+          <input id="cadastro-senha" type="password" minlength="6" required>
+        </div>
+
+        <div class="actions">
+          <button class="btn" type="submit">Cadastrar</button>
+          <button class="btn btn-secondary" type="button" onclick="mostrarLogin()">
+            Voltar ao login
+          </button>
+        </div>
+      </form>
+
+      <div id="cadastro-mensagem"></div>
+    </section>
+
+    <section id="app" class="hidden">
+      <nav class="tabs" aria-label="Menu principal">
+        <button class="tab-btn active" data-tela="inicio" onclick="abrirTela('inicio')">Início</button>
+        <button class="tab-btn" data-tela="treinos" onclick="abrirTela('treinos')">Treinos</button>
+        <button class="tab-btn" data-tela="campeonatos" onclick="abrirTela('campeonatos')">Campeonatos</button>
+        <button class="tab-btn" data-tela="mensalidades" onclick="abrirTela('mensalidades')">Mensalidades</button>
+        <button class="tab-btn" data-tela="ranking" onclick="abrirTela('ranking')">Ranking</button>
+        <button class="tab-btn" data-tela="presencas" onclick="abrirTela('presencas')">Presenças</button>
+        <button class="tab-btn hidden" id="aba-admin" data-tela="admin" onclick="abrirTela('admin')">Administração</button>
       </nav>
 
-      <section id="tab-inicio" class="tab-content section">
-        <div class="grid">
-          <div class="panel span-6">
-            <h2>Minhas turmas</h2>
-            <div id="myClasses" class="stack"></div>
+      <section id="tela-inicio" class="tela-app">
+        <h1 class="section-title">Painel Spooky House</h1>
+
+        <div class="stats">
+          <div class="stat">
+            <div id="stat-treinos" class="stat-value">0</div>
+            <div class="stat-label">Treinos cadastrados</div>
           </div>
-          <div class="panel span-6">
-            <h2>Próximos treinos</h2>
-            <div id="homeTrainings" class="stack"></div>
+          <div class="stat">
+            <div id="stat-campeonatos" class="stat-value">0</div>
+            <div class="stat-label">Campeonatos</div>
           </div>
-          <div class="panel span-6">
-            <h2>Próximos campeonatos</h2>
-            <div id="homeChampionships" class="stack"></div>
+          <div class="stat">
+            <div id="stat-pontos" class="stat-value">0</div>
+            <div class="stat-label">Seus pontos no ranking</div>
           </div>
-          <div class="panel span-6">
-            <h2>Minhas convocações</h2>
-            <div id="myCallups" class="stack"></div>
-          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="section-title">Bem-vindo à Spooky House</h2>
+          <p class="muted">A Casa do Basquete.</p>
+          <button class="btn btn-secondary" onclick="abrirMeuPerfil()">Meu perfil</button>
         </div>
       </section>
 
-      <section id="tab-treinos" class="tab-content section hidden">
-        <div class="panel">
-          <h2>Agenda de treinos</h2>
-          <p class="muted small">Os treinos são exibidos conforme a turma à qual você pertence. Administradores podem visualizar todos.</p>
-          <div id="allTrainings" class="stack"></div>
+      <section id="tela-treinos" class="tela-app hidden">
+        <h1 class="section-title">Treinos</h1>
+        <div id="lista-treinos" class="card">
+          <div class="empty">Carregando treinos...</div>
         </div>
       </section>
 
-      <section id="tab-campeonatos" class="tab-content section hidden">
-        <div class="panel">
-          <h2>Campeonatos</h2>
-          <div id="allChampionships" class="stack"></div>
+      <section id="tela-campeonatos" class="tela-app hidden">
+        <h1 class="section-title">Campeonatos e convocações</h1>
+        <div id="lista-campeonatos"></div>
+      </section>
+
+      <section id="tela-mensalidades" class="tela-app hidden">
+        <h1 class="section-title">Mensalidades</h1>
+        <div id="lista-mensalidades"></div>
+      </section>
+
+      <section id="tela-ranking" class="tela-app hidden">
+        <h1 class="section-title">Ranking dos atletas</h1>
+        <p class="muted">A classificação é calculada automaticamente pela pontuação.</p>
+        <div id="lista-ranking" class="card">
+          <div class="empty">Carregando ranking...</div>
         </div>
       </section>
 
-      <section id="tab-mensalidades" class="tab-content section hidden">
-        <div class="panel">
-          <h2>Minhas mensalidades</h2>
-          <p class="muted small">O pagamento é registrado manualmente pela administração.</p>
-          <div id="myBills" class="stack"></div>
+      <section id="tela-presencas" class="tela-app hidden">
+        <h1 class="section-title">Minhas presenças</h1>
+        <div id="historico-presencas" class="card">
+          <div class="empty">Carregando histórico...</div>
         </div>
       </section>
 
-      <section id="tab-admin" class="tab-content section hidden">
-        <div class="notice">Área administrativa. Cadastros e alterações dependem das permissões RLS configuradas no Supabase.</div>
-        <nav class="tabs" id="adminTabs">
-          <button class="btn active" data-admin="turmas" type="button">Turmas e atletas</button>
-          <button class="btn" data-admin="treinos" type="button">Cadastrar treino</button>
-          <button class="btn" data-admin="campeonatos" type="button">Campeonatos e convocações</button>
-          <button class="btn" data-admin="mensalidades" type="button">Mensalidades</button>
-          <button class="btn" data-admin="atletas" type="button">Atletas</button>
+      <section id="tela-perfil" class="tela-app hidden">
+        <div class="actions" style="margin-bottom:14px">
+          <button class="btn btn-secondary" onclick="voltarTelaAnterior()">Voltar</button>
+        </div>
+        <div id="conteudo-perfil"></div>
+      </section>
+
+      <section id="tela-admin" class="tela-app hidden">
+        <h1 class="section-title">Administração</h1>
+
+        <nav class="tabs" aria-label="Menu administrativo">
+          <button class="tab-btn active" data-admin="atletas" onclick="abrirAdmin('atletas')">Atletas e turmas</button>
+          <button class="tab-btn" data-admin="treinos" onclick="abrirAdmin('treinos')">Criar treino</button>
+          <button class="tab-btn" data-admin="campeonatos" onclick="abrirAdmin('campeonatos')">Campeonatos</button>
+          <button class="tab-btn" data-admin="mensalidades" onclick="abrirAdmin('mensalidades')">Mensalidades</button>
+          <button class="tab-btn" data-admin="chamada" onclick="abrirAdmin('chamada')">Fazer chamada</button>
+          <button class="tab-btn" data-admin="ranking" onclick="abrirAdmin('ranking')">Editar ranking</button>
         </nav>
 
-        <section id="admin-turmas" class="admin-content stack">
-          <div class="panel">
-            <h2>Criar turma</h2>
-            <form id="classForm" class="stack">
-              <div class="form-grid">
-                <div class="field"><label for="className">Nome da turma</label><input id="className" required maxlength="100" placeholder="Ex.: Academy Masculino"></div>
-                <div class="field"><label for="classCategory">Categoria</label><input id="classCategory" maxlength="100" placeholder="Ex.: Sub-17, adulto, feminino"></div>
-                <div class="field full"><label for="classDescription">Descrição</label><textarea id="classDescription"></textarea></div>
-              </div>
-              <button class="btn primary" type="submit">Criar turma</button>
-            </form>
-          </div>
-          <div class="panel">
-            <h2>Gerenciar turmas e atletas</h2>
-            <div id="adminClasses" class="stack"></div>
+        <section id="admin-atletas" class="admin-tela">
+          <div class="card">
+            <h2 class="section-title">Atletas cadastrados</h2>
+            <div id="admin-lista-atletas"></div>
           </div>
         </section>
 
-        <section id="admin-treinos" class="admin-content stack hidden">
-          <div class="panel">
-            <h2>Cadastrar treino</h2>
-            <form id="trainingForm" class="stack">
-              <div class="form-grid">
-                <div class="field"><label for="trainingTitle">Título</label><input id="trainingTitle" required maxlength="120"></div>
-                <div class="field"><label for="trainingCategory">Categoria</label><input id="trainingCategory" maxlength="100"></div>
-                <div class="field"><label for="trainingMode">Modalidade</label><input id="trainingMode" maxlength="100" placeholder="Ex.: Basquete"></div>
-                <div class="field"><label for="trainingDay">Dia da semana</label>
-                  <select id="trainingDay">
-                    <option value="">Selecione</option>
-                    <option>Segunda-feira</option><option>Terça-feira</option>
-                    <option>Quarta-feira</option><option>Quinta-feira</option>
-                    <option>Sexta-feira</option><option>Sábado</option><option>Domingo</option>
-                  </select>
-                </div>
-                <div class="field"><label for="trainingStart">Horário de início</label><input id="trainingStart" type="time"></div>
-                <div class="field"><label for="trainingEnd">Horário de fim</label><input id="trainingEnd" type="time"></div>
-                <div class="field"><label for="trainingClass">Turma com acesso</label><select id="trainingClass"><option value="">Selecione a turma</option></select></div>
-                <div class="field"><label for="trainingLocation">Local</label><input id="trainingLocation" maxlength="180" placeholder="Ex.: João do Pulo"></div>
-                <div class="field full"><label for="trainingDescription">Descrição</label><textarea id="trainingDescription"></textarea></div>
+        <section id="admin-treinos" class="admin-tela hidden">
+          <div class="card">
+            <h2 class="section-title">Cadastrar treino</h2>
+
+            <form id="form-criar-treino">
+              <div class="field">
+                <label for="treino-titulo">Título</label>
+                <input id="treino-titulo" type="text" required>
               </div>
-              <button class="btn primary" type="submit">Salvar treino</button>
+
+              <div class="field">
+                <label for="treino-data">Data e horário</label>
+                <input id="treino-data" type="datetime-local" required>
+              </div>
+
+              <div class="field">
+                <label for="treino-turma">Turma</label>
+                <select id="treino-turma" required></select>
+              </div>
+
+              <div class="field">
+                <label for="treino-descricao">Descrição</label>
+                <textarea id="treino-descricao" rows="3"></textarea>
+              </div>
+
+              <button class="btn" type="submit">Salvar treino</button>
             </form>
+            <div id="treino-mensagem"></div>
           </div>
-          <div class="panel"><h2>Treinos cadastrados</h2><div id="adminTrainingList" class="stack"></div></div>
         </section>
 
-        <section id="admin-campeonatos" class="admin-content stack hidden">
-          <div class="panel">
-            <h2>Cadastrar campeonato</h2>
-            <form id="champForm" class="stack">
-              <div class="form-grid">
-                <div class="field"><label for="champName">Nome</label><input id="champName" required maxlength="150"></div>
-                <div class="field"><label for="champCategory">Categoria</label><input id="champCategory" maxlength="100"></div>
-                <div class="field"><label for="champDate">Data</label><input id="champDate" type="date"></div>
-                <div class="field"><label for="champTime">Horário</label><input id="champTime" type="time"></div>
-                <div class="field full"><label for="champLocation">Local</label><input id="champLocation" maxlength="180"></div>
-                <div class="field full"><label for="champDescription">Descrição</label><textarea id="champDescription"></textarea></div>
+        <section id="admin-campeonatos" class="admin-tela hidden">
+          <div class="card">
+            <h2 class="section-title">Cadastrar campeonato</h2>
+
+            <form id="form-criar-campeonato">
+              <div class="field">
+                <label for="campeonato-nome">Nome do campeonato</label>
+                <input id="campeonato-nome" type="text" required>
               </div>
-              <button class="btn primary" type="submit">Salvar campeonato</button>
+
+              <div class="field">
+                <label for="campeonato-data">Data</label>
+                <input id="campeonato-data" type="date">
+              </div>
+
+              <div class="field">
+                <label for="campeonato-local">Local</label>
+                <input id="campeonato-local" type="text">
+              </div>
+
+              <div class="field">
+                <label for="campeonato-descricao">Descrição</label>
+                <textarea id="campeonato-descricao" rows="3"></textarea>
+              </div>
+
+              <button class="btn" type="submit">Salvar campeonato</button>
             </form>
+            <div id="campeonato-mensagem"></div>
           </div>
-          <div class="panel"><h2>Gerenciar campeonatos e convocações</h2><div id="adminChampList" class="stack"></div></div>
+
+          <div class="card">
+            <h2 class="section-title">Convocações</h2>
+            <div id="admin-convocacoes"></div>
+          </div>
         </section>
 
-        <section id="admin-mensalidades" class="admin-content stack hidden">
-          <div class="panel">
-            <h2>Lançar mensalidade</h2>
-            <form id="billForm" class="stack">
-              <div class="form-grid">
-                <div class="field full"><label for="billAthlete">Atleta</label><select id="billAthlete" required></select></div>
-                <div class="field"><label for="billValue">Valor (R$)</label><input id="billValue" type="number" min="0" step="0.01" required></div>
-                <div class="field"><label for="billDue">Vencimento</label><input id="billDue" type="date" required></div>
-                <div class="field full"><label for="billDescription">Descrição / referência</label><input id="billDescription" maxlength="180" placeholder="Ex.: Mensalidade de outubro"></div>
+        <section id="admin-mensalidades" class="admin-tela hidden">
+          <div class="card">
+            <h2 class="section-title">Cadastrar mensalidade</h2>
+
+            <form id="form-criar-mensalidade">
+              <div class="field">
+                <label for="mensalidade-atleta">Atleta</label>
+                <select id="mensalidade-atleta" required></select>
               </div>
-              <button class="btn primary" type="submit">Lançar mensalidade</button>
+
+              <div class="field">
+                <label for="mensalidade-valor">Valor (R$)</label>
+                <input id="mensalidade-valor" type="number" min="0" step="0.01" required>
+              </div>
+
+              <div class="field">
+                <label for="mensalidade-vencimento">Vencimento</label>
+                <input id="mensalidade-vencimento" type="date" required>
+              </div>
+
+              <div class="field">
+                <label for="mensalidade-status">Status</label>
+                <select id="mensalidade-status">
+                  <option value="pendente">Pendente</option>
+                  <option value="paga">Paga</option>
+                </select>
+              </div>
+
+              <button class="btn" type="submit">Salvar mensalidade</button>
             </form>
+            <div id="mensalidade-mensagem"></div>
           </div>
-          <div class="panel"><h2>Controle de mensalidades</h2><div id="adminBills" class="stack"></div></div>
+
+          <div class="card">
+            <h2 class="section-title">Mensalidades cadastradas</h2>
+            <div id="admin-lista-mensalidades"></div>
+          </div>
         </section>
 
-        <section id="admin-atletas" class="admin-content stack hidden">
-          <div class="panel"><h2>Atletas cadastrados</h2><div id="adminAthletes" class="stack"></div></div>
+        <section id="admin-chamada" class="admin-tela hidden">
+          <div class="card">
+            <h2 class="section-title">Fazer chamada</h2>
+
+            <div class="field">
+              <label for="chamada-turma">Turma</label>
+              <select id="chamada-turma" required></select>
+            </div>
+
+            <div class="field">
+              <label for="chamada-data">Data do treino</label>
+              <input id="chamada-data" type="date" required>
+            </div>
+
+            <div class="field">
+              <label for="chamada-descricao">Identificação do treino</label>
+              <input id="chamada-descricao" type="text" placeholder="Ex.: treino técnico">
+            </div>
+
+            <button class="btn btn-secondary" type="button" onclick="carregarAtletasChamada()">
+              Carregar atletas
+            </button>
+
+            <div id="lista-atletas-chamada" style="margin-top:16px"></div>
+            <div id="chamada-mensagem"></div>
+
+            <button id="btn-salvar-chamada" class="btn hidden" type="button" onclick="salvarChamada()">
+              Salvar chamada
+            </button>
+          </div>
+        </section>
+
+        <section id="admin-ranking" class="admin-tela hidden">
+          <div class="card">
+            <h2 class="section-title">Editar pontos dos atletas</h2>
+            <p class="muted">Altere a pontuação e salve. A posição será recalculada automaticamente.</p>
+            <div id="admin-lista-ranking"></div>
+          </div>
         </section>
       </section>
     </section>
 
-    <footer>Spooky House · A Casa do Basquete</footer>
+    <div id="mensagem-global"></div>
   </main>
+    <script>
+    // ==========================================
+    // SPOOKY HOUSE — CONFIGURAÇÃO
+    // ==========================================
 
-<script>
-(() => {
-  "use strict";
+    const SUPABASE_URL = 'https://mcrreffapstciqpsgvro.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_S798hSSxNl63S2sgDYJoog_tl-N6poI';
 
-  // Chave pública (publishable/anon), apropriada para uso no navegador.
-  // Nunca coloque a service_role key neste arquivo.
-  const SUPABASE_URL = "https://mcrreffapstciqpsgvro.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_S798hSSxNl63S2sgDYJoog_tl-N6poI";
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
 
-  const $ = id => document.getElementById(id);
-  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  const state = {
-    user: null, profile: null, isAdmin: false,
-    profiles: [], classes: [], memberships: [], trainings: [],
-    championships: [], callups: [], bills: [], errors: []
-  };
+    let usuarioAtual = null;
+    let perfilAtual = null;
+    let telaAtual = 'inicio';
+    let telaAnterior = 'inicio';
+    let adminAtual = 'atletas';
 
-  const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, c => ({
-    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
-  }[c]));
+    let perfis = [];
+    let turmas = [];
+    let treinos = [];
+    let campeonatos = [];
+    let convocacoes = [];
+    let mensalidades = [];
+    let ranking = [];
+    let atletasChamada = [];
 
-  const money = value => Number(value || 0).toLocaleString("pt-BR", {
-    style: "currency", currency: "BRL"
-  });
+    let chamadaEmEdicao = null;
 
-  const dateBR = value => {
-    if (!value) return "Data não informada";
-    const s = String(value).slice(0, 10);
-    const parts = s.split("-");
-    return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : escapeHTML(value);
-  };
+    // ==========================================
+    // FUNÇÕES AUXILIARES
+    // ==========================================
 
-  const timeText = value => value ? escapeHTML(String(value).slice(0, 5)) : "";
-  const profileName = id => state.profiles.find(p => p.user_id === id)?.nome || "Atleta";
-  const className = id => state.classes.find(c => c.id === id)?.nome || "Turma";
-  const isMember = (classId, athleteId = state.user?.id) =>
-    state.memberships.some(m => m.turma_id === classId && m.atleta_id === athleteId);
+    const $ = (id) => document.getElementById(id);
 
-  function showMessage(target, message, type = "error") {
-    const el = $(target);
-    if (!el) return;
-    el.innerHTML = message
-      ? `<div class="notice ${type}">${escapeHTML(message)}</div>`
-      : "";
-  }
-
-  function errorText(error) {
-    if (!error) return "Erro não identificado";
-    return [error.message, error.details, error.hint, error.code]
-      .filter(Boolean).join(" — ");
-  }
-
-  function setBusy(button, busy, label = "Processando...") {
-    if (!button) return;
-    if (busy) {
-      button.dataset.originalText = button.textContent;
-      button.textContent = label;
-      button.disabled = true;
-    } else {
-      button.textContent = button.dataset.originalText || button.textContent;
-      button.disabled = false;
-    }
-  }
-
-  async function runForm(form, action) {
-    const button = form.querySelector('button[type="submit"]');
-    setBusy(button, true);
-    showMessage("globalMessage", "");
-    try {
-      await action();
-      form.reset();
-      await loadData();
-      showMessage("globalMessage", "Operação concluída.", "ok");
-    } catch (e) {
-      console.error("Erro na operação:", e);
-      showMessage("globalMessage", errorText(e));
-    } finally {
-      setBusy(button, false);
-    }
-  }
-
-  function requireAdmin() {
-    if (!state.isAdmin) throw new Error("Esta ação é exclusiva da administração.");
-  }
-
-  async function getProfile(userId) {
-    const { data, error } = await db.from("perfis")
-      .select("*").eq("user_id", userId).maybeSingle();
-    if (error) throw error;
-    return data;
-  }
-
-  async function ensureOwnProfile(user) {
-    let profile = await getProfile(user.id);
-    if (profile) return profile;
-
-    const metadata = user.user_metadata || {};
-    const payload = {
-      user_id: user.id,
-      nome: metadata.nome || user.email?.split("@")[0] || "Atleta",
-      papel: "atleta",
-      telefone: metadata.telefone || null,
-      responsavel: metadata.responsavel || null
-    };
-    const { error } = await db.from("perfis").upsert(payload, { onConflict: "user_id" });
-    if (error) {
-      throw new Error("Sua conta existe, mas o perfil não pôde ser criado. Confira a política RLS de perfis. " + errorText(error));
-    }
-    profile = await getProfile(user.id);
-    return profile;
-  }
-
-  // Cada consulta é isolada: um erro em uma tabela não apaga os resultados das outras.
-  async function fetchTable(label, query) {
-    const { data, error } = await query;
-    if (error) {
-      console.error(`Falha em ${label}:`, error);
-      state.errors.push({ label, error: errorText(error) });
-      return [];
-    }
-    return data || [];
-  }
-
-  async function loadData() {
-    state.errors = [];
-
-    const tasks = [
-      ["perfis", () => db.from("perfis").select("*").order("nome")],
-      ["turmas", () => db.from("turmas").select("*").order("nome")],
-      ["turma_atletas", () => db.from("turma_atletas").select("*")],
-      ["treinos", () => db.from("treinos").select("*").order("dia_semana").order("horario_inicio")],
-      ["campeonatos", () => db.from("campeonatos").select("*").order("data_evento")],
-      ["convocacoes", () => db.from("convocacoes").select("*")],
-      ["mensalidades", () => db.from("mensalidades").select("*").order("vencimento")]
-    ];
-
-    const results = await Promise.all(tasks.map(([name, query]) => fetchTable(name, query())));
-    [state.profiles, state.classes, state.memberships, state.trainings,
-      state.championships, state.callups, state.bills] = results;
-
-    state.profile = state.profiles.find(p => p.user_id === state.user.id) || state.profile;
-    state.isAdmin = state.profile?.papel === "admin";
-
-    // Nunca expor treinos de outras turmas a atletas comuns.
-    if (!state.isAdmin) {
-      state.trainings = state.trainings.filter(t => t.turma_id && isMember(t.turma_id));
+    function escaparHTML(valor) {
+      return String(valor ?? '').replace(/[&<>"']/g, caractere => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[caractere]);
     }
 
-    renderAll();
-    renderLoadErrors();
-  }
+    function mostrarMensagem(id, texto, tipo = 'error') {
+      const elemento = $(id);
+      if (!elemento) return;
 
-  function renderLoadErrors() {
-    const box = $("loadErrors");
-    if (!state.errors.length) {
-      box.classList.add("hidden");
-      box.innerHTML = "";
-      return;
-    }
-    box.classList.remove("hidden");
-    box.innerHTML = `
-      <div class="notice error">
-        <strong>Algumas informações não puderam ser carregadas.</strong>
-        <p class="small">Os dados de outras áreas ainda podem aparecer. Confira a tabela e a mensagem abaixo:</p>
-        ${state.errors.map(e => `<div class="item"><strong>${escapeHTML(e.label)}</strong><span class="small">${escapeHTML(e.error)}</span></div>`).join("")}
-      </div>`;
-  }
-
-  function renderAll() {
-    $("authScreen").classList.add("hidden");
-    $("appScreen").classList.remove("hidden");
-    $("logoutBtn").classList.remove("hidden");
-    $("userLabel").textContent = state.profile?.nome || state.user.email || "";
-    $("welcomeTitle").textContent = `Olá, ${(state.profile?.nome || "atleta").split(" ")[0]}!`;
-    $("welcomeSub").textContent = state.isAdmin
-      ? "Painel administrativo da Spooky House."
-      : "Acompanhe sua rotina dentro da Spooky House.";
-
-    $("adminTab").classList.toggle("hidden", !state.isAdmin);
-    $("statTurmas").textContent = state.isAdmin
-      ? state.classes.length
-      : state.classes.filter(c => isMember(c.id)).length;
-    $("statTreinos").textContent = state.trainings.length;
-    $("statPendentes").textContent = state.bills.filter(b =>
-      b.atleta_id === state.user.id && b.status !== "pago"
-    ).length;
-
-    renderClasses();
-    renderTrainings();
-    renderChampionships();
-    renderCallups();
-    renderBills();
-    if (state.isAdmin) renderAdmin();
-  }
-
-  function renderClasses() {
-    const mine = state.isAdmin
-      ? state.classes
-      : state.classes.filter(c => isMember(c.id));
-    $("myClasses").innerHTML = mine.length ? mine.map(c => `
-      <div class="item">
-        <div class="item-title">${escapeHTML(c.nome)}</div>
-        <div class="muted small">${escapeHTML(c.categoria || "Categoria não informada")}</div>
-        ${c.descricao ? `<div>${escapeHTML(c.descricao)}</div>` : ""}
-      </div>`).join("") : `<div class="empty">Você ainda não está vinculado a uma turma.</div>`;
-  }
-
-  function trainingCard(t) {
-    return `<div class="item">
-      <div class="between">
-        <div class="item-title">${escapeHTML(t.titulo || "Treino")}</div>
-        ${t.ativo === false ? '<span class="pill bad">Inativo</span>' : ""}
-      </div>
-      <div class="muted small">${escapeHTML(t.categoria || t.modalidade || "Treino")}${t.dia_semana ? " · " + escapeHTML(t.dia_semana) : ""}</div>
-      <div>${timeText(t.horario_inicio)}${t.horario_fim ? " – " + timeText(t.horario_fim) : ""}</div>
-      ${t.local ? `<div>Local: ${escapeHTML(t.local)}</div>` : ""}
-      ${t.turma_id ? `<div class="small muted">Turma: ${escapeHTML(className(t.turma_id))}</div>` : ""}
-      ${t.descricao ? `<div>${escapeHTML(t.descricao)}</div>` : ""}
-    </div>`;
-  }
-
-  function renderTrainings() {
-    const visible = state.trainings.filter(t => t.ativo !== false);
-    const html = visible.length ? visible.map(trainingCard).join("") :
-      `<div class="empty">Nenhum treino disponível para suas turmas.</div>`;
-    $("homeTrainings").innerHTML = html;
-    $("allTrainings").innerHTML = html;
-  }
-
-  function championshipCard(c) {
-    return `<div class="item">
-      <div class="item-title">${escapeHTML(c.nome || "Campeonato")}</div>
-      <div class="muted small">${escapeHTML(c.categoria || "Categoria não informada")}</div>
-      <div>${dateBR(c.data_evento)}${c.horario ? " · " + escapeHTML(c.horario) : ""}</div>
-      ${c.local ? `<div>Local: ${escapeHTML(c.local)}</div>` : ""}
-      ${c.descricao ? `<div>${escapeHTML(c.descricao)}</div>` : ""}
-    </div>`;
-  }
-
-  function renderChampionships() {
-    const html = state.championships.length
-      ? state.championships.map(championshipCard).join("")
-      : `<div class="empty">Nenhum campeonato cadastrado.</div>`;
-    $("homeChampionships").innerHTML = html;
-    $("allChampionships").innerHTML = html;
-  }
-
-  function renderCallups() {
-    const mine = state.callups.filter(c => c.atleta_id === state.user.id);
-    $("myCallups").innerHTML = mine.length ? mine.map(c => {
-      const champ = state.championships.find(x => x.id === c.campeonato_id);
-      return `<div class="item"><div class="item-title">${escapeHTML(champ?.nome || "Campeonato")}</div>
-        <div class="muted small">${champ ? dateBR(champ.data_evento) : "Data não informada"}</div>
-        <span class="pill good">Convocado</span></div>`;
-    }).join("") : `<div class="empty">Você ainda não tem convocações cadastradas.</div>`;
-  }
-
-  function billCard(b, admin = false) {
-    const paid = b.status === "pago";
-    return `<div class="item">
-      <div class="between">
-        <div class="item-title">${money(b.valor)}</div>
-        <span class="pill ${paid ? "good" : "bad"}">${paid ? "Pago" : "Pendente"}</span>
-      </div>
-      <div>${escapeHTML(b.descricao || "Mensalidade")}</div>
-      <div class="muted small">Vencimento: ${dateBR(b.vencimento)}</div>
-      ${admin ? `<div class="small">Atleta: ${escapeHTML(profileName(b.atleta_id))}</div>
-        <div class="row">
-          ${paid
-            ? `<button class="btn" type="button" data-action="bill-pending" data-id="${escapeHTML(b.id)}">Marcar pendente</button>`
-            : `<button class="btn primary" type="button" data-action="bill-paid" data-id="${escapeHTML(b.id)}">Marcar como pago</button>`}
-          <button class="btn danger" type="button" data-action="bill-delete" data-id="${escapeHTML(b.id)}">Excluir</button>
-        </div>` : ""}
-    </div>`;
-  }
-
-  function renderBills() {
-    const mine = state.bills.filter(b => b.atleta_id === state.user.id);
-    $("myBills").innerHTML = mine.length ? mine.map(b => billCard(b)).join("") :
-      `<div class="empty">Nenhuma mensalidade cadastrada para sua conta.</div>`;
-  }
-
-  function fillSelect(id, items, placeholder, valueFn, labelFn) {
-    const el = $(id);
-    const previous = el.value;
-    el.innerHTML = `<option value="">${escapeHTML(placeholder)}</option>` +
-      items.map(item => `<option value="${escapeHTML(valueFn(item))}">${escapeHTML(labelFn(item))}</option>`).join("");
-    if (items.some(item => valueFn(item) === previous)) el.value = previous;
-  }
-
-  function renderAdmin() {
-    fillSelect("trainingClass", state.classes.filter(c => c.ativo !== false),
-      "Selecione a turma", c => c.id, c => c.nome);
-    const athletes = state.profiles.filter(p => p.papel !== "admin");
-    fillSelect("billAthlete", athletes, "Selecione o atleta", p => p.user_id, p => p.nome || p.user_id);
-
-    $("adminClasses").innerHTML = state.classes.length ? state.classes.map(c => {
-      const members = state.memberships.filter(m => m.turma_id === c.id);
-      return `<div class="item">
-        <div class="between"><div class="item-title">${escapeHTML(c.nome)}</div>
-          <span class="pill">${members.length} atleta(s)</span></div>
-        <div class="muted small">${escapeHTML(c.categoria || "Sem categoria")}</div>
-        ${c.descricao ? `<div>${escapeHTML(c.descricao)}</div>` : ""}
-        <form class="row add-member-form" data-class-id="${escapeHTML(c.id)}">
-          <select name="athlete" required>
-            <option value="">Adicionar atleta...</option>
-            ${athletes.filter(a => !members.some(m => m.atleta_id === a.user_id))
-              .map(a => `<option value="${escapeHTML(a.user_id)}">${escapeHTML(a.nome || a.user_id)}</option>`).join("")}
-          </select>
-          <button class="btn primary" type="submit">Adicionar</button>
-        </form>
-        <div class="stack">
-          ${members.map(m => `<div class="between">
-            <span>${escapeHTML(profileName(m.atleta_id))}</span>
-            <button class="btn danger" type="button" data-action="member-remove" data-class-id="${escapeHTML(c.id)}" data-athlete-id="${escapeHTML(m.atleta_id)}">Remover</button>
-          </div>`).join("") || `<div class="empty">Nenhum atleta vinculado.</div>`}
+      elemento.innerHTML = `
+        <div class="message ${tipo}">
+          ${escaparHTML(texto)}
         </div>
-        <div class="row"><button class="btn danger" type="button" data-action="class-delete" data-id="${escapeHTML(c.id)}">Excluir turma</button></div>
-      </div>`;
-    }).join("") : `<div class="empty">Nenhuma turma criada.</div>`;
-
-    $("adminTrainingList").innerHTML = state.trainings.length
-      ? state.trainings.map(t => `<div class="item">${trainingCard(t)}
-          <div class="row"><button class="btn danger" type="button" data-action="training-delete" data-id="${escapeHTML(t.id)}">Excluir treino</button></div>
-        </div>`).join("")
-      : `<div class="empty">Nenhum treino cadastrado.</div>`;
-
-    $("adminChampList").innerHTML = state.championships.length
-      ? state.championships.map(c => {
-        const selected = state.callups.filter(x => x.campeonato_id === c.id);
-        return `<div class="item">
-          ${championshipCard(c)}
-          <form class="row add-callup-form" data-champ-id="${escapeHTML(c.id)}">
-            <select name="athlete" required>
-              <option value="">Convocar atleta...</option>
-              ${athletes.filter(a => !selected.some(x => x.atleta_id === a.user_id))
-                .map(a => `<option value="${escapeHTML(a.user_id)}">${escapeHTML(a.nome || a.user_id)}</option>`).join("")}
-            </select>
-            <button class="btn primary" type="submit">Convocar</button>
-          </form>
-          <div class="stack">${selected.map(x => `<div class="between">
-            <span>${escapeHTML(profileName(x.atleta_id))}</span>
-            <button class="btn danger" type="button" data-action="callup-remove" data-id="${escapeHTML(x.id)}">Retirar convocação</button>
-          </div>`).join("") || `<div class="empty">Nenhum atleta convocado.</div>`}</div>
-          <button class="btn danger" type="button" data-action="champ-delete" data-id="${escapeHTML(c.id)}">Excluir campeonato</button>
-        </div>`;
-      }).join("")
-      : `<div class="empty">Nenhum campeonato cadastrado.</div>`;
-
-    $("adminBills").innerHTML = state.bills.length
-      ? state.bills.map(b => billCard(b, true)).join("")
-      : `<div class="empty">Nenhuma mensalidade lançada.</div>`;
-
-    $("adminAthletes").innerHTML = athletes.length
-      ? athletes.map(a => `<div class="item">
-          <div class="item-title">${escapeHTML(a.nome || "Atleta")}</div>
-          <div class="muted small">${escapeHTML(a.telefone || "Sem telefone informado")}</div>
-          ${a.responsavel ? `<div class="small">Responsável: ${escapeHTML(a.responsavel)}</div>` : ""}
-          <div class="small muted">ID: ${escapeHTML(a.user_id)}</div>
-        </div>`).join("")
-      : `<div class="empty">Nenhum perfil de atleta visível.</div>`;
-  }
-
-  function switchAuth(tab) {
-    ["loginForm", "signupForm", "resetForm"].forEach(id => $(id).classList.add("hidden"));
-    ["loginTab", "signupTab", "resetTab"].forEach(id => $(id).classList.remove("active"));
-    const map = { login: ["loginForm", "loginTab"], signup: ["signupForm", "signupTab"], reset: ["resetForm", "resetTab"] };
-    $(map[tab][0]).classList.remove("hidden");
-    $(map[tab][1]).classList.add("active");
-    showMessage("authMessage", "");
-  }
-
-  function switchMainTab(tab) {
-    document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
-    document.querySelectorAll("#mainTabs [data-tab]").forEach(el => el.classList.toggle("active", el.dataset.tab === tab));
-    $("tab-" + tab)?.classList.remove("hidden");
-  }
-
-  function switchAdminTab(tab) {
-    document.querySelectorAll(".admin-content").forEach(el => el.classList.add("hidden"));
-    document.querySelectorAll("#adminTabs [data-admin]").forEach(el => el.classList.toggle("active", el.dataset.admin === tab));
-    $("admin-" + tab)?.classList.remove("hidden");
-  }
-
-  async function startApp(user) {
-    state.user = user;
-    $("authScreen").classList.add("hidden");
-    $("appScreen").classList.remove("hidden");
-    $("logoutBtn").classList.remove("hidden");
-    $("userLabel").textContent = user.email || "";
-
-    try {
-      state.profile = await ensureOwnProfile(user);
-      await loadData();
-    } catch (e) {
-      console.error("Falha ao iniciar painel:", e);
-      showMessage("globalMessage", errorText(e));
+      `;
     }
-  }
 
-  $("loginTab").addEventListener("click", () => switchAuth("login"));
-  $("signupTab").addEventListener("click", () => switchAuth("signup"));
-  $("resetTab").addEventListener("click", () => switchAuth("reset"));
+    function limparMensagem(id) {
+      const elemento = $(id);
+      if (elemento) elemento.innerHTML = '';
+    }
 
-  $("loginForm").addEventListener("submit", async e => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    await runForm(form, async () => {
-      const { error } = await db.auth.signInWithPassword({
-        email: $("loginEmail").value.trim(),
-        password: $("loginPassword").value
-      });
-      if (error) throw error;
-      const { data } = await db.auth.getSession();
-      if (data.session?.user) await startApp(data.session.user);
-    });
-  });
+    function formatarData(data) {
+      if (!data) return 'Não informada';
 
-  $("signupForm").addEventListener("submit", async e => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const button = form.querySelector('button[type="submit"]');
-    setBusy(button, true);
-    try {
-      const name = $("signupName").value.trim();
-      const phone = $("signupPhone").value.trim();
-      const responsible = $("signupResponsible").value.trim();
-      const { data, error } = await db.auth.signUp({
-        email: $("signupEmail").value.trim(),
-        password: $("signupPassword").value,
-        options: { data: { nome: name, telefone: phone, responsavel: responsible } }
-      });
-      if (error) throw error;
+      const partes = String(data).slice(0, 10).split('-');
 
-      if (data.session?.user) {
-        const user = data.session.user;
-        const { error: profileError } = await db.from("perfis").upsert({
-          user_id: user.id, nome: name, papel: "atleta",
-          telefone: phone || null, responsavel: responsible || null
-        }, { onConflict: "user_id" });
-        if (profileError) throw profileError;
-        form.reset();
-        await startApp(user);
-      } else {
-        form.reset();
-        showMessage("authMessage", "Cadastro criado! Confirme seu e-mail pelo link enviado. Depois, entre na sua conta.", "ok");
-        switchAuth("login");
+      if (partes.length !== 3) return escaparHTML(data);
+
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+
+    function formatarDataHora(data) {
+      if (!data) return 'Não informada';
+
+      const valor = new Date(data);
+
+      if (Number.isNaN(valor.getTime())) {
+        return escaparHTML(data);
       }
-    } catch (err) {
-      console.error("Erro no cadastro:", err);
-      showMessage("authMessage", errorText(err));
-    } finally {
-      setBusy(button, false);
+
+      return valor.toLocaleString('pt-BR', {
+        dateStyle: 'short',
+        timeStyle: 'short'
+      });
     }
-  });
 
-  $("resetForm").addEventListener("submit", async e => {
-    e.preventDefault();
-    const button = e.currentTarget.querySelector('button[type="submit"]');
-    setBusy(button, true);
-    try {
-      const { error } = await db.auth.resetPasswordForEmail($("resetEmail").value.trim(), {
-        redirectTo: window.location.origin
+    function formatarMoeda(valor) {
+      return Number(valor || 0).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
       });
-      if (error) throw error;
-      showMessage("authMessage", "Se o endereço estiver cadastrado, você receberá um e-mail com as instruções.", "ok");
-    } catch (err) {
-      showMessage("authMessage", errorText(err));
-    } finally {
-      setBusy(button, false);
     }
-  });
 
-  $("logoutBtn").addEventListener("click", async () => {
-    const { error } = await db.auth.signOut();
-    if (error) {
-      showMessage("globalMessage", errorText(error));
-      return;
+    function nomePerfil(perfil) {
+      return perfil?.nome || 'Atleta sem nome';
     }
-    state.user = null;
-    state.profile = null;
-    state.isAdmin = false;
-    $("appScreen").classList.add("hidden");
-    $("logoutBtn").classList.add("hidden");
-    $("authScreen").classList.remove("hidden");
-    $("userLabel").textContent = "";
-    switchAuth("login");
-  });
 
-  $("mainTabs").addEventListener("click", e => {
-    const button = e.target.closest("[data-tab]");
-    if (!button) return;
-    const tab = button.dataset.tab;
-    if (tab === "admin" && !state.isAdmin) return;
-    switchMainTab(tab);
-  });
+    function ehAdmin() {
+      return perfilAtual?.papel === 'admin';
+    }
 
-  $("adminTabs").addEventListener("click", e => {
-    const button = e.target.closest("[data-admin]");
-    if (button) switchAdminTab(button.dataset.admin);
-  });
+    function obterPerfil(id) {
+      return perfis.find(perfil => perfil.user_id === id) || null;
+    }
 
-  $("classForm").addEventListener("submit", e => {
-    e.preventDefault();
-    runForm(e.currentTarget, async () => {
-      requireAdmin();
-      const { error } = await db.from("turmas").insert({
-        nome: $("className").value.trim(),
-        categoria: $("classCategory").value.trim() || null,
-        descricao: $("classDescription").value.trim() || null,
-        criado_por: state.user.id
-      });
-      if (error) throw error;
-    });
-  });
+    function obterNomeAtleta(id) {
+      const perfil = obterPerfil(id);
+      return nomePerfil(perfil);
+    }
 
-  $("trainingForm").addEventListener("submit", e => {
-    e.preventDefault();
-    runForm(e.currentTarget, async () => {
-      requireAdmin();
-      const turmaId = $("trainingClass").value;
-      if (!turmaId) throw new Error("Selecione uma turma para restringir o acesso ao treino.");
-      const { error } = await db.from("treinos").insert({
-        titulo: $("trainingTitle").value.trim(),
-        categoria: $("trainingCategory").value.trim() || null,
-        modalidade: $("trainingMode").value.trim() || null,
-        dia_semana: $("trainingDay").value || null,
-        horario_inicio: $("trainingStart").value || null,
-        horario_fim: $("trainingEnd").value || null,
-        turma_id: turmaId,
-        local: $("trainingLocation").value.trim() || null,
-        descricao: $("trainingDescription").value.trim() || null,
-        ativo: true,
-        criado_por: state.user.id
-      });
-      if (error) throw error;
-    });
-  });
+    function criarLinkAtleta(id, nome) {
+      return `
+        <span class="clickable-name"
+          role="button"
+          tabindex="0"
+          onclick="abrirPerfilAtleta('${escaparHTML(id)}')"
+          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirPerfilAtleta('${escaparHTML(id)}')}">
+          ${escaparHTML(nome)}
+        </span>
+      `;
+    }
 
-  $("champForm").addEventListener("submit", e => {
-    e.preventDefault();
-    runForm(e.currentTarget, async () => {
-      requireAdmin();
-      const { error } = await db.from("campeonatos").insert({
-        nome: $("champName").value.trim(),
-        categoria: $("champCategory").value.trim() || null,
-        data_evento: $("champDate").value || null,
-        horario: $("champTime").value || null,
-        local: $("champLocation").value.trim() || null,
-        descricao: $("champDescription").value.trim() || null,
-        criado_por: state.user.id
-      });
-      if (error) throw error;
-    });
-  });
-
-  $("billForm").addEventListener("submit", e => {
-    e.preventDefault();
-    runForm(e.currentTarget, async () => {
-      requireAdmin();
-      const value = Number($("billValue").value);
-      if (!Number.isFinite(value) || value < 0) throw new Error("Informe um valor válido.");
-      const { error } = await db.from("mensalidades").insert({
-        atleta_id: $("billAthlete").value,
-        valor: value,
-        vencimento: $("billDue").value,
-        descricao: $("billDescription").value.trim() || null,
-        status: "pendente",
-        criado_por: state.user.id
-      });
-      if (error) throw error;
-    });
-  });
-
-  document.addEventListener("submit", async e => {
-    const memberForm = e.target.closest(".add-member-form");
-    const callupForm = e.target.closest(".add-callup-form");
-    if (!memberForm && !callupForm) return;
-    e.preventDefault();
-
-    const form = e.target;
-    const button = form.querySelector('button[type="submit"]');
-    setBusy(button, true);
-    try {
-      requireAdmin();
-      const athleteId = new FormData(form).get("athlete");
-      if (!athleteId) throw new Error("Selecione um atleta.");
-      if (memberForm) {
-        const { error } = await db.from("turma_atletas").insert({
-          turma_id: memberForm.dataset.classId,
-          atleta_id: athleteId
-        });
-        if (error) throw error;
-      } else {
-        const { error } = await db.from("convocacoes").insert({
-          campeonato_id: callupForm.dataset.champId,
-          atleta_id: athleteId
-        });
-        if (error) throw error;
+    function mostrarCarregando(id, texto = 'Carregando...') {
+      const elemento = $(id);
+      if (elemento) {
+        elemento.innerHTML = `<div class="empty">${escaparHTML(texto)}</div>`;
       }
-      await loadData();
-      showMessage("globalMessage", "Alteração salva.", "ok");
-    } catch (err) {
-      console.error(err);
-      showMessage("globalMessage", errorText(err));
-    } finally {
-      setBusy(button, false);
     }
-  });
 
-  document.addEventListener("click", async e => {
-    const button = e.target.closest("[data-action]");
-    if (!button) return;
-    const action = button.dataset.action;
-    const id = button.dataset.id;
-    if (!confirm("Tem certeza de que deseja realizar esta alteração?")) return;
-    setBusy(button, true);
+    function mostrarErro(id, erro) {
+      console.error(erro);
 
-    try {
-      requireAdmin();
-      let result;
-      switch (action) {
-        case "member-remove":
-          result = await db.from("turma_atletas").delete()
-            .eq("turma_id", button.dataset.classId)
-            .eq("atleta_id", button.dataset.athleteId);
-          break;
-        case "class-delete":
-          // Remover vínculos e treinos primeiro para evitar referências pendentes.
-          {
-            const { error: e1 } = await db.from("turma_atletas").delete().eq("turma_id", id);
-            if (e1) throw e1;
-            const { error: e2 } = await db.from("treinos").delete().eq("turma_id", id);
-            if (e2) throw e2;
-            result = await db.from("turmas").delete().eq("id", id);
-          }
-          break;
-        case "training-delete":
-          result = await db.from("treinos").delete().eq("id", id);
-          break;
-        case "champ-delete":
-          {
-            const { error: e1 } = await db.from("convocacoes").delete().eq("campeonato_id", id);
-            if (e1) throw e1;
-            result = await db.from("campeonatos").delete().eq("id", id);
-          }
-          break;
-        case "callup-remove":
-          result = await db.from("convocacoes").delete().eq("id", id);
-          break;
-        case "bill-paid":
-          result = await db.from("mensalidades").update({
-            status: "pago", pago_em: new Date().toISOString()
-          }).eq("id", id);
-          break;
-        case "bill-pending":
-          result = await db.from("mensalidades").update({
-            status: "pendente", pago_em: null
-          }).eq("id", id);
-          break;
-        case "bill-delete":
-          result = await db.from("mensalidades").delete().eq("id", id);
-          break;
-        default:
-          throw new Error("Ação desconhecida.");
-      }
-      if (result?.error) throw result.error;
-      await loadData();
-      showMessage("globalMessage", "Alteração concluída.", "ok");
-    } catch (err) {
-      console.error("Erro na alteração:", err);
-      showMessage("globalMessage", errorText(err));
-    } finally {
-      setBusy(button, false);
+      const mensagem = erro?.message || 'Ocorreu um erro inesperado.';
+      mostrarMensagem(id, mensagem, 'error');
     }
-  });
 
-  // Atualiza a interface após mudanças de autenticação sem criar inicializações concorrentes.
-  let startingUserId = null;
-  db.auth.onAuthStateChange((event, session) => {
-    setTimeout(async () => {
-      const user = session?.user || null;
-      if (!user) {
-        if (state.user) {
-          state.user = null;
-          state.profile = null;
-          state.isAdmin = false;
-          $("appScreen").classList.add("hidden");
-          $("logoutBtn").classList.add("hidden");
-          $("authScreen").classList.remove("hidden");
-          $("userLabel").textContent = "";
-        }
+    function dataHoje() {
+      const agora = new Date();
+      const ano = agora.getFullYear();
+      const mes = String(agora.getMonth() + 1).padStart(2, '0');
+      const dia = String(agora.getDate()).padStart(2, '0');
+
+      return `${ano}-${mes}-${dia}`;
+    }
+
+    // ==========================================
+    // NAVEGAÇÃO
+    // ==========================================
+
+    function abrirTela(nome) {
+      if (nome === 'admin' && !ehAdmin()) {
+        mostrarMensagem(
+          'mensagem-global',
+          'Você não tem permissão para acessar a administração.'
+        );
         return;
       }
-      if (startingUserId === user.id && state.user?.id === user.id && state.profile) return;
-      startingUserId = user.id;
-      await startApp(user);
-    }, 0);
-  });
 
-  async function init() {
-    const { data, error } = await db.auth.getSession();
-    if (error) {
-      showMessage("authMessage", errorText(error));
-      return;
-    }
-    if (data.session?.user) await startApp(data.session.user);
-    else {
-      $("authScreen").classList.remove("hidden");
-      $("appScreen").classList.add("hidden");
-      $("logoutBtn").classList.add("hidden");
-    }
-  }
+      document.querySelectorAll('.tela-app').forEach(tela => {
+        tela.classList.add('hidden');
+      });
 
-  init();
-})();
-</script>
+      const tela = $(`tela-${nome}`);
+
+      if (tela) {
+        tela.classList.remove('hidden');
+      }
+
+      document.querySelectorAll('[data-tela]').forEach(botao => {
+        botao.classList.toggle(
+          'active',
+          botao.dataset.tela === nome
+        );
+      });
+
+      telaAnterior = telaAtual;
+      telaAtual = nome;
+
+      if (nome === 'inicio') {
+        atualizarResumo();
+      }
+
+      if (nome === 'treinos') {
+        carregarTreinos();
+      }
+
+      if (nome === 'campeonatos') {
+        carregarCampeonatos();
+      }
+
+      if (nome === 'mensalidades') {
+        carregarMensalidades();
+      }
+
+      if (nome === 'ranking') {
+        carregarRanking();
+      }
+
+      if (nome === 'presencas') {
+        carregarHistoricoPresencas();
+      }
+
+      if (nome === 'admin' && ehAdmin()) {
+        abrirAdmin(adminAtual);
+      }
+    }
+
+    function abrirAdmin(nome) {
+      if (!ehAdmin()) return;
+
+      adminAtual = nome;
+
+      document.querySelectorAll('.admin-tela').forEach(tela => {
+        tela.classList.add('hidden');
+      });
+
+      const selecionada = $(`admin-${nome}`);
+
+      if (selecionada) {
+        selecionada.classList.remove('hidden');
+      }
+
+      document.querySelectorAll('[data-admin]').forEach(botao => {
+        botao.classList.toggle(
+          'active',
+          botao.dataset.admin === nome
+        );
+      });
+
+      if (nome === 'atletas') {
+        carregarAtletasAdmin();
+      }
+
+      if (nome === 'treinos') {
+        preencherSelectTurmas();
+      }
+
+      if (nome === 'campeonatos') {
+        carregarCampeonatosAdmin();
+      }
+
+      if (nome === 'mensalidades') {
+        carregarMensalidadesAdmin();
+        preencherSelectAtletas();
+      }
+
+      if (nome === 'chamada') {
+        preencherSelectChamada();
+      }
+
+      if (nome === 'ranking') {
+        carregarRankingAdmin();
+      }
+    }
+
+    function voltarTelaAnterior() {
+      abrirTela(telaAnterior === 'perfil' ? 'inicio' : telaAnterior);
+    }
+
+    function mostrarLogin() {
+      $('tela-login').classList.remove('hidden');
+      $('tela-cadastro').classList.add('hidden');
+      $('app').classList.add('hidden');
+    }
+
+    function mostrarCadastro() {
+      $('tela-login').classList.add('hidden');
+      $('tela-cadastro').classList.remove('hidden');
+      $('app').classList.add('hidden');
+    }
+
+    // ==========================================
+    // LOGIN E CADASTRO
+    // ==========================================
+
+    $('form-login').addEventListener('submit', async evento => {
+      evento.preventDefault();
+      limparMensagem('login-mensagem');
+
+      const email = $('login-email').value.trim();
+      const senha = $('login-senha').value;
+
+      const botao = $('form-login').querySelector('[type="submit"]');
+      botao.disabled = true;
+      botao.textContent = 'Entrando...';
+
+      try {
+        const { error } = await supabaseClient.auth.signInWithPassword({
+          email,
+          password: senha
+        });
+
+        if (error) throw error;
+      } catch (erro) {
+        mostrarErro('login-mensagem', erro);
+      } finally {
+        botao.disabled = false;
+        botao.textContent = 'Entrar';
+      }
+    });
+
+    $('form-cadastro').addEventListener('submit', async evento => {
+      evento.preventDefault();
+      limparMensagem('cadastro-mensagem');
+
+      const nome = $('cadastro-nome').value.trim();
+      const email = $('cadastro-email').value.trim();
+      const telefone = $('cadastro-telefone').value.trim();
+      const senha = $('cadastro-senha').value;
+
+      if (!nome) {
+        mostrarMensagem('cadastro-mensagem', 'Informe seu nome.');
+        return;
+      }
+
+      const botao = $('form-cadastro').querySelector('[type="submit"]');
+      botao.disabled = true;
+      botao.textContent = 'Cadastrando...';
+
+      try {
+        const { data, error } = await supabaseClient.auth.signUp({
+          email,
+          password: senha,
+          options: {
+            data: {
+              nome,
+              telefone
+            }
+          }
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+          const { error: erroPerfil } = await supabaseClient
+            .from('perfis')
+            .upsert({
+              user_id: data.user.id,
+              nome,
+              telefone,
+              papel: 'atleta'
+            }, {
+              onConflict: 'user_id'
+            });
+
+          if (erroPerfil) {
+            console.error('Erro ao criar perfil:', erroPerfil);
+            mostrarMensagem(
+              'cadastro-mensagem',
+              'A conta foi criada, mas houve um problema ao salvar o perfil. Entre em contato com a administração.'
+            );
+            return;
+          }
+        }
+
+        if (data.session) {
+          mostrarMensagem(
+            'cadastro-mensagem',
+            'Cadastro realizado! Acessando sua conta...',
+            'success'
+          );
+        } else {
+          mostrarMensagem(
+            'cadastro-mensagem',
+            'Cadastro iniciado! Se o Supabase solicitar confirmação de e-mail, confirme antes de entrar.',
+            'success'
+          );
+          $('form-cadastro').reset();
+        }
+      } catch (erro) {
+        mostrarErro('cadastro-mensagem', erro);
+      } finally {
+        botao.disabled = false;
+        botao.textContent = 'Cadastrar';
+      }
+    });
+
+    async function recuperarSenha() {
+      const email = $('login-email').value.trim();
+
+      if (!email) {
+        mostrarMensagem(
+          'login-mensagem',
+          'Digite seu e-mail no campo de login antes de solicitar a recuperação.'
+        );
+        return;
+      }
+
+      try {
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
+
+        if (error) throw error;
+
+        mostrarMensagem(
+          'login-mensagem',
+          'Se o e-mail estiver cadastrado, você receberá as instruções de recuperação.',
+          'success'
+        );
+      } catch (erro) {
+        mostrarErro('login-mensagem', erro);
+      }
+    }
+
+    async function sair() {
+      const { error } = await supabaseClient.auth.signOut();
+
+      if (error) {
+        console.error('Erro ao sair:', error);
+        alert('Não foi possível sair da conta. Tente novamente.');
+      }
+    }
+
+    // ==========================================
+    // INICIALIZAÇÃO DA SESSÃO
+    // ==========================================
+
+    supabaseClient.auth.onAuthStateChange(async (evento, sessao) => {
+      if (evento === 'PASSWORD_RECOVERY') {
+        return;
+      }
+
+      if (sessao?.user) {
+        usuarioAtual = sessao.user;
+
+        setTimeout(async () => {
+          await inicializarAplicacao();
+        }, 0);
+      } else {
+        usuarioAtual = null;
+        perfilAtual = null;
+
+        $('usuario-logado').textContent = '';
+        $('btn-sair').classList.add('hidden');
+        $('aba-admin').classList.add('hidden');
+
+        $('app').classList.add('hidden');
+        $('tela-cadastro').classList.add('hidden');
+        $('tela-login').classList.remove('hidden');
+      }
+    });
+
+    async function inicializarAplicacao() {
+      if (!usuarioAtual) return;
+
+      try {
+        const { data: perfil, error } = await supabaseClient
+          .from('perfis')
+          .select('*')
+          .eq('user_id', usuarioAtual.id)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (!perfil) {
+          mostrarMensagem(
+            'login-mensagem',
+            'Sua conta existe, mas seu perfil ainda não foi encontrado. Peça à administração para verificar seu cadastro.'
+          );
+
+          await supabaseClient.auth.signOut();
+          return;
+        }
+
+        perfilAtual = perfil;
+
+        $('usuario-logado').textContent = nomePerfil(perfilAtual);
+        $('btn-sair').classList.remove('hidden');
+
+        $('tela-login').classList.add('hidden');
+        $('tela-cadastro').classList.add('hidden');
+        $('app').classList.remove('hidden');
+
+        $('aba-admin').classList.toggle('hidden', !ehAdmin());
+
+        await carregarDadosBase();
+
+        abrirTela('inicio');
+      } catch (erro) {
+        console.error('Falha na inicialização:', erro);
+
+        mostrarMensagem(
+          'mensagem-global',
+          `Não foi possível carregar sua conta: ${erro.message || 'erro desconhecido'}`
+        );
+      }
+    }
+
+    // ==========================================
+    // CARREGAMENTO DOS DADOS DO SISTEMA
+    // ==========================================
+
+    async function carregarDadosBase() {
+      const resultados = await Promise.all([
+        supabaseClient.from('perfis').select('*'),
+        supabaseClient.from('turmas').select('*'),
+        supabaseClient.from('treinos').select('*'),
+        supabaseClient.from('campeonatos').select('*'),
+        supabaseClient.from('convocacoes').select('*'),
+        supabaseClient.from('mensalidades').select('*')
+      ]);
+
+      const nomesTabelas = [
+        'perfis',
+        'turmas',
+        'treinos',
+        'campeonatos',
+        'convocacoes',
+        'mensalidades'
+      ];
+
+      resultados.forEach((resultado, indice) => {
+        if (resultado.error) {
+          console.warn(
+            `Não foi possível carregar ${nomesTabelas[indice]}:`,
+            resultado.error.message
+          );
+        }
+      });
+
+      perfis = resultados[0].data || [];
+      turmas = resultados[1].data || [];
+      treinos = resultados[2].data || [];
+      campeonatos = resultados[3].data || [];
+      convocacoes = resultados[4].data || [];
+      mensalidades = resultados[5].data || [];
+
+      await carregarRanking(false);
+
+      preencherSelectTurmas();
+      preencherSelectAtletas();
+
+      atualizarResumo();
+    }
+
+    function atualizarResumo() {
+      $('stat-treinos').textContent = treinos.length;
+      $('stat-campeonatos').textContent = campeonatos.length;
+
+      const meuRanking = ranking.find(
+        item => item.atleta_id === usuarioAtual?.id
+      );
+
+      $('stat-pontos').textContent = meuRanking?.pontos ?? 0;
+    }
+
+    // ==========================================
+    // LISTAS E CAMPOS DE SELEÇÃO
+    // ==========================================
+
+    function preencherSelectTurmas() {
+      const ids = ['treino-turma', 'chamada-turma'];
+
+      ids.forEach(id => {
+        const select = $(id);
+        if (!select) return;
+
+        const valorAtual = select.value;
+
+        select.innerHTML = `
+          <option value="">Selecione a turma</option>
+          ${turmas.map(turma => `
+            <option value="${escaparHTML(turma.id)}">
+              ${escaparHTML(turma.nome || turma.titulo || 'Turma')}
+            </option>
+          `).join('')}
+        `;
+
+        if (valorAtual) select.value = valorAtual;
+      });
+    }
+
+    function preencherSelectAtletas() {
+      const select = $('mensalidade-atleta');
+      if (!select) return;
+
+      const valorAtual = select.value;
+
+      const atletas = perfis.filter(perfil => perfil.papel !== 'admin');
+
+      select.innerHTML = `
+        <option value="">Selecione o atleta</option>
+        ${atletas.map(atleta => `
+          <option value="${escaparHTML(atleta.user_id)}">
+            ${escaparHTML(nomePerfil(atleta))}
+          </option>
+        `).join('')}
+      `;
+
+      if (valorAtual) select.value = valorAtual;
+    }
+
+    async function carregarDadosAtualizados() {
+      await carregarDadosBase();
+
+      if (telaAtual === 'ranking') {
+        await carregarRanking();
+      }
+
+      if (telaAtual === 'presencas') {
+        await carregarHistoricoPresencas();
+      }
+
+      if (telaAtual === 'admin') {
+        abrirAdmin(adminAtual);
+      }
+    }
+
+        // ==========================================
+    // TREINOS
+    // ==========================================
+
+    async function carregarTreinos() {
+      mostrarCarregando('lista-treinos');
+
+      const { data, error } = await supabaseClient
+        .from('treinos')
+        .select('*')
+        .order('data', { ascending: false });
+
+      if (error) {
+        mostrarErro('lista-treinos', error);
+        return;
+      }
+
+      treinos = data || [];
+
+      if (!treinos.length) {
+        $('lista-treinos').innerHTML =
+          '<div class="empty">Nenhum treino cadastrado.</div>';
+        return;
+      }
+
+      $('lista-treinos').innerHTML = treinos.map(treino => {
+        const turma = turmas.find(item => item.id === treino.turma_id);
+
+        return `
+          <article class="card">
+            <h2>${escaparHTML(treino.titulo || treino.nome || 'Treino')}</h2>
+            <p class="muted">
+              Data: ${formatarDataHora(treino.data || treino.data_hora)}
+            </p>
+            <p class="muted">
+              Turma: ${escaparHTML(turma?.nome || 'Não informada')}
+            </p>
+            <p>${escaparHTML(treino.descricao || '')}</p>
+          </article>
+        `;
+      }).join('');
+    }
+
+    $('form-criar-treino').addEventListener('submit', async evento => {
+      evento.preventDefault();
+
+      if (!ehAdmin()) return;
+
+      limparMensagem('treino-mensagem');
+
+      const registro = {
+        titulo: $('treino-titulo').value.trim(),
+        data: new Date($('treino-data').value).toISOString(),
+        turma_id: $('treino-turma').value,
+        descricao: $('treino-descricao').value.trim()
+      };
+
+      try {
+        const { error } = await supabaseClient
+          .from('treinos')
+          .insert(registro);
+
+        if (error) throw error;
+
+        $('form-criar-treino').reset();
+
+        mostrarMensagem(
+          'treino-mensagem',
+          'Treino cadastrado com sucesso!',
+          'success'
+        );
+
+        await carregarDadosBase();
+      } catch (erro) {
+        mostrarErro('treino-mensagem', erro);
+      }
+    });
+
+    // ==========================================
+    // CAMPEONATOS E CONVOCAÇÕES
+    // ==========================================
+
+    async function carregarCampeonatos() {
+      mostrarCarregando('lista-campeonatos');
+
+      const { data, error } = await supabaseClient
+        .from('campeonatos')
+        .select('*')
+        .order('data', { ascending: true });
+
+      if (error) {
+        mostrarErro('lista-campeonatos', error);
+        return;
+      }
+
+      campeonatos = data || [];
+
+      if (!campeonatos.length) {
+        $('lista-campeonatos').innerHTML =
+          '<div class="card empty">Nenhum campeonato cadastrado.</div>';
+        return;
+      }
+
+      const resultado = await supabaseClient
+        .from('convocacoes')
+        .select('*');
+
+      if (!resultado.error) {
+        convocacoes = resultado.data || [];
+      }
+
+      $('lista-campeonatos').innerHTML = campeonatos.map(campeonato => {
+        const minhasConvocacoes = convocacoes.filter(item =>
+          item.campeonato_id === campeonato.id &&
+          item.atleta_id === usuarioAtual.id
+        );
+
+        return `
+          <article class="card">
+            <h2>${escaparHTML(campeonato.nome || campeonato.titulo || 'Campeonato')}</h2>
+            <p class="muted">Data: ${formatarData(campeonato.data)}</p>
+            <p class="muted">Local: ${escaparHTML(campeonato.local || 'Não informado')}</p>
+            <p>${escaparHTML(campeonato.descricao || '')}</p>
+            ${
+              minhasConvocacoes.length
+                ? `<p><span class="badge badge-success">Você possui uma convocação</span></p>`
+                : ''
+            }
+          </article>
+        `;
+      }).join('');
+    }
+
+    $('form-criar-campeonato').addEventListener('submit', async evento => {
+      evento.preventDefault();
+
+      if (!ehAdmin()) return;
+
+      limparMensagem('campeonato-mensagem');
+
+      const registro = {
+        nome: $('campeonato-nome').value.trim(),
+        data: $('campeonato-data').value || null,
+        local: $('campeonato-local').value.trim(),
+        descricao: $('campeonato-descricao').value.trim()
+      };
+
+      try {
+        const { error } = await supabaseClient
+          .from('campeonatos')
+          .insert(registro);
+
+        if (error) throw error;
+
+        $('form-criar-campeonato').reset();
+
+        mostrarMensagem(
+          'campeonato-mensagem',
+          'Campeonato cadastrado com sucesso!',
+          'success'
+        );
+
+        await carregarDadosBase();
+        await carregarCampeonatosAdmin();
+      } catch (erro) {
+        mostrarErro('campeonato-mensagem', erro);
+      }
+    });
+
+    async function carregarCampeonatosAdmin() {
+      if (!ehAdmin()) return;
+
+      const elemento = $('admin-convocacoes');
+
+      elemento.innerHTML = `
+        <div class="field">
+          <label for="convocacao-campeonato">Campeonato</label>
+          <select id="convocacao-campeonato">
+            <option value="">Selecione o campeonato</option>
+            ${campeonatos.map(item => `
+              <option value="${escaparHTML(item.id)}">
+                ${escaparHTML(item.nome || item.titulo || 'Campeonato')}
+              </option>
+            `).join('')}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="convocacao-atleta">Atleta</label>
+          <select id="convocacao-atleta">
+            <option value="">Selecione o atleta</option>
+            ${perfis.filter(p => p.papel !== 'admin').map(atleta => `
+              <option value="${escaparHTML(atleta.user_id)}">
+                ${escaparHTML(nomePerfil(atleta))}
+              </option>
+            `).join('')}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="convocacao-status">Status</label>
+          <select id="convocacao-status">
+            <option value="convocado">Convocado</option>
+            <option value="confirmado">Confirmado</option>
+            <option value="recusado">Recusado</option>
+          </select>
+        </div>
+
+        <button class="btn" onclick="salvarConvocacao()">Salvar convocação</button>
+
+        <div id="convocacao-mensagem"></div>
+
+        <h3>Convocações registradas</h3>
+        <div id="lista-convocacoes-registradas"></div>
+      `;
+
+      renderizarConvocacoes();
+    }
+
+    async function salvarConvocacao() {
+      if (!ehAdmin()) return;
+
+      const campeonatoId = $('convocacao-campeonato').value;
+      const atletaId = $('convocacao-atleta').value;
+      const status = $('convocacao-status').value;
+
+      if (!campeonatoId || !atletaId) {
+        mostrarMensagem(
+          'convocacao-mensagem',
+          'Selecione o campeonato e o atleta.'
+        );
+        return;
+      }
+
+      try {
+        const { error } = await supabaseClient
+          .from('convocacoes')
+          .insert({
+            campeonato_id: campeonatoId,
+            atleta_id: atletaId,
+            status
+          });
+
+        if (error) throw error;
+
+        mostrarMensagem(
+          'convocacao-mensagem',
+          'Convocação registrada!',
+          'success'
+        );
+
+        const { data, error: erroConsulta } = await supabaseClient
+          .from('convocacoes')
+          .select('*');
+
+        if (erroConsulta) throw erroConsulta;
+
+        convocacoes = data || [];
+        renderizarConvocacoes();
+      } catch (erro) {
+        mostrarErro('convocacao-mensagem', erro);
+      }
+    }
+
+    function renderizarConvocacoes() {
+      const elemento = $('lista-convocacoes-registradas');
+      if (!elemento) return;
+
+      if (!convocacoes.length) {
+        elemento.innerHTML = '<div class="empty">Nenhuma convocação registrada.</div>';
+        return;
+      }
+
+      elemento.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Campeonato</th>
+                <th>Atleta</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${convocacoes.map(item => {
+                const campeonato = campeonatos.find(c => c.id === item.campeonato_id);
+
+                return `
+                  <tr>
+                    <td>${escaparHTML(campeonato?.nome || campeonato?.titulo || 'Campeonato')}</td>
+                    <td>${criarLinkAtleta(item.atleta_id, obterNomeAtleta(item.atleta_id))}</td>
+                    <td>${escaparHTML(item.status || 'Convocado')}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    // ==========================================
+    // MENSALIDADES
+    // ==========================================
+
+    async function carregarMensalidades() {
+      mostrarCarregando('lista-mensalidades');
+
+      let consulta = supabaseClient
+        .from('mensalidades')
+        .select('*')
+        .order('vencimento', { ascending: false });
+
+      if (!ehAdmin()) {
+        consulta = consulta.eq('atleta_id', usuarioAtual.id);
+      }
+
+      const { data, error } = await consulta;
+
+      if (error) {
+        mostrarErro('lista-mensalidades', error);
+        return;
+      }
+
+      mensalidades = data || [];
+
+      if (!mensalidades.length) {
+        $('lista-mensalidades').innerHTML =
+          '<div class="card empty">Nenhuma mensalidade encontrada.</div>';
+        return;
+      }
+
+      $('lista-mensalidades').innerHTML = `
+        <div class="card table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Atleta</th>
+                <th>Valor</th>
+                <th>Vencimento</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${mensalidades.map(item => `
+                <tr>
+                  <td>${criarLinkAtleta(item.atleta_id, obterNomeAtleta(item.atleta_id))}</td>
+                  <td>${formatarMoeda(item.valor)}</td>
+                  <td>${formatarData(item.vencimento)}</td>
+                  <td>
+                    <span class="badge ${item.status === 'paga' ? 'badge-success' : 'badge-danger'}">
+                      ${escaparHTML(item.status || 'pendente')}
+                    </span>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    $('form-criar-mensalidade').addEventListener('submit', async evento => {
+      evento.preventDefault();
+
+      if (!ehAdmin()) return;
+
+      limparMensagem('mensalidade-mensagem');
+
+      const registro = {
+        atleta_id: $('mensalidade-atleta').value,
+        valor: Number($('mensalidade-valor').value),
+        vencimento: $('mensalidade-vencimento').value,
+        status: $('mensalidade-status').value
+      };
+
+      if (!registro.atleta_id || !registro.vencimento) {
+        mostrarMensagem(
+          'mensalidade-mensagem',
+          'Preencha todos os campos obrigatórios.'
+        );
+        return;
+      }
+
+      try {
+        const { error } = await supabaseClient
+          .from('mensalidades')
+          .insert(registro);
+
+        if (error) throw error;
+
+        $('form-criar-mensalidade').reset();
+
+        mostrarMensagem(
+          'mensalidade-mensagem',
+          'Mensalidade cadastrada!',
+          'success'
+        );
+
+        await carregarDadosBase();
+        await carregarMensalidadesAdmin();
+      } catch (erro) {
+        mostrarErro('mensalidade-mensagem', erro);
+      }
+    });
+
+    async function carregarMensalidadesAdmin() {
+      if (!ehAdmin()) return;
+
+      const { data, error } = await supabaseClient
+        .from('mensalidades')
+        .select('*')
+        .order('vencimento', { ascending: false });
+
+      if (error) {
+        mostrarErro('admin-lista-mensalidades', error);
+        return;
+      }
+
+      mensalidades = data || [];
+
+      if (!mensalidades.length) {
+        $('admin-lista-mensalidades').innerHTML =
+          '<div class="empty">Nenhuma mensalidade cadastrada.</div>';
+        return;
+      }
+
+      $('admin-lista-mensalidades').innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Atleta</th>
+                <th>Valor</th>
+                <th>Vencimento</th>
+                <th>Status</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${mensalidades.map(item => `
+                <tr>
+                  <td>${criarLinkAtleta(item.atleta_id, obterNomeAtleta(item.atleta_id))}</td>
+                  <td>${formatarMoeda(item.valor)}</td>
+                  <td>${formatarData(item.vencimento)}</td>
+                  <td>${escaparHTML(item.status || 'pendente')}</td>
+                  <td>
+                    <button class="btn btn-secondary btn-small"
+                      onclick="alternarStatusMensalidade('${escaparHTML(item.id)}','${item.status === 'paga' ? 'pendente' : 'paga'}')">
+                      Marcar ${item.status === 'paga' ? 'pendente' : 'paga'}
+                    </button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    async function alternarStatusMensalidade(id, status) {
+      if (!ehAdmin()) return;
+
+      const { error } = await supabaseClient
+        .from('mensalidades')
+        .update({ status })
+        .eq('id', id);
+
+      if (error) {
+        alert('Não foi possível atualizar a mensalidade: ' + error.message);
+        return;
+      }
+
+      await carregarMensalidadesAdmin();
+      await carregarMensalidades();
+    }
+
+    // ==========================================
+    // RANKING DE ATLETAS
+    // ==========================================
+
+    async function carregarRanking(atualizarTela = true) {
+      const resultado = await supabaseClient
+        .from('ranking_atletas')
+        .select('*');
+
+      if (resultado.error) {
+        console.warn('Não foi possível carregar ranking:', resultado.error.message);
+        ranking = [];
+      } else {
+        ranking = resultado.data || [];
+      }
+
+      if (atualizarTela) {
+        renderizarRanking();
+      }
+
+      atualizarResumo();
+    }
+
+    function atletasOrdenadosRanking() {
+      return perfis
+        .filter(perfil => perfil.papel !== 'admin')
+        .map(perfil => {
+          const pontuacao = ranking.find(
+            item => item.atleta_id === perfil.user_id
+          );
+
+          return {
+            ...perfil,
+            pontos: Number(pontuacao?.pontos || 0),
+            observacao: pontuacao?.observacao || ''
+          };
+        })
+        .sort((a, b) => {
+          if (b.pontos !== a.pontos) {
+            return b.pontos - a.pontos;
+          }
+
+          return nomePerfil(a).localeCompare(nomePerfil(b), 'pt-BR');
+        });
+    }
+
+    function renderizarRanking() {
+      const elemento = $('lista-ranking');
+      if (!elemento) return;
+
+      const atletas = atletasOrdenadosRanking();
+
+      if (!atletas.length) {
+        elemento.innerHTML = '<div class="empty">Nenhum atleta encontrado.</div>';
+        return;
+      }
+
+      elemento.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Posição</th>
+                <th>Atleta</th>
+                <th>Turma</th>
+                <th>Pontos</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${atletas.map((atleta, indice) => {
+                const turma = obterTurmaAtleta(atleta.user_id);
+
+                return `
+                  <tr>
+                    <td><strong>#${indice + 1}</strong></td>
+                    <td>${criarLinkAtleta(atleta.user_id, nomePerfil(atleta))}</td>
+                    <td>${escaparHTML(turma?.nome || 'Sem turma')}</td>
+                    <td><strong>${atleta.pontos}</strong></td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    async function carregarRankingAdmin() {
+      if (!ehAdmin()) return;
+
+      await carregarRanking(false);
+
+      const elemento = $('admin-lista-ranking');
+      const atletas = atletasOrdenadosRanking();
+
+      if (!atletas.length) {
+        elemento.innerHTML = '<div class="empty">Nenhum atleta cadastrado.</div>';
+        return;
+      }
+
+      elemento.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Atleta</th>
+                <th>Pontos</th>
+                <th>Observação</th>
+                <th>Salvar</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${atletas.map(atleta => {
+                const registro = ranking.find(
+                  item => item.atleta_id === atleta.user_id
+                );
+
+                return `
+                  <tr>
+                    <td>${criarLinkAtleta(atleta.user_id, nomePerfil(atleta))}</td>
+                    <td style="min-width:100px">
+                      <input
+                        id="pontos-${escaparHTML(atleta.user_id)}"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value="${atleta.pontos}">
+                    </td>
+                    <td style="min-width:150px">
+                      <input
+                        id="obs-${escaparHTML(atleta.user_id)}"
+                        type="text"
+                        value="${escaparHTML(registro?.observacao || '')}"
+                        placeholder="Observação">
+                    </td>
+                    <td>
+                      <button class="btn btn-small"
+                        onclick="salvarPontosAtleta('${escaparHTML(atleta.user_id)}')">
+                        Salvar
+                      </button>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    async function salvarPontosAtleta(atletaId) {
+      if (!ehAdmin()) return;
+
+      const pontos = Number($(`pontos-${atletaId}`).value);
+      const observacao = $(`obs-${atletaId}`).value.trim();
+
+      if (!Number.isInteger(pontos) || pontos < 0) {
+        alert('Informe uma pontuação inteira igual ou maior que zero.');
+        return;
+      }
+
+      const registro = {
+        atleta_id: atletaId,
+        pontos,
+        observacao,
+        atualizado_por: usuarioAtual.id,
+        atualizado_em: new Date().toISOString()
+      };
+
+      const { error } = await supabaseClient
+        .from('ranking_atletas')
+        .upsert(registro, { onConflict: 'atleta_id' });
+
+      if (error) {
+        alert('Erro ao salvar pontos: ' + error.message);
+        return;
+      }
+
+      await carregarRanking(false);
+      await carregarRankingAdmin();
+      renderizarRanking();
+      atualizarResumo();
+
+      alert('Pontuação atualizada!');
+    }
+
+    // ==========================================
+    // PERFIL INDIVIDUAL DO ATLETA
+    // ==========================================
+
+    function obterTurmaAtleta(atletaId) {
+      const relacoes = window.__turmaAtletasCache || [];
+
+      const relacao = relacoes.find(item =>
+        item.atleta_id === atletaId
+      );
+
+      if (relacao) {
+        return turmas.find(turma => turma.id === relacao.turma_id) || null;
+      }
+
+      const perfil = obterPerfil(atletaId);
+
+      if (perfil?.turma_id) {
+        return turmas.find(turma => turma.id === perfil.turma_id) || null;
+      }
+
+      return null;
+    }
+
+    async function carregarRelacoesTurmas() {
+      const { data, error } = await supabaseClient
+        .from('turma_atletas')
+        .select('*');
+
+      if (error) {
+        console.warn('Não foi possível carregar as relações entre turmas e atletas:', error.message);
+        window.__turmaAtletasCache = [];
+        return;
+      }
+
+      window.__turmaAtletasCache = data || [];
+    }
+
+    async function abrirMeuPerfil() {
+      if (!usuarioAtual) return;
+
+      await abrirPerfilAtleta(usuarioAtual.id);
+    }
+
+    async function abrirPerfilAtleta(atletaId) {
+      if (!usuarioAtual || !atletaId) return;
+
+      const perfil = obterPerfil(atletaId);
+
+      if (!perfil) {
+        alert('Não foi possível encontrar o perfil deste atleta.');
+        return;
+      }
+
+      telaAnterior = telaAtual;
+
+      document.querySelectorAll('.tela-app').forEach(tela => {
+        tela.classList.add('hidden');
+      });
+
+      document.querySelectorAll('[data-tela]').forEach(botao => {
+        botao.classList.remove('active');
+      });
+
+      $('tela-perfil').classList.remove('hidden');
+      telaAtual = 'perfil';
+
+      await carregarRelacoesTurmas();
+      await carregarRanking(false);
+
+      const atletas = atletasOrdenadosRanking();
+      const posicao = atletas.findIndex(item => item.user_id === atletaId) + 1;
+      const atletaRanking = ranking.find(item => item.atleta_id === atletaId);
+      const turma = obterTurmaAtleta(atletaId);
+
+      const podeEditarIdade =
+        atletaId === usuarioAtual.id || ehAdmin();
+
+      const idade = perfil.idade ?? '';
+
+      $('conteudo-perfil').innerHTML = `
+        <div class="card">
+          <div class="profile-header">
+            <div class="avatar">
+              ${escaparHTML((nomePerfil(perfil).trim()[0] || 'A').toUpperCase())}
+            </div>
+            <div>
+              <h1 class="section-title" style="margin-bottom:6px">
+                ${escaparHTML(nomePerfil(perfil))}
+              </h1>
+              <div class="muted">Perfil do atleta Spooky House</div>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-value">${posicao || '—'}</div>
+              <div class="stat-label">Posição no ranking</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-value">${Number(atletaRanking?.pontos || 0)}</div>
+              <div class="stat-label">Pontos</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-value">${idade !== '' ? escaparHTML(idade) : '—'}</div>
+              <div class="stat-label">Idade</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Nome</label>
+            <input value="${escaparHTML(nomePerfil(perfil))}" disabled>
+          </div>
+
+          <div class="field">
+            <label>Turma / categoria</label>
+            <input value="${escaparHTML(turma?.nome || 'Sem turma cadastrada')}" disabled>
+          </div>
+
+          <div class="field">
+            <label for="perfil-idade">Idade</label>
+            <input
+              id="perfil-idade"
+              type="number"
+              min="1"
+              max="100"
+              value="${escaparHTML(idade)}"
+              ${podeEditarIdade ? '' : 'disabled'}
+              placeholder="Informe sua idade">
+          </div>
+
+          ${
+            podeEditarIdade
+              ? `<button class="btn" onclick="salvarIdadeAtleta('${escaparHTML(atletaId)}')">Salvar idade</button>`
+              : ''
+          }
+
+          <div id="perfil-mensagem"></div>
+        </div>
+      `;
+    }
+
+    async function salvarIdadeAtleta(atletaId) {
+      if (!usuarioAtual) return;
+
+      if (atletaId !== usuarioAtual.id && !ehAdmin()) {
+        alert('Você só pode editar a sua própria idade.');
+        return;
+      }
+
+      const campo = $('perfil-idade');
+      const idade = Number(campo.value);
+
+      if (!Number.isInteger(idade) || idade < 1 || idade > 100) {
+        mostrarMensagem('perfil-mensagem', 'Informe uma idade válida.');
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from('perfis')
+        .update({ idade })
+        .eq('user_id', atletaId);
+
+      if (error) {
+        mostrarErro('perfil-mensagem', error);
+        return;
+      }
+
+      const perfil = obterPerfil(atletaId);
+
+      if (perfil) {
+        perfil.idade = idade;
+      }
+
+      mostrarMensagem(
+        'perfil-mensagem',
+        'Idade atualizada com sucesso!',
+        'success'
+      );
+
+      await abrirPerfilAtleta(atletaId);
+    }
+
+    // ==========================================
+    // ADMINISTRAÇÃO DE ATLETAS
+    // ==========================================
+
+    async function carregarAtletasAdmin() {
+      if (!ehAdmin()) return;
+
+      const { data, error } = await supabaseClient
+        .from('perfis')
+        .select('*');
+
+      if (error) {
+        mostrarErro('admin-lista-atletas', error);
+        return;
+      }
+
+      perfis = data || [];
+
+      const atletas = perfis.filter(perfil => perfil.papel !== 'admin');
+
+      if (!atletas.length) {
+        $('admin-lista-atletas').innerHTML =
+          '<div class="empty">Nenhum atleta cadastrado.</div>';
+        return;
+      }
+
+      $('admin-lista-atletas').innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Atleta</th>
+                <th>Telefone</th>
+                <th>Turma</th>
+                <th>Perfil</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${atletas.map(atleta => {
+                const turma = obterTurmaAtleta(atleta.user_id);
+
+                return `
+                  <tr>
+                    <td>${criarLinkAtleta(atleta.user_id, nomePerfil(atleta))}</td>
+                    <td>${escaparHTML(atleta.telefone || '—')}</td>
+                    <td>${escaparHTML(turma?.nome || 'Sem turma')}</td>
+                    <td>
+                      <button class="btn btn-secondary btn-small"
+                        onclick="abrirPerfilAtleta('${escaparHTML(atleta.user_id)}')">
+                        Ver perfil
+                      </button>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+        // ==========================================
+    // CHAMADA E PRESENÇAS
+    // ==========================================
+
+    async function preencherSelectChamada() {
+      await carregarRelacoesTurmas();
+
+      const select = $('chamada-turma');
+      if (!select) return;
+
+      select.innerHTML = `
+        <option value="">Selecione a turma</option>
+        ${turmas.map(turma => `
+          <option value="${escaparHTML(turma.id)}">
+            ${escaparHTML(turma.nome || turma.titulo || 'Turma')}
+          </option>
+        `).join('')}
+      `;
+
+      if (!$('chamada-data').value) {
+        $('chamada-data').value = dataHoje();
+      }
+    }
+
+    async function carregarAtletasChamada() {
+      if (!ehAdmin()) return;
+
+      const turmaId = $('chamada-turma').value;
+      const data = $('chamada-data').value;
+      const descricao = $('chamada-descricao').value.trim();
+
+      if (!turmaId || !data) {
+        mostrarMensagem(
+          'chamada-mensagem',
+          'Selecione a turma e a data do treino.'
+        );
+        return;
+      }
+
+      limparMensagem('chamada-mensagem');
+      mostrarCarregando('lista-atletas-chamada', 'Carregando atletas...');
+
+      try {
+        await carregarRelacoesTurmas();
+
+        const relacoes = window.__turmaAtletasCache || [];
+
+        const idsAtletas = relacoes
+          .filter(relacao => relacao.turma_id === turmaId)
+          .map(relacao => relacao.atleta_id);
+
+        if (!idsAtletas.length) {
+          $('lista-atletas-chamada').innerHTML =
+            '<div class="empty">Nenhum atleta está vinculado a essa turma na tabela turma_atletas.</div>';
+          $('btn-salvar-chamada').classList.add('hidden');
+          return;
+        }
+
+        const atletas = perfis
+          .filter(perfil =>
+            perfil.papel !== 'admin' &&
+            idsAtletas.includes(perfil.user_id)
+          )
+          .sort((a, b) =>
+            nomePerfil(a).localeCompare(nomePerfil(b), 'pt-BR')
+          );
+
+        if (!atletas.length) {
+          $('lista-atletas-chamada').innerHTML =
+            '<div class="empty">Não foram encontrados perfis de atletas vinculados a essa turma.</div>';
+          $('btn-salvar-chamada').classList.add('hidden');
+          return;
+        }
+
+        const { data: chamadas, error: erroChamadas } = await supabaseClient
+          .from('chamadas')
+          .select('*')
+          .eq('turma_id', turmaId)
+          .eq('data', data);
+
+        if (erroChamadas) throw erroChamadas;
+
+        let chamadaExistente = (chamadas || [])[0] || null;
+
+        if (!chamadaExistente) {
+          const { data: novaChamada, error: erroCriacao } = await supabaseClient
+            .from('chamadas')
+            .insert({
+              turma_id: turmaId,
+              data,
+              treino: descricao,
+              criado_por: usuarioAtual.id
+            })
+            .select()
+            .single();
+
+          if (erroCriacao) throw erroCriacao;
+
+          chamadaExistente = novaChamada;
+        }
+
+        chamadaEmEdicao = chamadaExistente;
+
+        const { data: presencas, error: erroPresencas } = await supabaseClient
+          .from('presencas')
+          .select('*')
+          .eq('chamada_id', chamadaEmEdicao.id);
+
+        if (erroPresencas) throw erroPresencas;
+
+        const presencasExistentes = presencas || [];
+
+        atletasChamada = atletas.map(atleta => {
+          const registro = presencasExistentes.find(
+            item => item.atleta_id === atleta.user_id
+          );
+
+          return {
+            atleta_id: atleta.user_id,
+            nome: nomePerfil(atleta),
+            presente: registro ? registro.presente === true : false
+          };
+        });
+
+        renderizarAtletasChamada();
+
+        $('btn-salvar-chamada').classList.remove('hidden');
+      } catch (erro) {
+        mostrarErro('chamada-mensagem', erro);
+        $('lista-atletas-chamada').innerHTML = '';
+        $('btn-salvar-chamada').classList.add('hidden');
+      }
+    }
+
+    function renderizarAtletasChamada() {
+      const elemento = $('lista-atletas-chamada');
+
+      if (!elemento) return;
+
+      if (!atletasChamada.length) {
+        elemento.innerHTML = '<div class="empty">Nenhum atleta para exibir.</div>';
+        return;
+      }
+
+      elemento.innerHTML = `
+        <div class="notice">
+          Marque os atletas presentes. Os que ficarem desmarcados serão registrados como ausentes.
+        </div>
+
+        <div class="actions" style="margin-bottom:12px">
+          <button type="button" class="btn btn-secondary btn-small"
+            onclick="marcarTodosAtletas(true)">
+            Marcar todos
+          </button>
+
+          <button type="button" class="btn btn-secondary btn-small"
+            onclick="marcarTodosAtletas(false)">
+            Desmarcar todos
+          </button>
+        </div>
+
+        ${atletasChamada.map((atleta, indice) => `
+          <div class="attendance-row">
+            <div>
+              ${criarLinkAtleta(atleta.atleta_id, atleta.nome)}
+            </div>
+
+            <label class="check-label">
+              <input
+                type="checkbox"
+                ${atleta.presente ? 'checked' : ''}
+                onchange="alterarPresencaChamada(${indice}, this.checked)">
+              Presente
+            </label>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    function alterarPresencaChamada(indice, presente) {
+      if (!atletasChamada[indice]) return;
+
+      atletasChamada[indice].presente = presente;
+    }
+
+    function marcarTodosAtletas(presente) {
+      atletasChamada = atletasChamada.map(atleta => ({
+        ...atleta,
+        presente
+      }));
+
+      renderizarAtletasChamada();
+    }
+
+    async function salvarChamada() {
+      if (!ehAdmin()) return;
+
+      if (!chamadaEmEdicao || !atletasChamada.length) {
+        mostrarMensagem(
+          'chamada-mensagem',
+          'Carregue os atletas antes de salvar a chamada.'
+        );
+        return;
+      }
+
+      const botao = $('btn-salvar-chamada');
+      botao.disabled = true;
+      botao.textContent = 'Salvando...';
+
+      try {
+        const registros = atletasChamada.map(atleta => ({
+          chamada_id: chamadaEmEdicao.id,
+          atleta_id: atleta.atleta_id,
+          presente: atleta.presente
+        }));
+
+        const { error } = await supabaseClient
+          .from('presencas')
+          .upsert(registros, {
+            onConflict: 'chamada_id,atleta_id'
+          });
+
+        if (error) throw error;
+
+        mostrarMensagem(
+          'chamada-mensagem',
+          'Chamada salva com sucesso!',
+          'success'
+        );
+      } catch (erro) {
+        mostrarErro('chamada-mensagem', erro);
+      } finally {
+        botao.disabled = false;
+        botao.textContent = 'Salvar chamada';
+      }
+    }
+
+    async function carregarHistoricoPresencas() {
+      if (!usuarioAtual) return;
+
+      mostrarCarregando('historico-presencas');
+
+      try {
+        const { data: registros, error } = await supabaseClient
+          .from('presencas')
+          .select('*')
+          .eq('atleta_id', usuarioAtual.id);
+
+        if (error) throw error;
+
+        const presencas = registros || [];
+
+        if (!presencas.length) {
+          $('historico-presencas').innerHTML =
+            '<div class="empty">Você ainda não possui presenças registradas.</div>';
+          return;
+        }
+
+        const idsChamadas = [...new Set(
+          presencas.map(item => item.chamada_id)
+        )];
+
+        const { data: chamadas, error: erroChamadas } = await supabaseClient
+          .from('chamadas')
+          .select('*')
+          .in('id', idsChamadas);
+
+        if (erroChamadas) throw erroChamadas;
+
+        const listaChamadas = chamadas || [];
+
+        const historico = presencas.map(presenca => {
+          const chamada = listaChamadas.find(
+            item => item.id === presenca.chamada_id
+          );
+
+          const turma = turmas.find(
+            item => item.id === chamada?.turma_id
+          );
+
+          return {
+            ...presenca,
+            data: chamada?.data || '',
+            treino: chamada?.treino || '',
+            turma: turma?.nome || 'Turma'
+          };
+        }).sort((a, b) =>
+          String(b.data).localeCompare(String(a.data))
+        );
+
+        const total = historico.length;
+        const presentes = historico.filter(item => item.presente).length;
+        const percentual = total
+          ? Math.round((presentes / total) * 100)
+          : 0;
+
+        $('historico-presencas').innerHTML = `
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-value">${total}</div>
+              <div class="stat-label">Treinos registrados</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-value">${presentes}</div>
+              <div class="stat-label">Presenças</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-value">${percentual}%</div>
+              <div class="stat-label">Frequência</div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Treino</th>
+                  <th>Turma</th>
+                  <th>Situação</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                ${historico.map(item => `
+                  <tr>
+                    <td>${formatarData(item.data)}</td>
+                    <td>${escaparHTML(item.treino || 'Treino')}</td>
+                    <td>${escaparHTML(item.turma)}</td>
+                    <td>
+                      <span class="badge ${item.presente ? 'badge-success' : 'badge-danger'}">
+                        ${item.presente ? 'Presente' : 'Ausente'}
+                      </span>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } catch (erro) {
+        mostrarErro('historico-presencas', erro);
+      }
+    }
+
+    // ==========================================
+    // FINALIZAÇÃO E CARREGAMENTO INICIAL
+    // ==========================================
+
+    async function carregarTudoAposLogin() {
+      await carregarDadosBase();
+      await carregarRelacoesTurmas();
+      atualizarResumo();
+    }
+
+    // Define a data padrão da chamada.
+    if ($('chamada-data')) {
+      $('chamada-data').value = dataHoje();
+    }
+
+    // Fecha o JavaScript, o body e o documento HTML.
+  </script>
 </body>
 </html>
