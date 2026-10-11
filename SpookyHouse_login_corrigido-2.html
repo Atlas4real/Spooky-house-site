@@ -1,0 +1,986 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090909">
+  <title>SH — Plataforma</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--bg:#080808;--panel:#131313;--panel2:#1b1b1b;--line:#303030;--text:#f5f5f5;--muted:#aaa;--green:#b8f4c6;--red:#ffaaaa}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    button,input,select,textarea{font:inherit}button{border:1px solid #eee;background:#f5f5f5;color:#090909;padding:10px 14px;border-radius:9px;font-weight:750;cursor:pointer}button:hover{opacity:.88}button.secondary{background:#242424;color:#fff;border-color:#454545}button.danger{background:#4a1b1b;color:white;border-color:#763838}button:disabled{opacity:.5;cursor:wait}
+    input,select,textarea{width:100%;padding:11px;background:#080808;color:#fff;border:1px solid #3a3a3a;border-radius:8px}textarea{min-height:85px;resize:vertical}label{display:block;font-size:13px;color:#d6d6d6;margin:0 0 5px}.field{margin-bottom:12px}
+    .hidden{display:none!important}.wrap{max-width:1200px;margin:auto;padding:18px}.auth{max-width:440px;margin:7vh auto}.brand{font-size:25px;font-weight:950;letter-spacing:2px}.brand small{display:block;font-size:10px;color:#aaa;letter-spacing:3px}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:17px;margin:12px 0}.auth .card{padding:24px}.muted{color:var(--muted)}.small{font-size:12px}.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.row>*{flex:1}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:16px}.nav{display:flex;gap:7px;overflow:auto;padding:13px 0}.nav button{white-space:nowrap;background:#171717;color:#eee;border-color:#333}.nav button.active{background:#fff;color:#000}.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.page-heading-actions{display:flex;align-items:center;gap:13px}.back-home{display:inline-flex;align-items:center;gap:8px}.back-home .sh-icon{width:18px;height:18px}.section-head h1{margin:0;font-size:27px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}.stat{background:#171717;border:1px solid var(--line);padding:14px;border-radius:12px}.stat strong{font-size:27px;display:block}.stat span{font-size:12px;color:var(--muted)}.notice{padding:11px 13px;border-radius:9px;background:#222;border:1px solid #444;margin:12px 0}.notice.error{border-color:#773535;color:var(--red)}.notice.ok{border-color:#365c3d;color:var(--green)}.item{padding:11px 0;border-bottom:1px solid #303030}.item:last-child{border:0}.pill{display:inline-block;border-radius:99px;padding:3px 8px;background:#292929;font-size:12px}.pill.ok{color:var(--green)}.pill.bad{color:var(--red)}.actions{display:flex;gap:7px;flex-wrap:wrap}.actions button{font-size:12px;padding:7px 9px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;padding:9px 7px;border-bottom:1px solid #303030;vertical-align:top}th{color:#bbb}.checkline{display:flex;gap:10px;align-items:center}.checkline input{width:auto}.checkline label{margin:0}.footer{text-align:center;padding:28px 0;color:#666;font-size:12px}.profile-number{font-size:38px;font-weight:950}.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}.empty{padding:15px;color:#aaa}.inline{display:inline-block}
+    @media(max-width:620px){.wrap{padding:12px}.card{padding:13px}.auth .card{padding:18px}.section-head h1{font-size:23px}.split{grid-template-columns:1fr}.nav{margin:0 -2px}.nav button{padding:9px 11px}}
+
+    /* Visual Court Culture aplicado sobre o HTML original; sem substituir suas funções. */
+    /* SH — Court Culture: camada visual, sem alterar a lógica do app */
+    :root{
+      color-scheme:dark;
+      --bg:#0a0a0a;--panel:#141414;--panel2:#1e1e1e;--line:#303030;
+      --text:#f5f5f5;--muted:#a7a7a7;--green:#b8f4c6;--red:#ffaaaa;
+      --surface:#171717;--white:#f5f5f5;
+    }
+    body{background:radial-gradient(ellipse at 50% -18%,#262626 0%,#101010 35%,var(--bg) 72%);letter-spacing:.01em}
+    .wrap{max-width:1240px;padding:24px}
+    .brand{font-size:clamp(22px,3vw,29px);letter-spacing:2.8px;line-height:1.05;text-transform:uppercase}
+    .brand small{margin-top:7px;font-size:10px;letter-spacing:4px;font-weight:750}
+    .top{padding:8px 0 20px;border-bottom:1px solid #383838;position:relative}
+    .top:after{display:none!important;content:none!important}
+    .top .row{flex:0 1 auto!important}
+    .top .row>div{min-width:100px}
+    .top #headerName{font-size:14px}
+    .top #headerRole{font-size:11px;margin-top:2px}
+    .nav{display:none!important;gap:8px;padding:20px 0 15px;scrollbar-width:thin;scrollbar-color:#444 transparent}
+    .nav button{border:1px solid #353535;background:#171717;color:#d8d8d8;border-radius:7px;padding:10px 14px;font-size:12px;font-weight:800;letter-spacing:.02em;transition:background .18s,border-color .18s,transform .18s}
+    .nav button:hover{opacity:1;background:#292929;border-color:#666;transform:translateY(-1px)}
+    .nav button.active{background:#f5f5f5;color:#090909;border-color:#f5f5f5;box-shadow:0 4px 16px #0005}
+    .card{background:linear-gradient(145deg,#171717 0%,#111 100%);border:1px solid #303030;border-radius:15px;padding:20px;margin:14px 0;box-shadow:0 8px 24px #0002}
+    .card h2{font-size:18px;letter-spacing:-.3px;margin-top:0}
+    .section-head{margin:12px 0 18px;padding:0 0 13px;border-bottom:1px solid #292929}
+    .section-head h1{font-size:clamp(25px,4vw,34px);letter-spacing:-1.1px;font-weight:900;line-height:1.1}
+    .section-head p{margin:8px 0 0;font-size:13px}
+    .section-head .secondary{font-size:12px}
+    .stats{gap:12px;margin:16px 0}
+    .stat{position:relative;overflow:hidden;background:linear-gradient(145deg,#202020,#141414);border:1px solid #353535;border-radius:13px;padding:17px;min-height:94px}
+    .stat:after{content:"";position:absolute;right:-22px;top:-24px;width:66px;height:66px;border:1px solid #ffffff0c;border-radius:50%;box-shadow:0 0 0 10px #ffffff04,0 0 0 20px #ffffff03}
+    .stat strong{font-size:30px;letter-spacing:-1px;line-height:1.15}
+    .stat span{display:block;margin-top:6px;font-size:11px;letter-spacing:.04em;text-transform:uppercase;font-weight:750}
+    button{border-radius:8px;min-height:40px;transition:background .16s,border-color .16s,transform .16s,opacity .16s}
+    button:not(:disabled):hover{opacity:1;transform:translateY(-1px)}
+    button:not(.secondary):not(.danger){background:#f5f5f5;color:#090909;border-color:#f5f5f5}
+    button:not(.secondary):not(.danger):hover{background:#dcdcdc}
+    button.secondary{background:#252525;color:#f5f5f5;border-color:#444}
+    button.secondary:hover{background:#303030;border-color:#666}
+    button.danger{background:#391b1b;border-color:#693737}
+    input,select,textarea{background:#0c0c0c;border-color:#383838;border-radius:8px;min-height:42px;transition:border-color .15s,box-shadow .15s}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:#bdbdbd;box-shadow:0 0 0 3px #ffffff12}
+    input:disabled{color:#999;background:#151515}
+    label{font-weight:700;font-size:12px;letter-spacing:.02em}
+    .notice{border-radius:10px;padding:12px 14px;background:#222;border-color:#454545;font-size:13px}
+    .notice.ok{background:#172019;border-color:#34523a}
+    .notice.error{background:#251616;border-color:#663333}
+    .pill{border:1px solid #3b3b3b;background:#222;color:#ddd;padding:4px 9px;font-size:11px;font-weight:750}
+    .item{padding:13px 0;border-color:#2b2b2b}
+    .grid{gap:14px}
+    .split{gap:14px}
+    .table-wrap{border:1px solid #303030;border-radius:10px}
+    table{font-size:12px}
+    td,th{padding:11px 9px;border-color:#2e2e2e}
+    th{background:#1d1d1d;color:#ddd;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+    .profile-number{font-size:42px;letter-spacing:-1.5px}
+    .profile-photo{width:108px;height:108px;border:3px solid #f2f2f2;box-shadow:0 0 0 5px #ffffff0c}
+    .athlete-avatar{border-color:#555;background:#242424}
+    .footer{margin-top:28px;border-top:1px solid #252525;letter-spacing:2px;font-weight:800;font-size:10px}
+    /* Court Culture refined UI */
+    .home-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:14px;margin:18px 0 22px}
+    .home-tile{min-height:142px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:15px;padding:20px;border-radius:15px;background:linear-gradient(145deg,#242424,#141414)!important;color:#f6f6f6!important;border:1px solid #3c3c3c!important;box-shadow:0 10px 28px #0003}
+    .home-tile .sh-icon{width:31px;height:31px;color:#fff;padding:4px;border:1px solid #4a4a4a;border-radius:9px}
+    .home-tile strong{font-size:16px;letter-spacing:-.3px}.home-tile small{font-size:11px;color:#aaa;font-weight:550}
+    .home-tile:hover{background:linear-gradient(145deg,#303030,#191919)!important;border-color:#777!important;transform:translateY(-3px)!important}
+    .header-tools{gap:12px}.notification-wrap{position:relative;flex:0 0 auto!important}
+    .bell-button{position:relative;width:46px;height:44px;display:grid;place-items:center;padding:8px;border-radius:12px!important;background:#242424!important;border:1px solid #484848!important;color:#f4f4f4!important;box-shadow:none;transition:transform .18s,box-shadow .18s,background .18s,border-color .18s}
+    .bell-button:hover{background:#303030!important;border-color:#666!important;transform:translateY(-1px)}
+    .bell-button .sh-icon{display:block;width:23px!important;height:23px!important;color:currentColor!important;stroke:currentColor!important;fill:none!important;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+    .notification-badge{position:absolute;right:-5px;top:-5px;min-width:20px;height:20px;padding:0 5px;display:grid;place-items:center;border-radius:99px;background:#d71920;color:#fff;border:2px solid #151515;font-size:10px;font-weight:950;box-shadow:0 1px 5px #0008}
+    .bell-button.has-unread{background:#d71920!important;border-color:#ff4b52!important;color:#fff!important;box-shadow:0 0 0 2px #d7192033,0 4px 16px #d7192055}
+    .bell-button.has-unread:hover{background:#f02029!important;box-shadow:0 0 0 3px #d7192044,0 5px 20px #d7192077}
+    .bell-button.has-unread .notification-badge{background:#fff;color:#d71920;border-color:#d71920}
+    .bell-button.has-unread{animation:notificationPulse 1.8s ease-in-out infinite}
+    @keyframes notificationPulse{0%,100%{box-shadow:0 0 0 2px #d7192033,0 4px 16px #d7192055}50%{box-shadow:0 0 0 5px #d7192022,0 4px 22px #d7192099}}
+    .notification-panel{position:absolute;z-index:50;right:0;top:52px;width:min(360px,calc(100vw - 32px));max-height:65vh;overflow:auto;padding:10px;background:#151515;border:1px solid #454545;border-radius:15px;box-shadow:0 20px 60px #000b}
+    .notification-panel h3{margin:7px 8px 10px;font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:#aaa}
+    .notification-entry{width:100%;display:block;text-align:left;white-space:normal;background:#202020!important;color:#f4f4f4!important;border:1px solid #333!important;border-radius:10px;padding:12px;margin:6px 0;min-height:0}
+    .notification-entry strong{display:block;font-size:13px}.notification-entry small{display:block;color:#aaa;margin-top:4px;font-weight:500}
+    .new-announcement{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 17px;margin:12px 0 18px;border:1px solid #777;border-radius:14px;background:linear-gradient(110deg,#242424,#151515);cursor:pointer}
+    .new-announcement strong{display:block;font-size:14px}.new-announcement p{margin:4px 0 0;color:#bcbcbc;font-size:12px}.new-announcement .new-label{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;background:#f5f5f5;color:#080808;font-size:10px;letter-spacing:.8px;font-weight:950;white-space:nowrap}
+    .coach-calendar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.coach-day{min-height:120px;padding:12px;border:1px solid #333;border-radius:12px;background:#111}.coach-day.today{border-color:#eee;box-shadow:inset 0 0 0 1px #eee}.coach-day .day-date{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.7px}.coach-event{padding:8px;margin-top:8px;background:#222;border-radius:8px;border-left:2px solid #eee;font-size:12px}.coach-event strong{display:block;font-size:12px}.coach-event small{color:#aaa}
+    .remove-membership{margin-top:8px}.roster-member{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #292929}.roster-member:last-child{border-bottom:0}.roster-member button{flex:0 0 auto}
+    @media(max-width:650px){.home-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.home-tile{min-height:124px;padding:14px}.coach-calendar{grid-template-columns:repeat(2,minmax(0,1fr))}.top:after{display:none}.header-tools{gap:7px}}
+    .auth{max-width:470px;margin:6vh auto}
+    .auth>.brand{margin:0 0 22px 4px}
+    .auth .card{padding:27px;background:linear-gradient(145deg,#191919,#101010);border-radius:18px;box-shadow:0 20px 70px #0008}
+    #authTitle{font-size:30px;letter-spacing:-1px;margin:0 0 5px;font-weight:900}
+    #authView>p,.auth .muted{font-size:13px}
+    .auth form button[type="submit"]{margin-top:5px;min-height:46px;font-weight:900;letter-spacing:.03em}
+    .auth .row button{font-size:12px}
+    .champ-hero{border-radius:16px}
+    .champ-card,.team-card{box-shadow:0 12px 28px #0004}
+    .callup-admin summary{padding:10px 0}
+    .coach-card{display:flex;align-items:center;gap:16px;min-width:0}
+    .coach-avatar{width:72px;height:72px;flex:0 0 72px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:#252525;border:2px solid #eee;font-size:20px;font-weight:900}
+    .coach-avatar img{width:100%;height:100%;object-fit:cover}
+    .coach-info{min-width:0;overflow-wrap:anywhere}.coach-info h2{margin:0 0 8px}
+
+    /* Navegação e painel inicial com ícones vetoriais personalizados (sem emojis). */
+    .nav button{display:inline-flex;align-items:center;gap:9px}
+    .sh-icon{width:22px;height:22px;display:inline-block;flex:0 0 22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
+    .nav .sh-icon{width:17px;height:17px;flex-basis:17px}
+    .home-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:18px 0 24px}
+    .home-tile{min-height:142px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px;text-align:left;border:1px solid #393939!important;border-radius:15px!important;background:linear-gradient(145deg,#202020,#111)!important;color:#f5f5f5!important;box-shadow:0 10px 26px #0004}
+    .home-tile .sh-icon{width:32px;height:32px;flex-basis:32px}
+    .home-tile strong{font-size:16px;letter-spacing:.01em}
+    .home-tile small{color:#aaa;font-size:12px;font-weight:500}
+    .home-tile:hover{border-color:#aaa!important;background:linear-gradient(145deg,#292929,#151515)!important}
+    .rank-athlete{background:none!important;border:0!important;color:#fff!important;padding:3px 0!important;min-height:0!important;text-align:left;text-decoration:underline;text-decoration-color:#555;text-underline-offset:4px}
+    .rank-athlete:hover{color:#ccc!important}
+    .role-options{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0 14px}.role-options label{display:flex;align-items:center;gap:7px}.role-options input{width:auto;min-height:0}
+    .weekdays{display:flex;gap:8px;flex-wrap:wrap}.weekdays label{display:flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid #383838;border-radius:8px;background:#111}.weekdays input{width:auto;min-height:0}
+    @media(max-width:620px){.home-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.home-tile{min-height:122px;padding:14px}.home-tile strong{font-size:14px}}
+
+    ::selection{background:#f5f5f5;color:#090909}
+    @media(max-width:760px){
+      .wrap{padding:14px}
+      .top{align-items:flex-start}
+      .top .row{gap:8px}
+      .top:after{font-size:8px;letter-spacing:1.2px}
+      .nav{margin:0 -14px;padding:17px 14px 13px;overflow-x:auto;scroll-snap-type:x proximity}
+      .nav button{scroll-snap-align:start;flex:0 0 auto;padding:10px 12px}
+      .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .stat{padding:14px;min-height:84px}
+      .stat strong{font-size:26px}
+      .card{padding:15px;border-radius:13px}
+      .auth{margin:4vh auto}
+      .auth .card{padding:20px}
+      .section-head{align-items:flex-start}
+      .section-head h1{font-size:25px}
+    }
+    @media(max-width:380px){.brand{font-size:20px;letter-spacing:1.8px}.brand small{letter-spacing:2.7px}.stats{gap:8px}.stat strong{font-size:23px}.stat span{font-size:10px}}
+
+  
+
+    /* SH — camada visual premium; preserva a lógica e os fluxos existentes */
+    :root{--bg:#080808;--panel:#111;--panel2:#191919;--line:#2c2c2c;--text:#f6f6f6;--muted:#a1a1a1;--green:#c7f36b;--red:#ff9c9c;--accent:#d7ff65;--surface:#111}
+    body{background:radial-gradient(ellipse at 50% -12%,#303030 0%,#141414 27%,#080808 67%);background-attachment:fixed}
+    .wrap{max-width:1320px}
+    .brand-lockup{display:flex;align-items:center;gap:13px;letter-spacing:0;text-transform:none}
+    .sh-mark{width:48px;height:48px;display:grid;place-items:center;border:1px solid #555;border-radius:13px;background:linear-gradient(145deg,#292929,#0d0d0d);box-shadow:0 8px 24px #0007,inset 0 1px #ffffff18;color:#f7f7f7;flex:0 0 48px}
+    .sh-mark svg{width:34px;height:34px;display:block}.sh-mark img{width:39px;height:41px;object-fit:contain;display:block;filter:drop-shadow(0 1px 2px #0008)}
+    .brand-word{font-size:28px;font-weight:950;letter-spacing:-1.5px;line-height:1}
+    .brand-word small{display:block;font-size:9px;letter-spacing:3px;color:#969696;margin-top:7px;font-weight:800}
+    .top{padding:7px 0 21px;border-bottom-color:#3a3a3a;gap:14px}
+    .top:after{display:none!important;content:none!important}
+    .top #headerName{font-size:13px;font-weight:800;letter-spacing:.01em}
+    .top #headerRole{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#aaa}
+    .header-tools{gap:10px}
+    .nav{display:flex!important;gap:7px;padding:17px 0 10px;flex-wrap:nowrap}
+    .nav button{border-radius:10px;padding:10px 12px;background:#141414;color:#bdbdbd;border-color:#303030;font-size:11px;letter-spacing:.01em}
+    .nav button .sh-icon{width:16px;height:16px;flex-basis:16px}
+    .nav button.active{background:#f3f3f3;color:#090909;border-color:#f3f3f3;box-shadow:0 5px 18px #fff1}
+    .card{background:linear-gradient(145deg,#171717ed,#0e0e0ef5);border-color:#2d2d2d;border-radius:17px;box-shadow:0 12px 32px #0003,inset 0 1px #ffffff06}
+    .card h2{font-weight:850;letter-spacing:-.45px}
+    .section-head{border-bottom-color:#303030;margin-top:20px}
+    .section-head h1{font-size:clamp(28px,4vw,38px);letter-spacing:-1.5px}
+    .section-head p{color:#9e9e9e}
+    .home-tile{position:relative;overflow:hidden;min-height:150px;border-color:#333!important;background:linear-gradient(145deg,#202020,#101010)!important;border-radius:17px!important;transition:transform .2s,border-color .2s,background .2s;box-shadow:0 12px 28px #0003}
+    .home-tile:after{content:"";position:absolute;right:-35px;bottom:-55px;width:125px;height:125px;border:1px solid #ffffff0c;border-radius:50%;box-shadow:0 0 0 14px #ffffff04,0 0 0 28px #ffffff03;pointer-events:none}
+    .home-tile .sh-icon{width:40px;height:40px;flex-basis:40px;padding:9px;border-radius:12px;background:#ffffff08;border-color:#494949;color:#f5f5f5}
+    .home-tile strong{font-size:16px;font-weight:850;letter-spacing:-.4px}
+    .home-tile small{color:#aaa;line-height:1.5}
+    .home-tile:hover{transform:translateY(-4px)!important;border-color:#777!important;background:linear-gradient(145deg,#292929,#131313)!important}
+    .stat{border-radius:15px;background:linear-gradient(145deg,#202020,#111);border-color:#343434}
+    .stat strong{font-weight:900;letter-spacing:-1.3px}
+    .stat span{letter-spacing:.09em;font-size:10px}
+    button{border-radius:10px;font-weight:800;letter-spacing:.01em}
+    button.secondary{background:#1b1b1b;border-color:#393939}
+    button.secondary:hover{border-color:#707070;background:#292929}
+    button.danger{background:#351818;border-color:#633131}
+    input,select,textarea{background:#0a0a0a;border-color:#333;border-radius:10px}
+    input:focus,select:focus,textarea:focus{border-color:#bdbdbd;box-shadow:0 0 0 3px #ffffff10}
+    label{color:#d2d2d2;font-size:11px;text-transform:uppercase;letter-spacing:.07em}
+    .pill{border-color:#3c3c3c;background:#222;border-radius:7px;letter-spacing:.02em}
+    .notice{border-radius:12px;background:#1b1b1b;border-color:#383838}
+    .notification-panel{border:1px solid #383838;border-radius:15px;background:#141414;box-shadow:0 18px 50px #0009}
+    .bell-button{border-radius:12px}
+    .table-wrap{border-radius:12px;border-color:#303030}
+    table{border-collapse:separate;border-spacing:0}
+    th:first-child{border-top-left-radius:9px}th:last-child{border-top-right-radius:9px}
+    .profile-number{display:inline-flex;align-items:baseline;gap:8px;font-size:48px;line-height:1.1;padding:3px 0 8px;letter-spacing:-2px}
+    .profile-number+ .muted{font-size:11px;text-transform:uppercase;letter-spacing:1.8px}
+    #profilePhotoPreview{width:104px!important;height:104px!important;border:3px solid #e9e9e9!important;box-shadow:0 0 0 6px #ffffff0a}
+    #profileForm{border-top:1px solid #292929;padding-top:18px}
+    #profileForm button[type=submit]{min-width:150px}
+    .footer{border-top:1px solid #292929;color:#777;letter-spacing:.04em;font-size:11px;font-weight:600;text-transform:none;padding:25px 10px;margin-top:34px}
+    .sh-icon{filter:drop-shadow(0 1px 1px #0004)}
+    :focus-visible{outline:2px solid #e5e5e5!important;outline-offset:3px}
+    @media(max-width:760px){.wrap{padding:13px}.top{align-items:center}.top:after{letter-spacing:1.6px}.brand-word{font-size:25px}.sh-mark{width:43px;height:43px;flex-basis:43px}.sh-mark svg{width:30px;height:30px}.sh-mark img{width:34px;height:36px}.nav{margin:0 -13px;padding:14px 13px 12px;gap:7px}.nav button{padding:10px 11px}.nav button span:not(.sh-icon){font-size:11px}.home-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.home-tile{min-height:130px;padding:15px}.home-tile .sh-icon{width:35px;height:35px;flex-basis:35px}.card{padding:15px}.section-head h1{font-size:28px}}
+    @media(max-width:390px){.brand-word{font-size:22px}.brand-word small{font-size:8px;letter-spacing:2px}.sh-mark{width:39px;height:39px;flex-basis:39px}.home-tile{padding:12px;min-height:122px}.home-tile strong{font-size:13px}}
+
+  
+/* Painéis em blocos grandes, no mesmo padrão visual da tela inicial */
+.management-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0 24px}
+.management-shortcut{min-height:112px;display:flex;align-items:center;gap:14px;padding:18px;border:1px solid #383838;border-radius:16px;background:linear-gradient(145deg,#242424,#111);color:#fff;text-decoration:none;cursor:pointer;text-align:left;box-shadow:0 8px 20px #0003;transition:transform .15s,border-color .15s}
+.management-shortcut:hover{transform:translateY(-2px);border-color:#777}
+.management-shortcut .shortcut-icon{width:52px;height:52px;flex:0 0 52px;display:grid;place-items:center;border-radius:13px;background:#fff;color:#111;font-size:25px;font-weight:800}
+.management-shortcut strong{display:block;font-size:17px;line-height:1.2;margin-bottom:5px}.management-shortcut small{display:block;color:#bcbcbc;font-size:12px;line-height:1.35}
+.management-group-title{margin:20px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:1.4px;color:#aaa}
+.management-back{margin:0 0 16px;min-height:46px;padding:12px 18px;border-radius:12px;font-weight:700}.management-home[hidden],.management-back[hidden],section[hidden],.stats[hidden]{display:none!important}
+.admin-dashboard section.card,.coach-dashboard section.card{scroll-margin-top:18px;margin-bottom:16px;padding:20px;border-radius:16px}
+.admin-dashboard section.card h2,.coach-dashboard section.card h2{margin-top:0}
+@media(max-width:560px){.management-shortcuts{grid-template-columns:1fr;gap:10px}.management-shortcut{min-height:88px;padding:14px}.management-shortcut .shortcut-icon{width:46px;height:46px;flex-basis:46px}}
+
+</style>
+
+<style id="sh-hide-extra-topics">
+/* Remove os atalhos redundantes do topo; a navegação continua pelo painel principal. */
+#nav { display: none !important; }
+</style>
+
+<style id="final-mobile-fixes">
+/* Ajustes solicitados: navegação escura e notificações totalmente visíveis no celular */
+.nav button.active{background:#292929!important;color:#fff!important;border-color:#5a5a5a!important;box-shadow:inset 0 -2px 0 #a8a8a8!important}
+.nav button.active .sh-icon{color:#fff!important}
+.notification-panel{position:fixed!important;right:12px!important;left:auto!important;top:calc(env(safe-area-inset-top, 0px) + 76px)!important;width:min(360px,calc(100vw - 24px))!important;max-width:calc(100vw - 24px)!important;max-height:calc(100dvh - 100px)!important;overflow-y:auto!important;z-index:9999!important;margin:0!important}
+.notification-wrap{position:relative!important;flex:0 0 auto!important}
+.top{position:relative;z-index:100}
+.sh-mark{overflow:hidden}
+@media(max-width:760px){.header-tools{gap:6px!important}.header-tools>div:first-child{min-width:0!important;max-width:calc(100vw - 180px);overflow:hidden}.top #headerName{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.notification-panel{top:calc(env(safe-area-inset-top, 0px) + 70px)!important}}
+</style>
+
+<style id="spooky-showcase-style">
+.showcase-wrap{margin:18px 0}.showcase-track{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 12px}.showcase-card{flex:0 0 min(82%,340px);scroll-snap-align:start;border:1px solid #303030;border-radius:14px;overflow:hidden;background:#131313;color:#f5f5f5;text-align:left;padding:0}.showcase-card img{display:block;width:100%;height:190px;object-fit:cover;background:#1b1b1b}.showcase-card .showcase-copy{padding:14px}.showcase-card h3{margin:0 0 6px}.showcase-detail img{max-width:100%;max-height:360px;object-fit:contain;border-radius:10px;background:#111}.showcase-gallery{display:flex;gap:10px;overflow:auto}.showcase-gallery img{width:130px;height:110px;object-fit:cover;border-radius:8px}.showcase-admin-row{display:flex;gap:12px;align-items:center;justify-content:space-between;border:1px solid #303030;padding:13px;border-radius:12px;background:#171717;flex-wrap:wrap;margin-top:10px}.showcase-admin-row .admin-preview{width:76px;height:64px;object-fit:cover;border-radius:9px;background:#222;flex-shrink:0}.showcase-admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:14px}.showcase-admin-card{background:linear-gradient(145deg,#202020,#111);border:1px solid #393939;border-radius:14px;padding:15px;display:flex;flex-direction:column;gap:10px}.showcase-admin-card .admin-preview{width:100%;height:125px;object-fit:cover;border-radius:9px;background:#222}.upload-pick{display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;border:1px dashed #777;border-radius:10px;padding:12px;background:#101010;color:#eee;cursor:pointer}.upload-pick input{display:none}.upload-preview{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.upload-preview img{width:74px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #444}.admin-dashboard section.card{box-shadow:0 8px 24px #0002}.admin-dashboard section.card h2{display:flex;align-items:center;gap:8px}.admin-dashboard section.card h2:before{content:"";display:inline-block;width:5px;height:20px;background:#eee;border-radius:4px}.showcase-admin-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}.showcase-admin-form .field{margin:0}.showcase-admin-form .wide{grid-column:1/-1}.showcase-admin-actions{display:flex;gap:8px;flex-wrap:wrap;grid-column:1/-1}@media(max-width:600px){.showcase-admin-form{grid-template-columns:1fr}.showcase-admin-form .wide{grid-column:auto}}
+</style>
+</head>
+<body>
+  <section id="authView" class="wrap auth">
+    <div class="brand brand-lockup"><span class="sh-mark" aria-label="Logo oficial SH"><img src="data:image/png;base64,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" alt="SH" /></span><span class="brand-word">SH</span></div>
+    <div class="card">
+      <h1 id="authTitle">Entrar</h1>
+      <p class="muted">Treinos, atletas, presença e gestão em um só lugar.</p>
+      <div id="authMsg" class="notice hidden"></div>
+      <form id="loginForm">
+        <div class="field"><label for="loginEmail">E-mail</label><input id="loginEmail" type="email" autocomplete="email" required></div>
+        <div class="field"><label for="loginPassword">Senha</label><input id="loginPassword" type="password" autocomplete="current-password" required></div>
+        <button id="loginButton" type="submit" style="width:100%">Entrar</button>
+      </form>
+      <form id="signupForm" class="hidden">
+        <div class="field"><label for="signupName">Nome completo</label><input id="signupName" required></div>
+        <div class="field"><label for="signupPhone">Telefone</label><input id="signupPhone" type="tel"></div>
+        <div class="field"><label for="signupEmail">E-mail</label><input id="signupEmail" type="email" required></div>
+        <div class="field"><label for="signupPassword">Senha (mínimo 6 caracteres)</label><input id="signupPassword" type="password" minlength="6" required></div>
+        <button type="submit" style="width:100%">Criar conta</button>
+      </form>
+      <div class="row" style="margin-top:12px">
+        <button class="secondary" id="toggleSignup" type="button">Criar conta</button>
+        <button class="secondary" id="recoverButton" type="button">Esqueci a senha</button>
+      </div>
+      <p class="muted small">O cadastro e o acesso aos dados dependem das configurações de autenticação e das políticas do Supabase.</p>
+    </div>
+  </section>
+
+  <section id="appView" class="hidden">
+    <div class="wrap">
+      <header class="top">
+        <div class="brand brand-lockup"><span class="sh-mark" aria-label="Logo oficial SH"><img src="data:image/png;base64,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" alt="SH" /></span><span class="brand-word">SH</span></div>
+        <div class="row header-tools" style="flex:0 1 auto"><div><strong id="headerName">Usuário</strong><div class="muted small" id="headerRole">Atleta</div></div><div class="notification-wrap"><button class="secondary bell-button" id="notificationBell" type="button" aria-label="Abrir notificações"><svg class="sh-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span id="notificationBadge" class="notification-badge hidden">0</span></button><div id="notificationPanel" class="notification-panel hidden"></div></div><button class="secondary" id="logoutButton">Sair</button></div>
+      </header>
+      <nav id="nav" class="nav">
+        <button data-page="inicio" class="active"><span class="sh-icon" data-icon="home"></span><span>Início</span></button>
+        <button data-page="perfil"><span class="sh-icon" data-icon="user"></span><span>Meu perfil</span></button>
+        <button data-page="treinos"><span class="sh-icon" data-icon="calendar"></span><span>Treinos</span></button>
+        <button data-page="campeonatos"><span class="sh-icon" data-icon="trophy"></span><span>Campeonatos</span></button>
+        <button data-page="coletivos"><span class="sh-icon" data-icon="users"></span><span>Coletivos</span></button>
+        <button data-page="mensalidades"><span class="sh-icon" data-icon="wallet"></span><span>Mensalidades</span></button>
+        <button data-page="presencas"><span class="sh-icon" data-icon="clipboard"></span><span>Presenças</span></button>
+        <button data-page="ranking"><span class="sh-icon" data-icon="chart"></span><span>Ranking</span></button>
+        <button data-page="avisos"><span class="sh-icon" data-icon="bell"></span><span>Avisos</span></button>
+        <button data-page="treinadores"><span class="sh-icon" data-icon="whistle"></span><span>Treinadores</span></button>
+        <button data-page="admin" id="adminNav" class="hidden"><span class="sh-icon" data-icon="settings"></span><span>Administração</span></button>
+      </nav>
+      <div id="globalMsg" class="notice hidden"></div>
+      <main id="content"><div class="card">Carregando...</div></main>
+      <div class="footer">© Todos os direitos reservados a Igor Gonçalves Barbosa</div>
+    </div>
+  </section>
+
+<script>
+(() => {
+  'use strict';
+
+  const SUPABASE_URL = 'https://mcrreffapstciqpsgvro.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_S798hSSxNl63S2sgDYJoog_tl-N6poI';
+  const db = window.supabase?.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const $ = id => document.getElementById(id);
+
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[ch]));
+
+  const today = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  const dateBR = value => value
+    ? new Date(value + 'T12:00:00').toLocaleDateString('pt-BR')
+    : '—';
+
+  const money = value => Number(value || 0).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  });
+
+  let user = null;
+  let session = null;
+  let profile = null;
+  let isAdmin = false;
+  let currentPage = 'inicio';
+
+  let dataCache = {
+    perfis: [],
+    turmas: [],
+    treinos: [],
+    campeonatos: [],
+    mensalidades: [],
+    ranking: [],
+    avisos: []
+  };
+
+  function svgIcon(name){
+    const paths={
+      back:'<path d="M19 12H5M12 19l-7-7 7-7"/>',
+      home:'<path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9M9 20v-6h6v6"/>',
+      user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+      calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
+      trophy:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H3v2a5 5 0 0 0 5 5M17 6h4v2a5 5 0 0 1-5 5"/>',
+      wallet:'<rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 9h18M16 14h2"/>',
+      clipboard:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M8 10h8M8 14h8M8 18h5"/>',
+      chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+      bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
+      whistle:'<path d="M3 12h10l5-4h3v8h-3l-5-4"/><circle cx="7" cy="12" r="2"/><path d="M18 8V5"/>',
+      settings:'<circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.6a8 8 0 0 1-1.8 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.8-1l-1.7.6-1.4-2.4 1.4-1.1a7 7 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.6a8 8 0 0 1 1.8-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.8 1l1.7-.6 1.4 2.4-1.4 1.1a7 7 0 0 1 0 2z"/>'
+    };
+    return `<svg class="sh-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name]||paths.home}</svg>`;
+  }
+  function hydrateIcons(root=document){root.querySelectorAll('[data-icon]').forEach(el=>{el.innerHTML=svgIcon(el.dataset.icon);});}
+  function hasRole(profile, role){const raw=[...(Array.isArray(profile?.funcoes)?profile.funcoes:[]), ...String(profile?.papel||'').toLowerCase().split(/[,;|+]/)];return raw.map(x=>String(x).trim().toLowerCase()).some(x=>({administrador:'admin',técnico:'tecnico',treinador:'tecnico',professor:'tecnico'}[x]||x)===role);}
+  function profileRoles(profile){const roles=Array.isArray(profile?.funcoes)?profile.funcoes:[];return [...new Set([...roles,...String(profile?.papel||'atleta').toLowerCase().split(/[,;|+]/).map(x=>x.trim()).filter(Boolean)])];}
+  function roleLabel(value){const roles=value&&typeof value==='object'&&!Array.isArray(value)?profileRoles(value):Array.isArray(value)?value:String(value||'atleta').toLowerCase().split(/[,;|+]/).map(x=>x.trim()).filter(Boolean);return [...new Set(roles)].map(x=>({admin:'Administrador',administrador:'Administrador',atleta:'Atleta',tecnico:'Técnico',técnico:'Técnico',treinador:'Técnico',professor:'Técnico'}[String(x).trim().toLowerCase()]||String(x).trim())).filter(Boolean).join(' + ');}
+
+  function showMessage(text, type = 'ok', global = true) {
+    const el = $(global ? 'globalMsg' : 'authMsg');
+    el.textContent = text;
+    el.className = 'notice ' + (type === 'error' ? 'error' : 'ok');
+    el.classList.remove('hidden');
+
+    if (global) {
+      setTimeout(() => el.classList.add('hidden'), 7000);
+    }
+  }
+
+  function handleError(error, context = 'Erro na operação') {
+    console.error(context, error);
+    showMessage(
+      `${context}: ${error?.message || 'verifique as permissões e a conexão com o Supabase.'}`,
+      'error'
+    );
+  }
+
+  function buttonRefresh() {
+    return '<button class="secondary" type="button" id="refreshCurrent">Atualizar</button>';
+  }
+
+  function pageHeader(title, description = '') {
+    const back = currentPage !== 'inicio' ? `<button class="secondary back-home" type="button" data-back-home aria-label="Voltar à tela inicial"><span class="sh-icon">${svgIcon('back')}</span><span>Voltar</span></button>` : '';
+    return `<div class="section-head">
+      <div class="page-heading-actions">${back}<div><h1>${esc(title)}</h1>${description ? `<p class="muted">${esc(description)}</p>` : ''}</div></div>
+      ${buttonRefresh()}
+    </div>`;
+  }
+
+  function adminCheck() {
+    return isAdmin;
+  }
+
+  // Atletas não veem a área de treinadores; administradores e perfis somente técnicos veem.
+  function canSeeCoaches() {
+    return isAdmin || (hasRole(profile, 'tecnico') && !hasRole(profile, 'atleta'));
+  }
+
+  function teamName(id) {
+    return dataCache.turmas.find(t => String(t.id) === String(id))?.nome || '';
+  }
+
+  function personName(id) {
+    return dataCache.perfis.find(p => p.user_id === id)?.nome || id || '—';
+  }
+
+  function setAppVisible(visible) {
+    $('authView').classList.toggle('hidden', visible);
+    $('appView').classList.toggle('hidden', !visible);
+  }
+
+  function setPageButtons() {
+    document.querySelectorAll('#nav [data-page]').forEach(b => {
+      b.classList.toggle('active', b.dataset.page === currentPage);
+    });
+  }
+
+  async function loadProfile() {
+    const { data, error } = await db
+      .from('perfis')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (data) {
+      profile = data;
+    } else {
+      profile = {
+        user_id: user.id,
+        nome: user.user_metadata?.nome || user.email?.split('@')[0] || 'Atleta',
+        papel: 'atleta',
+        telefone: user.user_metadata?.telefone || null
+      };
+    }
+
+    isAdmin = hasRole(profile, 'admin');
+
+    $('headerName').textContent = profile.nome || user.email;
+    $('headerRole').textContent = roleLabel(profile) || 'Atleta';
+    $('adminNav').classList.toggle('hidden', !isAdmin);
+  }
+
+  async function loadBase() {
+    const queries = [
+      ['turmas', () => db.from('turmas').select('*').order('nome')],
+      ['treinos', () => db.from('treinos').select('*').order('criado_em', { ascending: false })],
+      ['campeonatos', () => db.from('campeonatos').select('*').order('data_evento', { ascending: true })],
+      ['mensalidades', () => db.from('mensalidades').select('*').order('vencimento', { ascending: false })],
+      ['ranking', () => db.from('ranking_atletas').select('*').order('pontos', { ascending: false })],
+      ['avisos', () => db.from('announcements').select('*').order('created_at', { ascending: false })]
+    ];
+
+    for (const [key, query] of queries) {
+      const { data, error } = await query();
+
+      if (error) {
+        console.warn(`Não carregou ${key}:`, error.message);
+        dataCache[key] = [];
+      } else {
+        dataCache[key] = data || [];
+      }
+    }
+
+    const { data, error } = await db.from('perfis').select('*').order('nome');
+
+    if (error) {
+      console.warn('Não carregou perfis:', error.message);
+    } else {
+      dataCache.perfis = data || [];
+    }
+  }
+
+  async function openPage(name){
+    currentPage=name;
+    setPageButtons();
+    const c=$('content');
+    c.innerHTML='<div class="card">Carregando...</div>';
+    try{
+      switch(name){
+        case 'inicio':await renderHome(c);break;
+        case 'perfil':await renderProfile(c);break;
+        case 'treinos':await renderTrainings(c);break;
+        case 'campeonatos':await renderChampionships(c);break;
+        case 'coletivos':await renderCollectives(c);break;
+        case 'mensalidades':await renderBills(c);break;
+        case 'presencas':await renderAttendance(c);break;
+        case 'ranking':await renderRanking(c);break;
+        case 'avisos':await renderAnnouncements(c);break;
+        case 'treinadores':if(!canSeeCoaches()){currentPage='inicio';await renderHome(c);}else{await renderCoaches(c);}break;
+        case 'admin':await renderAdmin(c);break;
+        case 'anuncio':await renderShowcaseDetail(c,sessionStorage.getItem('spooky_showcase_open')||'');break;
+        default:await renderHome(c);
+      }
+      const refresh=$('refreshCurrent');
+      if(refresh)refresh.onclick=()=>openPage(currentPage);
+    }catch(error){
+      console.error(error);
+      c.innerHTML=`<div class="card"><h2>Não foi possível abrir esta tela</h2><p class="muted">${esc(error.message)}</p><button onclick="location.reload()">Recarregar página</button></div>`;
+    }
+  }
+
+  async function startApp(){
+    await loadProfile();
+    await loadBase();
+    const coachesNav = document.querySelector('#nav [data-page="treinadores"]');
+    if (coachesNav) coachesNav.classList.toggle('hidden', !canSeeCoaches());
+    if (!canSeeCoaches() && currentPage === 'treinadores') currentPage = 'inicio';
+    setAppVisible(true);
+    await openPage(currentPage);
+    refreshNotifications().catch(err=>console.warn("Notificações não carregadas:",err.message));
+  }
+
+  // Carrossel compartilhado pelo Supabase.
+  let showcaseCache=[];
+  const showcaseFromRow = r => ({id:r.id,title:r.titulo||'',price:r.preco||'',contact:r.contato||'',image:r.foto_principal||'',image2:r.foto_extra_2||'',image3:r.foto_extra_3||'',description:r.descricao||'',active:r.ativo!==false,order:Number(r.ordem||0)});
+  const showcaseToRow = x => ({titulo:x.title,preco:x.price||null,contato:x.contact||null,foto_principal:x.image||null,foto_extra_2:x.image2||null,foto_extra_3:x.image3||null,descricao:x.description||null,ativo:!!x.active,ordem:Number(x.order||0),atualizado_em:new Date().toISOString()});
+  async function readShowcase(includeInactive=false){
+    if(!db){showMessage('Não foi possível conectar ao Supabase.','error');return [];}
+    let q=db.from('spooky_carrossel').select('*').order('ordem',{ascending:true}).order('criado_em',{ascending:false});
+    if(!includeInactive)q=q.eq('ativo',true);
+    const {data,error}=await q;
+    if(error){console.error('Carrossel Supabase:',error);return showcaseCache.filter(x=>includeInactive||x.active);}
+    showcaseCache=(data||[]).map(showcaseFromRow);
+    return showcaseCache.filter(x=>includeInactive||x.active);
+  }
+  function renderShowcase(items){return `<section class="showcase-wrap"><div class="section-head"><div><h2>Destaques da Spooky House</h2><p class="muted small">Produtos, novidades e anúncios</p></div></div><div class="showcase-track">${items.map(x=>`<button type="button" class="showcase-card" data-showcase-open="${esc(x.id)}">${x.image?`<img src="${esc(x.image)}" alt="${esc(x.title)}" loading="lazy">`:''}<div class="showcase-copy"><h3>${esc(x.title)}</h3>${x.price?`<strong>${esc(x.price)}</strong>`:''}<p class="muted small">${esc(x.description||'Toque para ver detalhes')}</p></div></button>`).join('')}</div></section>`}
+  async function renderShowcaseDetail(c,id){const items=await readShowcase();const x=items.find(a=>a.id===id);if(!x){c.innerHTML=pageHeader('Anúncio','')+'<section class="card"><p>Este anúncio não está disponível.</p><button type="button" data-back-home>Voltar ao início</button></section>';return}const photos=[x.image,x.image2,x.image3].filter(Boolean);c.innerHTML=pageHeader(x.title,'Detalhes do anúncio')+`<section class="card showcase-detail"><button type="button" class="secondary" data-back-home>← Voltar</button>${photos.length?`<div class="showcase-gallery" style="margin-top:16px">${photos.map(src=>`<img src="${esc(src)}" alt="${esc(x.title)}" loading="lazy">`).join('')}</div>`:''}<h1>${esc(x.title)}</h1>${x.price?`<h2>${esc(x.price)}</h2>`:''}<p>${esc(x.description||'')}</p>${x.contact?`<div class="card"><strong>Contato</strong><p>${esc(x.contact)}</p><button type="button" id="showcaseContact">Entrar em contato</button></div>`:''}</section>`;const btn=$('showcaseContact');if(btn)btn.onclick=()=>{const contact=x.contact||'';const url=/^https?:\/\//i.test(contact)?contact:(/^[+\d\s().-]{8,}$/.test(contact)?`https://wa.me/${contact.replace(/\D/g,'')}`:contact.startsWith('@')?`https://instagram.com/${contact.slice(1)}`:'');if(url)window.open(url,'_blank','noopener');else showMessage('Contato: '+contact);};}
+  function setupShowcaseAdmin(c){
+    const form=$('showcaseForm'),list=$('showcaseAdminList');if(!form||!list)return;
+    const pendingImages={};
+    const compressImage=file=>new Promise((resolve,reject)=>{if(!file)return resolve('');if(!file.type.startsWith('image/'))return reject(new Error('Escolha um arquivo de imagem.'));const reader=new FileReader();reader.onerror=()=>reject(new Error('Não foi possível ler a imagem.'));reader.onload=()=>{const img=new Image();img.onerror=()=>reject(new Error('Imagem inválida.'));img.onload=()=>{const max=1000,scale=Math.min(1,max/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.65));};img.src=reader.result;};reader.readAsDataURL(file);});
+    const preview=(key,src)=>{const box=form.querySelector(`[data-preview="${key}"]`);if(box)box.innerHTML=src?`<img src="${esc(src)}" alt="Prévia da foto"><button type="button" class="secondary" data-clear-photo="${key}">Remover foto</button>`:'';};
+    const renderList=async()=>{list.innerHTML='<p class="muted">Carregando anúncios...</p>';const items=await readShowcase(true);list.innerHTML='<h3 style="margin-top:22px">Anúncios cadastrados</h3><div class="showcase-admin-grid">'+(items.map(x=>`<article class="showcase-admin-card">${x.image?`<img class="admin-preview" src="${esc(x.image)}" alt="">`: '<div class="admin-preview" style="display:grid;place-items:center;color:#888">Sem foto</div>'}<div><strong>${esc(x.title)}</strong><div class="muted small">${x.active?'Ativo':'Oculto'}${x.price?' · '+esc(x.price):''}</div></div><div class="actions"><button type="button" class="secondary" data-showcase-edit="${x.id}">Editar</button><button type="button" class="secondary" data-showcase-toggle="${x.id}">${x.active?'Ocultar':'Ativar'}</button><button type="button" class="danger" data-showcase-delete="${x.id}">Excluir</button></div></article>`).join('')||'<p class="muted">Nenhum anúncio cadastrado.</p>')+'</div>';};
+    form.querySelectorAll('[data-showcase-file]').forEach(input=>input.addEventListener('change',async()=>{const key=input.dataset.showcaseFile,file=input.files?.[0];if(!file)return;try{const data=await compressImage(file);pendingImages[key]=data;preview(key,data);}catch(err){showMessage(err.message||'Erro ao carregar a foto.','error');input.value='';}}));
+    form.addEventListener('click',e=>{const b=e.target.closest('[data-clear-photo]');if(!b)return;const key=b.dataset.clearPhoto;pendingImages[key]='';form.querySelector(`[data-showcase-file="${key}"]`).value='';preview(key,'');});
+    form.onsubmit=async e=>{e.preventDefault();const submit=form.querySelector('[type="submit"]');if(submit)submit.disabled=true;try{const f=new FormData(form),id=String(f.get('id')||crypto.randomUUID()),old=showcaseCache.find(x=>x.id===id);const imageFor=key=>Object.prototype.hasOwnProperty.call(pendingImages,key)?pendingImages[key]:(old?.[key]||'');const item={id,title:String(f.get('title')||'').trim(),price:String(f.get('price')||'').trim(),contact:String(f.get('contact')||'').trim(),image:imageFor('image'),image2:imageFor('image2'),image3:imageFor('image3'),description:String(f.get('description')||'').trim(),active:f.get('active')==='on',order:old?.order??showcaseCache.length};if(!item.title)throw new Error('Informe o título do anúncio.');const payload=showcaseToRow(item);let result;if(old)result=await db.from('spooky_carrossel').update(payload).eq('id',id).select('id').maybeSingle();else result=await db.from('spooky_carrossel').insert({id,...payload}).select('id').maybeSingle();if(result.error)throw result.error;if(!result.data)throw new Error('O Supabase não confirmou a gravação. Confira as permissões de administrador (RLS).');form.reset();form.elements.id.value='';Object.keys(pendingImages).forEach(k=>delete pendingImages[k]);['image','image2','image3'].forEach(k=>preview(k,''));showMessage('Anúncio salvo no Supabase.');await renderList();}catch(err){console.error(err);showMessage('Não foi possível salvar: '+(err.message||'verifique a conexão e as permissões do Supabase.'),'error');}finally{if(submit)submit.disabled=false;}};
+    $('showcaseCancel').onclick=()=>{form.reset();form.elements.id.value='';Object.keys(pendingImages).forEach(k=>delete pendingImages[k]);['image','image2','image3'].forEach(k=>preview(k,''));};
+    list.onclick=async e=>{const b=e.target.closest('button');if(!b)return;const id=b.dataset.showcaseEdit||b.dataset.showcaseToggle||b.dataset.showcaseDelete,item=showcaseCache.find(x=>x.id===id);if(!item)return;try{if(b.dataset.showcaseDelete){if(!confirm('Excluir este anúncio?'))return;const {data,error}=await db.from('spooky_carrossel').delete().eq('id',id).select('id');if(error)throw error;if(!data?.length)throw new Error('Nenhum registro foi excluído. Confira as permissões do Supabase.');showMessage('Anúncio excluído.');await renderList();return;}if(b.dataset.showcaseToggle){const {data,error}=await db.from('spooky_carrossel').update({ativo:!item.active,atualizado_em:new Date().toISOString()}).eq('id',id).select('id').maybeSingle();if(error)throw error;if(!data)throw new Error('Alteração bloqueada pelas permissões do Supabase.');showMessage(item.active?'Anúncio ocultado.':'Anúncio ativado.');await renderList();return;}form.reset();Object.keys(pendingImages).forEach(k=>delete pendingImages[k]);for(const k of ['id','title','price','contact','description'])form.elements[k].value=item[k]||'';form.elements.active.checked=!!item.active;for(const k of ['image','image2','image3']){pendingImages[k]=item[k]||'';preview(k,item[k]||'');}form.scrollIntoView({behavior:'smooth',block:'start'});}catch(err){console.error(err);showMessage('Não foi possível concluir: '+(err.message||'verifique as permissões do Supabase.'),'error');}};renderList();
+  }
+
+  async function renderHome(c){
+    await loadBase();
+    const myBills=dataCache.mensalidades.filter(x=>x.atleta_id===user.id);
+    const unpaid=myBills.filter(x=>String(x.status).toLowerCase()!=='pago').length;
+    const score=dataCache.ranking.find(x=>x.atleta_id===user.id)?.pontos||0;
+
+    const showcase=await readShowcase();
+    c.innerHTML=pageHeader('Painel','Bem-vindo ao seu painel.')+`
+      ${showcase.length?renderShowcase(showcase):''}
+      <div class="stats">
+        <div class="stat"><strong>${dataCache.treinos.filter(x=>x.ativo!==false).length}</strong><span>Treinos ativos</span></div>
+        <div class="stat"><strong>${dataCache.campeonatos.length}</strong><span>Campeonatos</span></div>
+        <div class="stat"><strong>${score}</strong><span>Seus pontos</span></div>
+        <div class="stat"><strong>${unpaid}</strong><span>Mensalidades pendentes</span></div>
+      </div>
+      <section class="home-actions" aria-label="Acesso rápido">
+        <button type="button" class="home-tile" data-home-page="treinos"><span class="sh-icon">${svgIcon('calendar')}</span><strong>Treinos</strong><small>Agenda e horários</small></button>
+        <button type="button" class="home-tile" data-home-page="ranking"><span class="sh-icon">${svgIcon('chart')}</span><strong>Ranking</strong><small>Pontuação dos atletas</small></button>
+        <button type="button" class="home-tile" data-home-page="campeonatos"><span class="sh-icon">${svgIcon('trophy')}</span><strong>Campeonatos</strong><small>Eventos e convocações</small></button>
+        ${isAdmin?`<button type="button" class="home-tile" data-home-page="coletivos"><span class="sh-icon">${svgIcon('users')}</span><strong>Coletivos</strong><small>Monte os times e gerencie atletas</small></button>`:''}
+        <button type="button" class="home-tile" data-home-page="presencas"><span class="sh-icon">${svgIcon('clipboard')}</span><strong>Presenças</strong><small>Chamadas e histórico</small></button>
+        <button type="button" class="home-tile" data-home-page="mensalidades"><span class="sh-icon">${svgIcon('wallet')}</span><strong>Mensalidades</strong><small>Pagamentos e situação</small></button>
+        <button type="button" class="home-tile" data-home-page="avisos"><span class="sh-icon">${svgIcon('bell')}</span><strong>Avisos</strong><small>Comunicados e atualizações</small></button>
+        <button type="button" class="home-tile" data-home-page="perfil"><span class="sh-icon">${svgIcon('user')}</span><strong>Meu perfil</strong><small>Seus dados e turmas</small></button>
+        ${canSeeCoaches()?`<button type="button" class="home-tile" data-home-page="treinadores"><span class="sh-icon">${svgIcon('whistle')}</span><strong>Treinadores</strong><small>Conheça a equipe</small></button>`:''}
+        ${isAdmin?`<button type="button" class="home-tile" data-home-page="admin"><span class="sh-icon">${svgIcon('settings')}</span><strong>Administração</strong><small>Gerenciar a plataforma</small></button>`:''}
+      </section>
+      <div class="split">
+        <section class="card"><h2>Próximos treinos</h2>${dataCache.treinos.filter(t=>t.ativo!==false).slice(0,5).map(t=>`<div class="item"><strong>${esc(t.titulo)}</strong><div class="muted small">${esc(t.dia_semana||'')} ${esc(t.horario_inicio||'')} ${t.local?'· '+esc(t.local):''}</div></div>`).join('')||'<p class="muted">Nenhum treino cadastrado.</p>'}</section>
+        <section class="card"><h2>Campeonatos</h2>${dataCache.campeonatos.slice(0,5).map(x=>`<div class="item"><strong>${esc(x.nome)}</strong><div class="muted small">${dateBR(x.data_evento)} · ${esc(x.local)}</div></div>`).join('')||'<p class="muted">Nenhum campeonato cadastrado.</p>'}</section>
+      </div>
+      ${(() => {const latest=(dataCache.avisos||[]).filter(a=>a.created_at&&Date.now()-new Date(a.created_at).getTime()<48*60*60*1000).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0];const seen=latest?localStorage.getItem('spooky_seen_announcement_'+user.id):null;return latest&&String(seen)!==String(latest.id)?`<button type="button" class="new-announcement" id="homeNewAnnouncement"><span><span class="new-label">${svgIcon('bell')} AVISO NOVO</span><strong>${esc(latest.title)}</strong><p>${esc(latest.message.slice(0,130))}${latest.message.length>130?'…':''}</p></span><span class="sh-icon">${svgIcon('back')}</span></button>`:'';})()}`;
+    c.querySelectorAll('[data-home-page]').forEach(b=>b.onclick=()=>openPage(b.dataset.homePage));
+    const newNotice=$('homeNewAnnouncement');if(newNotice){newNotice.onclick=()=>{const latest=(dataCache.avisos||[]).filter(a=>a.created_at&&Date.now()-new Date(a.created_at).getTime()<48*60*60*1000).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0];if(latest)localStorage.setItem('spooky_seen_announcement_'+user.id,String(latest.id));openPage('avisos');};}
+  }
+
+  async function renderProfile(c){
+    const [{data:rank,error:rankError},{data:pub,error:pubError},{data:rels,error:relError}]=await Promise.all([
+      db.from('ranking_atletas').select('pontos').eq('atleta_id',user.id).maybeSingle(),
+      db.from('perfil_atletas_publico').select('*').eq('atleta_id',user.id).maybeSingle(),
+      db.from('turma_atletas').select('turma_id').eq('atleta_id',user.id)
+    ]);
+
+    if(rankError)console.warn(rankError.message);
+    if(pubError)console.warn(pubError.message);
+    if(relError)console.warn(relError.message);
+
+    const ids=(rels||[]).map(x=>String(x.turma_id));
+    const teams=dataCache.turmas.filter(t=>ids.includes(String(t.id))).map(t=>t.nome).join(', ');
+    const score=rank?.pontos??pub?.pontos??0;
+
+    c.innerHTML=pageHeader('Meu perfil','Confira e atualize seus dados.')+`
+      <section class="card"><div class="profile-number">${Number(score)}</div><div class="muted">Pontos no ranking</div>
+        <div class="row" style="align-items:center;margin-top:16px"><div style="flex:0 0 96px"><img id="profilePhotoPreview" src="${esc(profile?.foto_url||'')}" alt="Foto de perfil" style="width:88px;height:88px;object-fit:cover;border-radius:50%;border:1px solid #444;${profile?.foto_url?'':'display:none'}"></div><div><strong>Foto de perfil</strong><div class="muted small">Escolha uma imagem JPG ou PNG.</div></div></div>
+        <form id="profileForm" style="margin-top:18px">
+          <div class="field"><label>Adicionar foto de perfil</label><input name="foto" id="profilePhotoInput" type="file" accept="image/*"></div>
+          <div class="grid">
+            <div class="field"><label>Nome completo</label><input name="nome" value="${esc(profile?.nome)}" required></div>
+            <div class="field"><label>E-mail</label><input value="${esc(user.email)}" disabled></div>
+            <div class="field"><label>Telefone</label><input name="telefone" value="${esc(profile?.telefone)}"></div>
+            <div class="field"><label>Responsável</label><input name="responsavel" value="${esc(profile?.responsavel)}"></div>
+            <div class="field"><label>Idade</label><input name="idade" type="number" min="1" max="110" value="${esc(profile?.idade)}"></div>
+            <div class="field"><label>Turma(s) cadastrada(s)</label><input value="${esc(teams||profile?.turma||'Nenhuma turma vinculada')}" disabled><small class="muted">As turmas são exibidas conforme os vínculos cadastrados.</small></div>
+          </div><button type="submit">Salvar perfil</button>
+        </form>
+      </section>`;
+
+    const photoInput=$('profilePhotoInput');
+    if(photoInput)photoInput.onchange=()=>{const file=photoInput.files?.[0];if(!file)return;const preview=$('profilePhotoPreview');preview.src=URL.createObjectURL(file);preview.style.display='block';};
+    $('profileForm').onsubmit=async e=>{
+      e.preventDefault();
+      const f=new FormData(e.target);
+      const patch={
+        nome:String(f.get('nome')).trim(),
+        telefone:String(f.get('telefone')||'').trim()||null,
+        responsavel:String(f.get('responsavel')||'').trim()||null,
+        idade:f.get('idade')?Number(f.get('idade')):null
+      };
+      const photoFile=f.get('foto');
+      if(photoFile && photoFile.size){
+        if(!photoFile.type.startsWith('image/'))return showMessage('Escolha um arquivo de imagem.','error');
+        if(photoFile.size>6*1024*1024)return showMessage('A foto deve ter até 6 MB.','error');
+        try{patch.foto_url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=reject;reader.onload=()=>{const img=new Image();img.onerror=reject;img.onload=()=>{const canvas=document.createElement('canvas');const scale=Math.min(1,600/Math.max(img.width,img.height));canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',0.78));};img.src=reader.result;};reader.readAsDataURL(photoFile);});}catch(_){return showMessage('Não foi possível processar a foto.','error');}
+      }
+      const {error}=await db.from('perfis').update(patch).eq('user_id',user.id);
+      if(error)return handleError(error,'Erro ao salvar perfil');
+      profile={...profile,...patch};
+      showMessage('Perfil atualizado.');
+      await renderProfile(c);
+    };
+  }
+
+  function trainingForm(){
+    return `<form id="trainingForm" class="card"><h2>Cadastrar treino</h2><div class="grid">
+      <div class="field"><label>Título</label><input name="titulo" required></div>
+      <div class="field"><label>Categoria</label><input name="categoria" placeholder="Sub-17, adulto..."></div>
+      <div class="field"><label>Modalidade</label><input name="modalidade" value="Basquete"></div>
+      <div class="field"><label>Tipo</label><select name="tipo_evento"><option value="recorrente">Treino recorrente</option><option value="unico">Evento único</option></select></div>
+      <div class="field" id="trainingDayField"><label>Dias da semana (selecione quantos quiser)</label><div class="weekdays">${['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'].map(d=>`<label><input type="checkbox" name="dias_semana" value="${d}">${d}</label>`).join('')}</div></div>
+      <div class="field hidden" id="trainingDateField"><label>Data do evento</label><input name="data_evento" type="date"></div>
+      <div class="field"><label>Horário inicial</label><input name="inicio" type="time" required></div>
+      <div class="field"><label>Horário final</label><input name="fim" type="time"></div>
+      <div class="field"><label>Local</label><input name="local" value="Centro Esportivo João do Pulo"></div>
+      <div class="field"><label>Turmas (selecione uma ou mais)</label><select name="turma_ids" multiple size="4">${dataCache.turmas.map(t=>`<option value="${t.id}">${esc(t.nome)}</option>`).join('')}</select><small class="muted">Use Ctrl ou toque para selecionar mais de uma turma.</small></div>
+    </div><div class="field"><label>Descrição</label><textarea name="descricao"></textarea></div><button type="submit">Salvar treino</button></form>`;
+  }
+
+  async function renderTrainings(c){
+    await loadBase();
+    // Pull the join table so each training can be assigned to multiple classes.
+    const [{data:links},{data:fixedCoachLinks}] = await Promise.all([
+      db.from('turma_treinos').select('treino_id,turma_id'),
+      db.from('turmas_professores').select('turma_id,professor_id')
+    ]);
+    const linked=links||[];
+    const fixed=fixedCoachLinks||[];
+    c.innerHTML=pageHeader('Treinos','Agenda, horários, turmas e professores responsáveis.')+(isAdmin?trainingForm():'')+`<div class="grid">${dataCache.treinos.filter(t=>isAdmin||t.ativo!==false).map(t=>{const teamIds=[...new Set([...(t.turma_id?[String(t.turma_id)]:[]),...linked.filter(l=>String(l.treino_id)===String(t.id)).map(l=>String(l.turma_id))])];const coaches=[...new Set(fixed.filter(f=>teamIds.includes(String(f.turma_id))).map(f=>personName(f.professor_id)).filter(Boolean))];const creator=dataCache.perfis.find(p=>p.user_id===t.criado_por);const responsible=coaches.length?coaches.join(', '):(creator?.nome||'Professor não definido');return `<article class="card"><span class="pill">${esc(t.modalidade||t.categoria||'Basquete')}</span> <span class="pill">${String(t.dia_semana||'').startsWith('Evento único')?'Evento único':'Recorrente'}</span><h2>${esc(t.titulo)}</h2><p>${esc(t.descricao||'')}</p><div class="muted small">${esc(t.dia_semana||'')} ${esc(t.horario_inicio||'')}${t.horario_fim?'–'+esc(t.horario_fim):''}</div><div class="muted small">${esc(t.local||'')} ${teamIds.length?'· '+teamIds.map(id=>esc(teamName(id))).filter(Boolean).join(', '):'· Todas as turmas'}</div><div class="item" style="margin-top:10px"><strong>Professor responsável:</strong> ${esc(responsible)}</div>${isAdmin?`<div class="actions" style="margin-top:12px"><button class="secondary" data-training-toggle="${t.id}" data-active="${t.ativo!==false}">${t.ativo===false?'Ativar':'Desativar'}</button><button class="danger" data-training-delete="${t.id}">Excluir treino</button></div>`:''}</article>`}).join('')||'<div class="card muted">Nenhum treino cadastrado.</div>'}</div>`;
+    if(isAdmin){
+      const typeSelect=$('trainingForm').elements.tipo_evento;
+      const syncType=()=>{const unique=typeSelect.value==='unico';$('trainingDayField').classList.toggle('hidden',unique);$('trainingDateField').classList.toggle('hidden',!unique);$('trainingForm').elements.data_evento.required=unique;$('trainingForm').querySelectorAll('[name="dias_semana"]').forEach(el=>el.required=false);};
+      typeSelect.onchange=syncType;syncType();
+      $('trainingForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);const selected=[...e.target.elements.turma_ids.selectedOptions].map(o=>o.value);const unique=f.get('tipo_evento')==='unico';const selectedDays=[...e.target.querySelectorAll('[name="dias_semana"]:checked')].map(el=>el.value);if(!unique&&!selectedDays.length)return showMessage('Selecione pelo menos um dia da semana.','error');const day=unique?`Evento único · ${f.get('data_evento')}`:selectedDays.join(', ');const payload={titulo:f.get('titulo'),categoria:f.get('categoria')||'Geral',modalidade:f.get('modalidade')||'Basquete',dia_semana:day,horario_inicio:f.get('inicio')||'',horario_fim:f.get('fim')||'',local:f.get('local')||'',descricao:f.get('descricao')||'',ativo:true,criado_por:user.id,turma_id:selected[0]||null};const {data,error}=await db.from('treinos').insert(payload).select('id').single();if(error)return handleError(error,'Erro ao cadastrar treino');if(selected.length){const rows=selected.map(turma_id=>({turma_id,treino_id:data.id}));const {error:linkError}=await db.from('turma_treinos').insert(rows);if(linkError){await db.from('treinos').delete().eq('id',data.id);return handleError(linkError,'Treino criado, mas não foi possível vincular as turmas');}}showMessage('Treino cadastrado.');await renderTrainings(c);};
+      c.querySelectorAll('[data-training-toggle]').forEach(b=>b.onclick=async()=>{const {error}=await db.from('treinos').update({ativo:b.dataset.active!=='true'}).eq('id',b.dataset.trainingToggle);if(error)return handleError(error,'Erro ao alterar treino');await renderTrainings(c);});
+      c.querySelectorAll('[data-training-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('Excluir este treino e os vínculos com as turmas?'))return;const id=b.dataset.trainingDelete;const {error:linkError}=await db.from('turma_treinos').delete().eq('treino_id',id);if(linkError)return handleError(linkError,'Erro ao remover vínculo com turmas');const {error}=await db.from('treinos').delete().eq('id',id);if(error)return handleError(error,'Erro ao excluir treino');showMessage('Treino excluído.');await renderTrainings(c);});
+    }
+  }
+
+  async function renderChampionships(c){
+    await loadBase();
+    const form=isAdmin?`<form id="champForm" class="card"><h2>Cadastrar campeonato</h2><div class="grid"><div class="field"><label>Nome</label><input name="nome" required></div><div class="field"><label>Categoria</label><input name="categoria" required></div><div class="field"><label>Data</label><input name="data" type="date"></div><div class="field"><label>Horário</label><input name="horario" placeholder="09:00" required></div><div class="field"><label>Local</label><input name="local" required></div></div><div class="field"><label>Descrição</label><textarea name="descricao"></textarea></div><button>Cadastrar campeonato</button></form>`:'';
+    c.innerHTML=pageHeader('Campeonatos','Calendário de competições e convocações.')+form+`<div class="grid">${dataCache.campeonatos.map(x=>`<article class="card"><span class="pill">${esc(x.categoria)}</span><h2>${esc(x.nome)}</h2><p>${dateBR(x.data_evento)} · ${esc(x.horario)}</p><p>${esc(x.local)}</p><p class="muted">${esc(x.descricao)}</p><div class="actions"><button class="secondary" data-callup="${x.id}">Ver convocação</button>${isAdmin?`<button class="danger" data-champ-delete="${x.id}">Excluir</button>`:''}</div><div class="muted small" id="callup-${x.id}"></div></article>`).join('')||'<div class="card muted">Nenhum campeonato cadastrado.</div>'}</div>`;
+    if(isAdmin){
+      $('champForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);const {error}=await db.from('campeonatos').insert({nome:f.get('nome'),categoria:f.get('categoria'),data_evento:f.get('data')||null,horario:f.get('horario'),local:f.get('local'),descricao:f.get('descricao')||null,criado_por:user.id});if(error)return handleError(error,'Erro ao cadastrar campeonato');showMessage('Campeonato cadastrado.');await renderChampionships(c);};
+      c.querySelectorAll('[data-champ-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('Excluir este campeonato?'))return;const {error}=await db.from('campeonatos').delete().eq('id',b.dataset.champDelete);if(error)return handleError(error,'Erro ao excluir campeonato');await renderChampionships(c);});
+    }
+    c.querySelectorAll('[data-callup]').forEach(b=>b.onclick=async()=>{const champId=b.dataset.callup;const box=$('callup-'+champId);box.innerHTML='<p class="muted">Carregando convocação...</p>';const {data:rows,error}=await db.from('convocacoes').select('id,atleta_id,team_name,criado_em').eq('campeonato_id',champId);if(error){box.textContent=error.message;return;}const list=rows||[];const profiles=dataCache.perfis.filter(p=>list.some(r=>r.atleta_id===p.user_id));const roster=list.map(r=>{const p=dataCache.perfis.find(x=>x.user_id===r.atleta_id);return `<div class="item row" style="align-items:center"><div style="flex:0 0 54px"><img src="${esc(p?.foto_url||'')}" alt="" style="width:48px;height:48px;border-radius:50%;object-fit:cover;${p?.foto_url?'':'display:none'}"></div><div><button type="button" class="secondary" data-athlete-profile="${r.atleta_id}">${esc(p?.nome||'Atleta sem perfil')}</button><div class="muted small">Equipe: ${esc(r.team_name||'Sem equipe definida')} · ${Number(dataCache.ranking.find(s=>s.atleta_id===r.atleta_id)?.pontos||0)} pontos</div></div>${isAdmin?`<button type="button" class="danger" data-callup-remove="${r.id}">Remover</button>`:''}</div>`}).join('');const addForm=isAdmin?`<form class="card" data-callup-add="${champId}"><h3>Adicionar atleta à equipe</h3><div class="grid"><div class="field"><label>Atleta</label><select name="atleta_id" required><option value="">Selecione o atleta</option>${dataCache.perfis.filter(p=>(hasRole(p,'atleta')||!hasRole(p,'admin'))).map(p=>`<option value="${p.user_id}">${esc(p.nome)}</option>`).join('')}</select></div><div class="field"><label>Nome da equipe</label><input name="team_name" placeholder="Ex.: SH Sub-21" required></div></div><button>Adicionar à convocação</button></form>`:'';box.innerHTML=addForm+`<h3>Atletas convocados (${list.length})</h3>${roster||'<p class="muted">Nenhum atleta convocado ainda.</p>'}<div id="athleteDetails-${champId}"></div>`;const add=box.querySelector('[data-callup-add]');if(add)add.onsubmit=async e=>{e.preventDefault();const f=new FormData(add);const payload={campeonato_id:champId,atleta_id:f.get('atleta_id'),team_name:String(f.get('team_name')).trim()};const {error}=await db.from('convocacoes').insert(payload);if(error)return handleError(error,'Não foi possível adicionar o atleta à equipe');showMessage('Atleta adicionado à convocação.');b.click();};box.querySelectorAll('[data-callup-remove]').forEach(btn=>btn.onclick=async()=>{if(!confirm('Remover atleta desta convocação?'))return;const {error}=await db.from('convocacoes').delete().eq('id',btn.dataset.callupRemove);if(error)return handleError(error,'Erro ao remover atleta');b.click();});box.querySelectorAll('[data-athlete-profile]').forEach(btn=>btn.onclick=async()=>{const aid=btn.dataset.athleteProfile;const detail=$('athleteDetails-'+champId);const p=dataCache.perfis.find(x=>x.user_id===aid);const [{data:rank},{data:rels}]=await Promise.all([db.from('ranking_atletas').select('pontos').eq('atleta_id',aid).maybeSingle(),db.from('turma_atletas').select('turma_id').eq('atleta_id',aid)]);const teams=dataCache.turmas.filter(t=>(rels||[]).some(r=>String(r.turma_id)===String(t.id))).map(t=>t.nome);detail.innerHTML=`<article class="card"><div class="row"><div style="flex:0 0 90px"><img src="${esc(p?.foto_url||'')}" alt="" style="width:82px;height:82px;object-fit:cover;border-radius:50%;${p?.foto_url?'':'display:none'}"></div><div><h3>${esc(p?.nome||'Atleta')}</h3><div class="muted">${esc(p?.papel||'Atleta')} · ${Number(rank?.pontos||0)} pontos</div><div class="muted small">Turmas: ${esc(teams.join(', ')||p?.turma||'Sem turma vinculada')}</div><div class="muted small">Idade: ${esc(p?.idade||'—')} · Telefone: ${esc(p?.telefone||'—')}</div></div></div></article>`;});});
+  }
+
+
+  async function renderCollectives(c){
+    await loadBase();
+    const {data:collectives,error}=await db.from('coletivos').select('*').order('data_evento',{ascending:false});
+    if(error){
+      c.innerHTML=pageHeader('Coletivos','Organize os rachões, monte os times e veja os atletas com foto e nome.')+`<div class="card"><h3>Preparação necessária</h3><p>Para ativar esta área, primeiro execute o comando SQL de criação das tabelas do módulo Coletivos no Supabase.</p><p class="muted small">Detalhe: ${esc(error.message)}</p></div>`;
+      return;
+    }
+    const form=isAdmin?`<form id="collectiveForm" class="card"><h2>Criar coletivo</h2><div class="grid"><div class="field"><label>Nome do coletivo</label><input name="nome" placeholder="Ex.: Rachão de domingo" required></div><div class="field"><label>Data</label><input name="data" type="date" required></div><div class="field"><label>Horário</label><input name="horario" placeholder="09:00" required></div><div class="field"><label>Local</label><input name="local" placeholder="Ex.: João do Pulo" required></div></div><div class="field"><label>Informações / observações</label><textarea name="descricao" placeholder="Formato dos jogos, regras, duração... "></textarea></div><button type="submit">Criar coletivo</button></form>`:'';
+    const cards=(collectives||[]).map(x=>`<article class="card"><div class="row" style="align-items:flex-start;justify-content:space-between"><div style="flex:1"><span class="pill">COLETIVO</span><h2>${esc(x.nome)}</h2><p>${dateBR(x.data_evento)} · ${esc(x.horario||'Horário a definir')}</p><p>${esc(x.local||'Local a definir')}</p><p class="muted">${esc(x.descricao||'')}</p></div>${isAdmin?`<button type="button" class="danger" data-collective-delete="${x.id}">Excluir coletivo</button>`:''}</div><div id="collective-roster-${x.id}"><p class="muted small">Carregando times e atletas...</p></div>${isAdmin?`<form class="card" data-collective-add="${x.id}"><h3>Montar times e selecionar atletas</h3><p class="muted small">Crie quantos times precisar e selecione vários atletas para cada time. Cada atleta só pode entrar uma vez neste coletivo.</p><div data-team-builder><div class="team-builder-row item" style="margin-bottom:12px"><div class="grid"><div class="field"><label>Nome do time</label><input name="equipe" placeholder="Ex.: Time preto" required></div><div class="field"><label>Atletas do time (selecione vários)</label><select name="atletas" multiple size="5" required style="min-height:120px">${dataCache.perfis.filter(p=>hasRole(p,'atleta')||!hasRole(p,'admin')).map(p=>`<option value="${p.user_id}">${esc(p.nome)}</option>`).join('')}</select><small class="muted">No computador, use Ctrl; no celular, toque para selecionar.</small></div><div class="field"><label>Observação (opcional)</label><input name="observacao" placeholder="Ex.: capitão, posição..."></div></div></div></div><div class="row" style="flex-wrap:wrap;margin-top:10px"><button type="button" class="secondary" data-add-team-row>+ Adicionar outro time</button><button type="submit">Salvar times e atletas</button></div></form>`:''}</article>`).join('');
+    c.innerHTML=pageHeader('Coletivos','Crie um coletivo, monte os times e acompanhe os atletas com foto e nome.')+form+`<div class="grid">${cards||'<div class="card muted">Nenhum coletivo cadastrado. Crie um acima para começar.</div>'}</div>`;
+    if(isAdmin){
+      const create=$('collectiveForm');
+      if(create)create.onsubmit=async e=>{e.preventDefault();const f=new FormData(create);const payload={nome:String(f.get('nome')).trim(),data_evento:f.get('data')||null,horario:String(f.get('horario')).trim(),local:String(f.get('local')).trim(),descricao:String(f.get('descricao')||'').trim()||null,criado_por:user.id};const {error}=await db.from('coletivos').insert(payload);if(error)return handleError(error,'Não foi possível criar o coletivo');showMessage('Coletivo criado.');await renderCollectives(c);};
+      c.querySelectorAll('[data-collective-delete]').forEach(btn=>btn.onclick=async()=>{if(!confirm('Excluir este coletivo e todos os atletas vinculados a ele?'))return;const {error}=await db.from('coletivos').delete().eq('id',btn.dataset.collectiveDelete);if(error)return handleError(error,'Não foi possível excluir o coletivo');showMessage('Coletivo excluído.');await renderCollectives(c);});
+      c.querySelectorAll('[data-collective-add]').forEach(formEl=>{
+        const builder=formEl.querySelector('[data-team-builder]');
+        const addRowBtn=formEl.querySelector('[data-add-team-row]');
+        if(addRowBtn)addRowBtn.onclick=()=>{
+          const first=builder.querySelector('.team-builder-row');
+          const clone=first.cloneNode(true);
+          clone.querySelector('input[name="equipe"]').value='';
+          clone.querySelector('input[name="observacao"]').value='';
+          clone.querySelectorAll('option').forEach(o=>o.selected=false);
+          const label=clone.querySelector('label'); if(label)label.textContent='Atletas deste time (selecione vários)';
+          builder.appendChild(clone);
+        };
+        formEl.onsubmit=async e=>{
+          e.preventDefault();
+          const payload=[]; const used=new Set();
+          for(const row of builder.querySelectorAll('.team-builder-row')){
+            const equipe=String(row.querySelector('input[name="equipe"]').value||'').trim();
+            const observacao=String(row.querySelector('input[name="observacao"]').value||'').trim()||null;
+            const atletas=[...row.querySelector('select[name="atletas"]').selectedOptions].map(o=>o.value);
+            if(!equipe||!atletas.length){return handleError({message:'Preencha o nome de cada time e selecione pelo menos um atleta em cada um.'},'Confira os times');}
+            for(const atleta_id of atletas){if(used.has(atleta_id))return handleError({message:'O mesmo atleta foi selecionado em mais de um time. Cada atleta só pode estar em um time por coletivo.'},'Confira os atletas');used.add(atleta_id);payload.push({coletivo_id:formEl.dataset.collectiveAdd,atleta_id,equipe,observacao});}
+          }
+          const {error}=await db.from('coletivo_atletas').insert(payload);
+          if(error)return handleError(error,'Não foi possível salvar os times e atletas. Verifique as permissões e se algum atleta já está neste coletivo.');
+          showMessage('Times e atletas adicionados.');await renderCollectives(c);
+        };
+      });
+    }
+    for(const collective of (collectives||[])){
+      const box=$(`collective-roster-${collective.id}`);
+      const {data:rows,error:rosterError}=await db.from('coletivo_atletas').select('*').eq('coletivo_id',collective.id).order('equipe');
+      if(rosterError){box.innerHTML=`<p class="muted">Não foi possível carregar os times: ${esc(rosterError.message)}</p>`;continue;}
+      const list=rows||[];
+      const teams=[...new Set(list.map(r=>r.equipe||'Time sem nome'))];
+      box.innerHTML=(teams.length?teams.map(team=>`<section class="card"><h3>${esc(team)} <span class="muted small">(${list.filter(r=>(r.equipe||'Time sem nome')===team).length} atletas)</span></h3><div class="grid">${list.filter(r=>(r.equipe||'Time sem nome')===team).map(r=>{const p=dataCache.perfis.find(x=>x.user_id===r.atleta_id);return `<div class="item row" style="align-items:center;gap:12px"><img src="${esc(p?.foto_url||'')}" alt="Foto de ${esc(p?.nome||'atleta')}" style="width:64px;height:64px;flex:0 0 64px;border-radius:50%;object-fit:cover;background:#222;${p?.foto_url?'':'display:none'}"><div style="flex:1;min-width:0"><strong>${esc(p?.nome||'Atleta sem perfil')}</strong><div class="muted small">${esc(r.observacao||'')}</div></div>${isAdmin?`<button type="button" class="danger" data-collective-remove="${r.id}">Remover</button>`:''}</div>`}).join('')}</div></section>`).join(''):'<p class="muted">Nenhum atleta adicionado. Use o formulário para montar os times.</p>');
+      box.querySelectorAll('[data-collective-remove]').forEach(btn=>btn.onclick=async()=>{if(!confirm('Remover este atleta do coletivo?'))return;const {error}=await db.from('coletivo_atletas').delete().eq('id',btn.dataset.collectiveRemove);if(error)return handleError(error,'Não foi possível remover o atleta');await renderCollectives(c);});
+    }
+  }
+
+  async function renderBills(c){
+    await loadBase();
+    const bills=dataCache.mensalidades.filter(b=>isAdmin||b.atleta_id===user.id);
+    const form=isAdmin?`<form id="billForm" class="card"><h2>Lançar mensalidade</h2><div class="grid"><div class="field"><label>Atleta</label><select name="atleta_id" required><option value="">Selecione</option>${dataCache.perfis.filter(p=>(hasRole(p,'atleta')||!hasRole(p,'admin'))).map(p=>`<option value="${p.user_id}">${esc(p.nome)}</option>`).join('')}</select></div><div class="field"><label>Valor (R$)</label><input name="valor" type="number" min="0" step="0.01" required></div><div class="field"><label>Vencimento</label><input name="vencimento" type="date" required></div><div class="field"><label>Descrição</label><input name="descricao" placeholder="Mensalidade de outubro"></div></div><button>Lançar cobrança</button></form>`:'';
+    c.innerHTML=pageHeader('Mensalidades','Controle administrativo de pagamentos.')+form+`<div class="card"><div class="table-wrap"><table><thead><tr><th>Descrição</th>${isAdmin?'<th>Atleta</th>':''}<th>Valor</th><th>Vencimento</th><th>Status</th>${isAdmin?'<th>Ações</th>':''}</tr></thead><tbody>${bills.map(b=>`<tr><td>${esc(b.descricao||'Mensalidade')}</td>${isAdmin?`<td>${esc(personName(b.atleta_id))}</td>`:''}<td>${money(b.valor)}</td><td>${dateBR(b.vencimento)}</td><td><span class="pill ${b.status==='pago'?'ok':'bad'}">${esc(b.status)}</span></td>${isAdmin?`<td><div class="actions"><button data-bill-status="${b.id}" data-next="${b.status==='pago'?'pendente':'pago'}">${b.status==='pago'?'Marcar pendente':'Marcar pago'}</button><button class="danger" data-bill-delete="${b.id}">Excluir</button></div></td>`:''}</tr>`).join('')||`<tr><td colspan="${isAdmin?6:4}">Nenhuma mensalidade encontrada.</td></tr>`}</tbody></table></div></div>`;
+    if(isAdmin){
+      $('billForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);const {error}=await db.from('mensalidades').insert({atleta_id:f.get('atleta_id'),valor:Number(f.get('valor')),vencimento:f.get('vencimento'),descricao:f.get('descricao')||null,status:'pendente',criado_por:user.id});if(error)return handleError(error,'Erro ao lançar mensalidade');showMessage('Mensalidade lançada.');await renderBills(c);};
+      c.querySelectorAll('[data-bill-status]').forEach(b=>b.onclick=async()=>{const next=b.dataset.next;const {error}=await db.from('mensalidades').update({status:next,pago_em:next==='pago'?new Date().toISOString():null}).eq('id',b.dataset.billStatus);if(error)return handleError(error,'Erro ao atualizar cobrança');await renderBills(c);});
+      c.querySelectorAll('[data-bill-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('Excluir esta mensalidade?'))return;const {error}=await db.from('mensalidades').delete().eq('id',b.dataset.billDelete);if(error)return handleError(error,'Erro ao excluir mensalidade');await renderBills(c);});
+    }
+  }
+
+  async function openAthleteProfile(athleteId){
+    await loadBase();
+    const p=dataCache.perfis.find(x=>String(x.user_id)===String(athleteId));
+    if(!p)return showMessage('Não foi possível localizar o perfil deste atleta.','error');
+    const [{data:rank},{data:rels}]=await Promise.all([db.from('ranking_atletas').select('pontos').eq('atleta_id',athleteId).maybeSingle(),db.from('turma_atletas').select('turma_id').eq('atleta_id',athleteId)]);
+    const teams=dataCache.turmas.filter(t=>(rels||[]).some(r=>String(r.turma_id)===String(t.id))).map(t=>t.nome);
+    const c=$('content');
+    c.innerHTML=pageHeader('Perfil do atleta',`Informações de ${p.nome||'atleta'}.`)+`<article class="card"><div class="row" style="align-items:center"><div style="flex:0 0 112px">${p.foto_url?`<img src="${esc(p.foto_url)}" alt="Foto de ${esc(p.nome)}" class="profile-photo" style="width:100px;height:100px;border-radius:50%;object-fit:cover">`:svgIcon('user')}</div><div><h2>${esc(p.nome||'Atleta')}</h2><div class="muted">${esc(roleLabel(p))}</div><div class="profile-number">${Number(rank?.pontos||0)} <span class="muted small">pontos</span></div></div></div><div class="grid"><div class="stat"><span>Turmas</span><strong style="font-size:17px">${esc(teams.join(', ')||p.turma||'Sem turma')}</strong></div><div class="stat"><span>Idade</span><strong style="font-size:17px">${esc(p.idade||'—')}</strong></div><div class="stat"><span>Contato</span><strong style="font-size:17px">${esc(p.telefone||'—')}</strong></div></div><button type="button" class="secondary" id="backToRanking">Voltar ao ranking</button></article>`;
+    $('backToRanking').onclick=()=>openPage('ranking');
+  }
+
+  async function renderRanking(c){
+    await loadBase();
+    const profiles=dataCache.perfis.filter(p=>(hasRole(p,'atleta')||!hasRole(p,'admin')));
+    const scores=dataCache.ranking.slice().sort((a,b)=>Number(b.pontos||0)-Number(a.pontos||0));
+    c.innerHTML=pageHeader('Ranking','Pontuação dos atletas.')+`<div class="card"><div class="table-wrap"><table><thead><tr><th>Posição</th><th>Atleta</th><th>Pontos</th></tr></thead><tbody>${scores.map((r,i)=>`<tr><td>${i+1}</td><td><button type="button" class="rank-athlete" data-ranking-profile="${r.atleta_id}">${esc(personName(r.atleta_id))}</button></td><td><strong>${Number(r.pontos||0)}</strong></td></tr>`).join('')||'<tr><td colspan="3">O ranking ainda não possui pontuação.</td></tr>'}</tbody></table></div></div>`+(isAdmin?`<form id="pointsForm" class="card"><h2>Atualizar pontos</h2><div class="grid"><div class="field"><label>Atleta</label><select name="atleta_id" required><option value="">Selecione</option>${profiles.map(p=>`<option value="${p.user_id}">${esc(p.nome)}</option>`).join('')}</select></div><div class="field"><label>Quantidade de pontos</label><input name="pontos" type="number" min="1" step="1" value="1" required></div><div class="field"><label>Motivo</label><input name="descricao" placeholder="Ex.: presença no treino" required></div></div><div class="actions"><button type="submit" data-point-action="add">＋ Somar pontos</button><button type="submit" class="danger" data-point-action="remove">− Tirar pontos</button></div></form>`:'');
+    c.querySelectorAll('[data-ranking-profile]').forEach(b=>b.onclick=()=>openAthleteProfile(b.dataset.rankingProfile));
+    if(isAdmin)$('pointsForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);const action=e.submitter?.dataset.pointAction||'add';const amount=Math.abs(Number(f.get('pontos'))||0);if(!amount)return showMessage('Informe uma quantidade maior que zero.','error');const args={p_atleta_id:f.get('atleta_id'),p_tipo:'manual',p_pontos:action==='remove'?-amount:amount,p_descricao:String(f.get('descricao')||'').trim()};const {error}=await db.rpc('registrar_pontos_ranking',args);if(error)return handleError(error,'Não foi possível atualizar os pontos');showMessage(action==='remove'?'Pontos removidos.':'Pontos somados.');await renderRanking(c);};
+  }
+
+  async function renderAttendance(c){
+    await loadBase();
+    const adminCalls=isAdmin?(await db.from('chamadas').select('*').order('data_chamada',{ascending:false})).data||[]:[];
+    c.innerHTML=pageHeader('Presenças','Chamada por turma e histórico individual.')+(isAdmin?`<section class="card"><h2>Registrar chamada</h2><form id="attendanceForm"><div class="grid"><div class="field"><label>Turma</label><select name="turma_id" required><option value="">Selecione</option>${dataCache.turmas.map(t=>`<option value="${t.id}">${esc(t.nome)}</option>`).join('')}</select></div><div class="field"><label>Data da chamada</label><input name="data" type="date" value="${today()}" required></div></div><button>Carregar atletas</button></form><div id="roster"></div><h3>Listas de presença salvas</h3><div>${adminCalls.map(call=>`<div class="item row"><div><strong>${esc(teamName(call.turma_id))}</strong><div class="muted small">${dateBR(call.data_chamada)}</div></div><button class="danger" type="button" data-attendance-delete="${call.id}">Excluir lista</button></div>`).join('')||'<p class="muted">Nenhuma lista salva.</p>'}</div></section>`:'')+`<section class="card"><h2>Meu histórico</h2><div id="attendanceHistory">Carregando histórico...</div></section>`;
+    if(isAdmin)c.querySelectorAll('[data-attendance-delete]').forEach(btn=>btn.onclick=async()=>{if(!confirm('Excluir esta lista de presença e todos os registros dela?'))return;const id=btn.dataset.attendanceDelete;const {error:presError}=await db.from('chamada_presencas').delete().eq('chamada_id',id);if(presError)return handleError(presError,'Erro ao excluir os registros da chamada');const {error}=await db.from('chamadas').delete().eq('id',id);if(error)return handleError(error,'Erro ao excluir a lista de presença');showMessage('Lista de presença excluída.');await renderAttendance(c);});
+    if(isAdmin)$('attendanceForm').onsubmit=async e=>{
+      e.preventDefault();const f=new FormData(e.target);const teamId=f.get('turma_id'),date=f.get('data');
+      const {data:existing,error}=await db.from('chamadas').select('*').eq('turma_id',teamId).eq('data_chamada',date).maybeSingle();
+      if(error)return handleError(error,'Erro ao consultar chamada');
+      let call=existing;
+      if(!call){
+        const {data:created,error:createError}=await db.from('chamadas').insert({turma_id:teamId,data_chamada:date,criado_por:user.id}).select('*').single();
+        if(createError)return handleError(createError,'Erro ao criar chamada');
+        call=created;
+      }
+      await showRoster(call,teamId);
+    };
+    async function showRoster(call,teamId){
+      const box=$('roster');box.innerHTML='<p class="muted">Carregando atletas...</p>';
+      const {data:members,error}=await db.from('turma_atletas').select('atleta_id').eq('turma_id',teamId);
+      if(error){box.textContent=error.message;return;}
+      const ids=(members||[]).map(x=>x.atleta_id);
+      const people=dataCache.perfis.filter(p=>ids.includes(p.user_id));
+      const {data:pres,error:presError}=await db.from('chamada_presencas').select('*').eq('chamada_id',call.id);
+      if(presError){box.textContent=presError.message;return;}
+      box.innerHTML=`<h3>${esc(teamName(teamId))} · ${dateBR(call.data_chamada)}</h3><div id="rosterRows">${people.map(p=>{const row=pres.find(x=>x.atleta_id===p.user_id);return `<div class="item checkline"><input type="checkbox" data-athlete="${p.user_id}" ${row?.presente?'checked':''}><label>${esc(p.nome)}</label></div>`}).join('')||'<p class="muted">Nenhum atleta vinculado à turma.</p>'}</div><div class="actions" style="margin-top:12px"><button id="markAll" type="button">Marcar todos presentes</button><button id="saveRoster" type="button">Salvar chamada</button></div>`;
+      $('markAll').onclick=()=>box.querySelectorAll('[data-athlete]').forEach(input=>input.checked=true);
+      $('saveRoster').onclick=async()=>{const rows=[...box.querySelectorAll('[data-athlete]')].map(input=>({chamada_id:call.id,atleta_id:input.dataset.athlete,presente:input.checked,marcado_por:user.id,atualizado_em:new Date().toISOString()}));if(!rows.length)return showMessage('Nenhum atleta para registrar.','error');const {error}=await db.from('chamada_presencas').upsert(rows,{onConflict:'chamada_id,atleta_id'});if(error)return handleError(error,'Erro ao salvar chamada');showMessage('Chamada salva com sucesso.');await loadAttendanceHistory();};
+    }
+    async function loadAttendanceHistory(){
+      const box=$('attendanceHistory');
+      const {data:pres,error}=await db.from('chamada_presencas').select('chamada_id,presente').eq('atleta_id',user.id);
+
+      if(error){box.textContent=error.message;return;}
+      if(!pres?.length){
+        box.innerHTML='<p class="muted">Nenhuma presença registrada ainda.</p>';
+        return;
+      }
+      const ids=[...new Set(pres.map(x=>x.chamada_id))];
+      const {data:calls,error:callError}=await db.from('chamadas').select('*').in('id',ids).order('data_chamada',{ascending:false});
+      if(callError){box.textContent=callError.message;return;}
+      const attended=pres.filter(x=>x.presente).length;
+      box.innerHTML=`<div class="stats"><div class="stat"><strong>${pres.length}</strong><span>Registros</span></div><div class="stat"><strong>${attended}</strong><span>Presenças</span></div><div class="stat"><strong>${Math.round(attended/pres.length*100)}%</strong><span>Frequência</span></div></div>${calls.map(call=>{const row=pres.find(x=>x.chamada_id===call.id);return `<div class="item"><strong>${dateBR(call.data_chamada)}</strong> <span class="pill ${row?.presente?'ok':'bad'}">${row?.presente?'Presente':'Ausente'}</span><div class="muted small">${esc(teamName(call.turma_id))}</div></div>`}).join('')}`;
+    }
+    await loadAttendanceHistory();
+  }
+
+  async function renderAnnouncements(c){
+    await loadBase();
+    const cutoff=Date.now()-48*60*60*1000;
+    const expired=dataCache.avisos.filter(a=>a.created_at&&new Date(a.created_at).getTime()<=cutoff);
+    // Expired notices are hidden immediately; remove them from the database when RLS permits.
+    for(const a of expired){db.from('announcements').delete().eq('id',a.id).then(({error})=>{if(error)console.warn('Aviso expirado oculto, mas não apagado do banco:',error.message);});}
+    const announcements=dataCache.avisos.filter(a=>a.created_at&&new Date(a.created_at).getTime()>cutoff).filter(a=>a.target_type==='all'||(a.target_type==='athlete'&&a.target_athlete_id===user.id)||(a.target_type==='class'&&dataCache.turmas.some(t=>String(t.id)===String(a.target_class_id))));
+    const form=isAdmin?`<form id="announcementForm" class="card"><h2>Publicar aviso</h2><div class="field"><label>Título</label><input name="title" required></div><div class="field"><label>Mensagem</label><textarea name="message" required></textarea></div><div class="grid"><div class="field"><label>Destinatários</label><select name="target_type"><option value="all">Todos</option><option value="class">Turma</option><option value="athlete">Atleta específico</option></select></div><div class="field"><label>Turma</label><select name="target_class_id"><option value="">Selecione a turma</option>${dataCache.turmas.map(t=>`<option value="${t.id}">${esc(t.nome)}</option>`).join('')}</select></div><div class="field"><label>Atleta</label><select name="target_athlete_id"><option value="">Selecione o atleta</option>${dataCache.perfis.filter(p=>(hasRole(p,'atleta')||!hasRole(p,'admin'))).map(p=>`<option value="${p.user_id}">${esc(p.nome)}</option>`).join('')}</select></div></div><p class="muted small">Os avisos expiram automaticamente após 48 horas.</p><button>Publicar aviso</button></form>`:'';
+    c.innerHTML=pageHeader('Avisos','Comunicados com validade de 48 horas.')+form+`<div class="grid">${announcements.map(a=>`<article class="card"><h2>${esc(a.title)}</h2><p>${esc(a.message)}</p><div class="muted small">${a.created_at?new Date(a.created_at).toLocaleString('pt-BR'):''} · Expira em ${new Date(new Date(a.created_at).getTime()+48*60*60*1000).toLocaleString('pt-BR')}</div>${isAdmin?`<button class="danger" type="button" data-announcement-delete="${a.id}">Excluir aviso</button>`:''}</article>`).join('')||'<div class="card muted">Nenhum aviso publicado para você.</div>'}</div>`;
+    if(isAdmin){$('announcementForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);const target=f.get('target_type');const payload={title:f.get('title'),message:f.get('message'),target_type:target,target_class_id:target==='class'&&f.get('target_class_id')?f.get('target_class_id'):null,target_athlete_id:target==='athlete'&&f.get('target_athlete_id')?f.get('target_athlete_id'):null};const {error}=await db.from('announcements').insert(payload);if(error)return handleError(error,'Erro ao publicar aviso');showMessage('Aviso publicado.');await renderAnnouncements(c);};c.querySelectorAll('[data-announcement-delete]').forEach(btn=>btn.onclick=async()=>{if(!confirm('Excluir este aviso?'))return;const {error}=await db.from('announcements').delete().eq('id',btn.dataset.announcementDelete);if(error)return handleError(error,'Erro ao excluir aviso');await renderAnnouncements(c);});}
+  }
+
+  function addManagementShortcuts(container, mode){
+    const sections=[...container.querySelectorAll('section.card')];
+    const config=mode==='admin' ? [
+      ['Atletas cadastrados','Atletas','Consulte os perfis e dados cadastrados','♟'],
+      ['Gerenciar funções','Permissões e funções','Defina quem é atleta, técnico ou administrador','⚙'],
+      ['Criar turma','Turmas','Crie uma turma e organize as categorias','▦'],
+      ['Vincular atleta à turma','Vincular atletas','Adicione atletas às turmas existentes','＋'],
+      ['Carrossel da tela inicial','Destaques da página inicial','Publique novidades, produtos e anúncios','▣'],
+      ['Atletas por turma','Atletas por turma','Veja os vínculos e remova atletas das turmas','☷']
+    ] : [
+      ['Próximos 15 dias','Calendário de treinos','Veja aulas e horários dos próximos dias','▦'],
+      ['Equipe técnica','Equipe técnica','Consulte os treinadores cadastrados','♟'],
+      ['Adicionar aula à agenda','Cadastrar aula','Crie aula única ou agenda recorrente','＋'],
+      ['Professor fixo por turma','Professores por turma','Defina ou remova o professor responsável','⚙']
+    ];
+    const root=container.querySelector(mode==='admin'?'.admin-dashboard':'.coach-dashboard');
+    if(!root)return;
+    const stats=root.querySelector('.stats');
+    const shortcuts=[];
+    for(const [heading,label,desc,icon] of config){
+      const section=sections.find(el=>el.querySelector('h2')?.textContent.trim()===heading);
+      if(!section)continue;
+      const id='management-'+mode+'-'+shortcuts.length;
+      section.id=id;
+      section.hidden=true;
+      shortcuts.push(`<button type="button" class="management-shortcut" data-open-management="${id}"><span class="shortcut-icon">${icon}</span><span><strong>${label}</strong><small>${desc}</small></span></button>`);
+    }
+    const nav=document.createElement('div');
+    nav.className='management-home';
+    nav.innerHTML=`<div class="management-group-title">Acesso rápido</div><div class="management-shortcuts">${shortcuts.join('')}</div>`;
+    if(stats)root.insertBefore(nav,stats);else root.insertBefore(nav,root.firstChild);
+    const back=document.createElement('button');
+    back.type='button';back.className='secondary management-back';back.textContent='← Voltar ao painel';back.hidden=true;
+    root.insertBefore(back,root.firstChild);
+    const openView=(id)=>{
+      nav.hidden=true;
+      if(stats)stats.hidden=true;
+      sections.forEach(section=>section.hidden=section.id!==id);
+      back.hidden=false;
+      back.focus({preventScroll:true});
+      root.scrollIntoView({behavior:'smooth',block:'start'});
+    };
+    const showHome=()=>{
+      sections.forEach(section=>section.hidden=true);
+      nav.hidden=false;
+      if(stats)stats.hidden=false;
+      back.hidden=true;
+      root.scrollIntoView({behavior:'smooth',block:'start'});
+    };
+    nav.querySelectorAll('[data-open-management]').forEach(btn=>btn.addEventListener('click',()=>openView(btn.dataset.openManagement)));
+    back.addEventListener('click',showHome);
+  }
+
+  async function renderCoaches(c){
+    await loadBase();
+    const profiles=Array.isArray(dataCache.perfis)?dataCache.perfis:[];
+    const coaches=profiles.filter(p=>hasRole(p,'tecnico')||/treinador|coach|técnico|tecnico|professor/i.test(String(p.papel||'')));
+    const start=new Date();start.setHours(0,0,0,0);const days=Array.from({length:15},(_,i)=>{const d=new Date(start);d.setDate(d.getDate()+i);return d;});
+    let classes=[],assignments=[],fixed=[];
+    const [a,b,d]=await Promise.all([db.from('agenda_aulas').select('*'),db.from('agenda_aula_professores').select('*'),db.from('turmas_professores').select('*')]);
+    const scheduleError=a.error||b.error||d.error;
+    if(!scheduleError){classes=a.data||[];assignments=b.data||[];fixed=d.data||[];}
+    const canManage=isAdmin;
+    const eventRows=[];
+    for(const day of days){for(const lesson of classes){let occurs=false;const date=day.toISOString().slice(0,10);if(lesson.recorrente){const weekday=['domingo','segunda','terça','quarta','quinta','sexta','sábado'][day.getDay()];occurs=(lesson.dias_semana||[]).some(x=>String(x).toLowerCase().startsWith(weekday.slice(0,3)))&&(!lesson.data_inicio||date>=lesson.data_inicio)&&(!lesson.data_fim||date<=lesson.data_fim);}else occurs=lesson.data_aula===date;if(occurs)eventRows.push({date,lesson,teachers:[...new Set([...assignments.filter(x=>String(x.aula_id)===String(lesson.id)).map(x=>personName(x.professor_id)),...fixed.filter(x=>lesson.turma_id&&String(x.turma_id)===String(lesson.turma_id)).map(x=>personName(x.professor_id))])]});}}
+    const calendar=days.map(day=>{const date=day.toISOString().slice(0,10);const events=eventRows.filter(e=>e.date===date);return `<div class="coach-day ${date===today()?'today':''}"><div class="day-date">${['dom','seg','ter','qua','qui','sex','sáb'][day.getDay()]} · ${day.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</div>${events.map(e=>`<div class="coach-event"><strong>${esc(e.lesson.titulo)}</strong><small>${esc(e.lesson.horario_inicio||'')} ${e.lesson.horario_fim?'– '+esc(e.lesson.horario_fim):''} · ${esc(e.lesson.local||'Local a definir')}</small><small>Prof.: ${esc(e.teachers.join(', ')||'Sem professor atribuído')}</small><small>Turma: ${esc(teamName(e.lesson.turma_id)||'Geral')}</small></div>`).join('')||'<p class="muted small">Sem aulas</p>'}</div>`;}).join('');
+    const form=canManage?`<section class="card"><h2>Adicionar aula à agenda</h2><p class="muted small">Uma aula pode ter vários professores. Cadastre uma ocorrência única ou uma agenda recorrente por dias da semana.</p><form id="coachLessonForm"><div class="grid"><div class="field"><label>Nome da aula</label><input name="titulo" required placeholder="Ex.: Treino técnico Sub-17"></div><div class="field"><label>Turma</label><select name="turma_id"><option value="">Sem turma específica</option>${dataCache.turmas.map(t=>`<option value="${t.id}">${esc(t.nome)}</option>`).join('')}</select></div><div class="field"><label>Local</label><input name="local" placeholder="João do Pulo"></div><div class="field"><label>Início</label><input name="inicio" type="time" required></div><div class="field"><label>Fim</label><input name="fim" type="time"></div><div class="field"><label>Tipo de agenda</label><select name="recorrente"><option value="true">Recorrente</option><option value="false">Aula única</option></select></div><div class="field" data-coach-date><label>Data da aula única</label><input name="data_aula" type="date" min="${today()}"></div><div class="field" data-coach-start><label>Começar recorrência em</label><input name="data_inicio" type="date" value="${today()}"></div><div class="field" data-coach-end><label>Encerrar recorrência (opcional)</label><input name="data_fim" type="date"></div></div><div class="field" data-coach-weekdays><label>Dias da semana</label><div class="role-options">${[['segunda','Segunda'],['terça','Terça'],['quarta','Quarta'],['quinta','Quinta'],['sexta','Sexta'],['sábado','Sábado'],['domingo','Domingo']].map(([v,l])=>`<label><input type="checkbox" name="dias_semana" value="${v}"> ${l}</label>`).join('')}</div></div><div class="field"><label>Professores desta aula (pode escolher vários)</label><div class="grid">${coaches.map(p=>`<label class="checkline"><input type="checkbox" name="professores" value="${p.user_id}"> ${esc(p.nome)}</label>`).join('')||'<p class="muted">Cadastre a função Técnico em Administração primeiro.</p>'}</div></div><button>Salvar aula na agenda</button></form></section><section class="card"><h2>Professor fixo por turma</h2><form id="fixedCoachForm"><div class="grid"><div class="field"><label>Turma</label><select name="turma_id" required><option value="">Selecione</option>${dataCache.turmas.map(t=>`<option value="${t.id}">${esc(t.nome)}</option>`).join('')}</select></div><div class="field"><label>Professor fixo</label><select name="professor_id" required><option value="">Selecione</option>${coaches.map(p=>`<option value="${p.user_id}">${esc(p.nome)}</option>`).join('')}</select></div></div><button>Definir professor fixo</button></form><div>${fixed.map(f=>`<div class="roster-member"><span>${esc(teamName(f.turma_id))} — ${esc(personName(f.professor_id))}</span><button type="button" class="danger" data-fixed-delete="${f.id}">Remover</button></div>`).join('')||'<p class="muted small">Nenhum professor fixo definido.</p>'}</div></section>`:'';
+    c.innerHTML=pageHeader('Treinadores','Calendário atualizado com os próximos 15 dias.')+`<div class="coach-dashboard"><section class="card"><div class="section-head"><div><h2>Próximos 15 dias</h2><p class="muted small">Janela móvel: ${dateBR(days[0].toISOString().slice(0,10))} – ${dateBR(days[14].toISOString().slice(0,10))}</p></div><button class="secondary" id="refreshCoachCalendar">Atualizar calendário</button></div>${scheduleError?`<div class="notice error">Para ativar a agenda, execute o SQL de configuração que acompanha este arquivo. (${esc(scheduleError.message)})</div>`:`<div class="coach-calendar">${calendar}</div>`}</section><section class="card"><h2>Equipe técnica</h2><div class="grid">${coaches.map(p=>`<article class="card coach-card"><div class="coach-avatar">${p.foto_url?`<img src="${esc(p.foto_url)}" alt="Foto de ${esc(p.nome||'treinador')}">`:`<span>${esc(String(p.nome||'SH').split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase())}</span>`}</div><div class="coach-info"><h2>${esc(p.nome||'Treinador')}</h2><span class="pill">${esc(roleLabel(p))}</span>${p.telefone?`<p class="muted small">Contato: ${esc(p.telefone)}</p>`:''}</div></article>`).join('')||'<p class="muted">Nenhum técnico cadastrado.</p>'}</div></section>${form}</div>`;
+    addManagementShortcuts(c,'coach');
+    const rec=$('coachLessonForm')?.elements.recorrente;const syncRec=()=>{const unique=rec?.value==='false';c.querySelector('[data-coach-date]')?.classList.toggle('hidden',!unique);c.querySelector('[data-coach-start]')?.classList.toggle('hidden',unique);c.querySelector('[data-coach-end]')?.classList.toggle('hidden',unique);c.querySelector('[data-coach-weekdays]')?.classList.toggle('hidden',unique);};if(rec){rec.onchange=syncRec;syncRec();$('coachLessonForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target),unique=f.get('recorrente')==='false',teachers=[...e.target.querySelectorAll('[name="professores"]:checked')].map(x=>x.value),weekdays=[...e.target.querySelectorAll('[name="dias_semana"]:checked')].map(x=>x.value);if(!teachers.length)return showMessage('Selecione pelo menos um professor.','error');if(!unique&&!weekdays.length)return showMessage('Selecione ao menos um dia da semana.','error');const payload={titulo:f.get('titulo'),turma_id:f.get('turma_id')||null,local:f.get('local')||null,horario_inicio:f.get('inicio'),horario_fim:f.get('fim')||null,recorrente:!unique,data_aula:unique?f.get('data_aula'):null,dias_semana:unique?[]:weekdays,data_inicio:unique?null:(f.get('data_inicio')||today()),data_fim:unique?(null):(f.get('data_fim')||null),criado_por:user.id};const {data,error}=await db.from('agenda_aulas').insert(payload).select('id').single();if(error)return handleError(error,'Não foi possível salvar a aula');const rows=teachers.map(professor_id=>({aula_id:data.id,professor_id}));const {error:teacherError}=await db.from('agenda_aula_professores').insert(rows);if(teacherError){await db.from('agenda_aulas').delete().eq('id',data.id);return handleError(teacherError,'Não foi possível vincular os professores');}showMessage('Aula adicionada ao calendário.');await renderCoaches(c);};}
+    $('fixedCoachForm')?.addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.target);const {error}=await db.from('turmas_professores').upsert({turma_id:f.get('turma_id'),professor_id:f.get('professor_id')},{onConflict:'turma_id,professor_id'});if(error)return handleError(error,'Não foi possível definir o professor fixo');showMessage('Professor fixo definido.');await renderCoaches(c);});
+    c.querySelectorAll('[data-fixed-delete]').forEach(btn=>btn.onclick=async()=>{const {error}=await db.from('turmas_professores').delete().eq('id',btn.dataset.fixedDelete);if(error)return handleError(error,'Não foi possível remover o professor fixo');await renderCoaches(c);});
+    $('refreshCoachCalendar')?.addEventListener('click',()=>renderCoaches(c));
+  }
+
+  async function renderAdmin(c){
+    if(!isAdmin){c.innerHTML='<div class="card">Acesso restrito.</div>';return;}
+    await loadBase();
+    c.innerHTML=pageHeader('Administração','Resumo e gerenciamento de turmas e atletas.')+`<div class="admin-dashboard">
+      <div class="stats"><div class="stat"><strong>${dataCache.perfis.length}</strong><span>Perfis</span></div><div class="stat"><strong>${dataCache.turmas.length}</strong><span>Turmas</span></div><div class="stat"><strong>${dataCache.treinos.length}</strong><span>Treinos</span></div><div class="stat"><strong>${dataCache.mensalidades.filter(b=>b.status!=='pago').length}</strong><span>Cobranças pendentes</span></div></div>
+      <section class="card"><h2>Atletas cadastrados</h2><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Papel</th><th>Telefone</th><th>Responsável</th><th>Idade</th></tr></thead><tbody>${dataCache.perfis.map(p=>`<tr><td>${esc(p.nome)}</td><td>${esc(roleLabel(p))}</td><td>${esc(p.telefone||'—')}</td><td>${esc(p.responsavel||'—')}</td><td>${esc(p.idade||'—')}</td></tr>`).join('')||'<tr><td colspan="5">Sem perfis visíveis para sua conta.</td></tr>'}</tbody></table></div></section>
+      <section class="card"><h2>Gerenciar funções</h2><p class="muted small">Uma pessoa pode ter várias funções. As funções ficam separadas do papel principal para preservar as permissões do sistema.</p><form id="roleForm"><div class="grid"><div class="field"><label>Perfil</label><select name="user_id" required><option value="">Selecione uma pessoa</option>${dataCache.perfis.map(p=>`<option value="${p.user_id}">${esc(p.nome)} — ${esc(roleLabel(p))}</option>`).join('')}</select></div></div><div class="role-options"><label><input type="checkbox" name="roles" value="atleta"> Atleta</label><label><input type="checkbox" name="roles" value="tecnico"> Técnico</label><label><input type="checkbox" name="roles" value="admin"> Administrador</label></div><button>Salvar funções</button></form></section>
+      <section class="card"><h2>Criar turma</h2><form id="teamForm"><div class="grid"><div class="field"><label>Nome da turma</label><input name="nome" required></div><div class="field"><label>Categoria</label><input name="categoria" required placeholder="Sub-17, feminino, adulto..."></div><div class="field"><label>Descrição</label><input name="descricao"></div></div><button>Criar turma</button></form></section>
+      <section class="card"><h2>Vincular atleta à turma</h2><form id="linkForm"><div class="grid"><div class="field"><label>Atleta</label><select name="atleta_id" required><option value="">Selecione</option>${dataCache.perfis.filter(p=>(hasRole(p,'atleta')||!hasRole(p,'admin'))).map(p=>`<option value="${p.user_id}">${esc(p.nome)}</option>`).join('')}</select></div><div class="field"><label>Turma</label><select name="turma_id" required><option value="">Selecione</option>${dataCache.turmas.map(t=>`<option value="${t.id}">${esc(t.nome)}</option>`).join('')}</select></div></div><button>Vincular atleta</button></form></section>
+      <section class="card"><h2>Carrossel da tela inicial</h2><p class="muted small">Cadastre anúncios, produtos ou novidades. Fotos, preço e contato são opcionais. Sem anúncios ativos, o carrossel não aparece na tela inicial.</p><form id="showcaseForm" class="showcase-admin-form"><input type="hidden" name="id"><div class="field"><label>Título</label><input name="title" maxlength="120" required placeholder="Ex.: Garanta seu uniforme"></div><div class="field"><label>Preço (opcional)</label><input name="price" maxlength="80" placeholder="Ex.: R$ 60,00"></div><div class="field"><label>Contato (opcional)</label><input name="contact" maxlength="180" placeholder="WhatsApp, Instagram ou telefone"></div><div class="field"><label>Foto principal (opcional)</label><label class="upload-pick">＋ Escolher foto principal<input name="imageFile" type="file" accept="image/*" data-showcase-file="image"></label><div class="upload-preview" data-preview="image"></div></div><div class="field"><label>Foto extra 2 (opcional)</label><label class="upload-pick">＋ Adicionar outra foto<input name="image2File" type="file" accept="image/*" data-showcase-file="image2"></label><div class="upload-preview" data-preview="image2"></div></div><div class="field"><label>Foto extra 3 (opcional)</label><label class="upload-pick">＋ Adicionar outra foto<input name="image3File" type="file" accept="image/*" data-showcase-file="image3"></label><div class="upload-preview" data-preview="image3"></div></div><div class="field wide"><label>Descrição (opcional)</label><textarea name="description" rows="3" maxlength="1500" placeholder="Detalhes do produto ou anúncio"></textarea></div><label class="checkline wide"><input type="checkbox" name="active" checked> Exibir no carrossel da tela inicial</label><div class="showcase-admin-actions"><button type="submit">Salvar anúncio</button><button type="button" class="secondary" id="showcaseCancel">Limpar formulário</button></div></form><div id="showcaseAdminList"></div></section>
+      <section class="card"><h2>Atletas por turma</h2><div id="teamRosterList">Carregando...</div></section></div>`;
+    addManagementShortcuts(c,'admin');
+    setupShowcaseAdmin(c);
+    $('teamForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);const {error}=await db.from('turmas').insert({nome:f.get('nome'),categoria:f.get('categoria'),descricao:f.get('descricao')||null,ativo:true,criado_por:user.id});if(error)return handleError(error,'Erro ao criar turma');showMessage('Turma criada.');await renderAdmin(c);};
+    $('roleForm').elements.user_id.onchange=()=>{const p=dataCache.perfis.find(x=>x.user_id===$('roleForm').elements.user_id.value);const roles=profileRoles(p);$('roleForm').querySelectorAll('[name="roles"]').forEach(el=>el.checked=roles.includes(el.value)||(el.value==='admin'&&roles.includes('administrador'))||(el.value==='tecnico'&&roles.some(r=>['treinador','professor','técnico'].includes(r))));};
+    $('roleForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);const target=f.get('user_id');const roles=[...e.target.querySelectorAll('[name="roles"]:checked')].map(el=>el.value);if(!roles.length)return showMessage('Selecione pelo menos uma função.','error');const primaryRole=roles.includes('admin')?'admin':'atleta';const {error}=await db.from('perfis').update({papel:primaryRole,funcoes:roles}).eq('user_id',target);if(error)return handleError(error,'Não foi possível atualizar as funções');showMessage('Funções atualizadas.');await loadProfile();await renderAdmin(c);};
+    $('linkForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);const {error}=await db.from('turma_atletas').upsert({atleta_id:f.get('atleta_id'),turma_id:f.get('turma_id')},{onConflict:'turma_id,atleta_id'});if(error)return handleError(error,'Erro ao vincular atleta');showMessage('Atleta vinculado à turma.');await renderAdmin(c);};
+    const rosterBox=$('teamRosterList');
+    const {data:links,error}=await db.from('turma_atletas').select('turma_id,atleta_id');
+    if(error){rosterBox.textContent=error.message;return;}
+    rosterBox.innerHTML=dataCache.turmas.map(t=>{const teamLinks=(links||[]).filter(l=>String(l.turma_id)===String(t.id));return `<div class="item"><strong>${esc(t.nome)}</strong>${teamLinks.map(l=>`<div class="roster-member"><span>${esc(personName(l.atleta_id))}</span><button type="button" class="danger" data-unlink-athlete="${l.atleta_id}" data-unlink-team="${t.id}">Tirar da turma</button></div>`).join('')||'<p class="muted small">Nenhum atleta vinculado</p>'}</div>`}).join('')||'<p class="muted">Nenhuma turma cadastrada.</p>';
+    rosterBox.querySelectorAll('[data-unlink-athlete]').forEach(btn=>btn.onclick=async()=>{if(!confirm(`Tirar ${personName(btn.dataset.unlinkAthlete)} desta turma?`))return;const {error}=await db.from('turma_atletas').delete().eq('turma_id',btn.dataset.unlinkTeam).eq('atleta_id',btn.dataset.unlinkAthlete);if(error)return handleError(error,'Não foi possível tirar o atleta da turma');showMessage('Atleta removido da turma.');await renderAdmin(c);});
+  }
+
+  async function refreshNotifications(){
+    if(!user||!db)return;await loadBase();
+    const recent=(dataCache.avisos||[]).filter(a=>a.created_at&&Date.now()-new Date(a.created_at).getTime()<48*60*60*1000).filter(a=>a.target_type==='all'||(a.target_type==='athlete'&&a.target_athlete_id===user.id)||(a.target_type==='class'&&dataCache.turmas.some(t=>String(t.id)===String(a.target_class_id))));
+    const {data:callups}=await db.from('convocacoes').select('id,campeonato_id,criado_em,team_name').eq('atleta_id',user.id).order('criado_em',{ascending:false}).limit(10);
+    const items=[...recent.map(a=>({id:'notice-'+a.id,title:a.title,message:a.message,date:a.created_at,page:'avisos'})),...(callups||[]).map(a=>({id:'callup-'+a.id,title:'Você foi convocado',message:a.team_name||'Confira os campeonatos e sua convocação.',date:a.criado_em,page:'campeonatos'}))].sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+    const seen=JSON.parse(localStorage.getItem('spooky_seen_notifications_'+user.id)||'[]');const unread=items.filter(x=>!seen.includes(x.id));const bell=$('notificationBell');bell?.classList.toggle('has-unread',unread.length>0);const badge=$('notificationBadge');if(badge){badge.textContent=unread.length>9?'9+':String(unread.length);badge.classList.toggle('hidden',unread.length===0);}
+    const panel=$('notificationPanel');if(panel)panel.innerHTML=`<h3>Notificações</h3>${items.map(x=>`<button class="notification-entry" type="button" data-notification-id="${esc(x.id)}" data-notification-page="${x.page}"><strong>${esc(x.title)}${seen.includes(x.id)?'':' · NOVO'}</strong><small>${esc(x.message||'')} · ${x.date?new Date(x.date).toLocaleString('pt-BR'):''}</small></button>`).join('')||'<p class="muted small" style="padding:10px">Nenhuma notificação por enquanto.</p>'}`;
+    panel?.querySelectorAll('[data-notification-id]').forEach(btn=>btn.onclick=()=>{const key='spooky_seen_notifications_'+user.id;const arr=JSON.parse(localStorage.getItem(key)||'[]');arr.push(btn.dataset.notificationId);localStorage.setItem(key,JSON.stringify([...new Set(arr)]));panel.classList.add('hidden');openPage(btn.dataset.notificationPage);refreshNotifications();});
+  }
+  $('notificationBell')?.addEventListener('click',async e=>{e.stopPropagation();const panel=$('notificationPanel');panel.classList.toggle('hidden');if(!panel.classList.contains('hidden'))await refreshNotifications();});
+  document.addEventListener('click',e=>{if(!e.target.closest('.notification-wrap'))$('notificationPanel')?.classList.add('hidden');});
+
+  $('loginForm').addEventListener('submit',async e=>{
+    e.preventDefault();if(!db)return showMessage('Biblioteca Supabase não carregou. Verifique a internet.','error',false);
+    $('loginButton').disabled=true;
+    const {data,error}=await db.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});
+    $('loginButton').disabled=false;
+    if(error)return showMessage(error.message,'error',false);
+    user=data.user;session=data.session;
+    try{await startApp();}catch(err){handleError(err,'Não foi possível carregar seu perfil');}
+  });
+  $('toggleSignup').onclick=()=>{const show=$('signupForm').classList.toggle('hidden');$('loginForm').classList.toggle('hidden',show);$('authTitle').textContent=show?'Criar conta':'Entrar';$('toggleSignup').textContent=show?'Voltar para entrar':'Criar conta';$('recoverButton').classList.toggle('hidden',show);};
+  $('signupForm').addEventListener('submit',async e=>{
+    e.preventDefault();const {data,error}=await db.auth.signUp({email:$('signupEmail').value.trim(),password:$('signupPassword').value,options:{data:{nome:$('signupName').value.trim(),telefone:$('signupPhone').value.trim()}}});
+    if(error)return showMessage(error.message,'error',false);
+    if(data.session&&data.user){
+      user=data.user;session=data.session;
+      const {error:profileError}=await db.from('perfis').upsert({user_id:user.id,nome:$('signupName').value.trim(),telefone:$('signupPhone').value.trim()||null,papel:'atleta'},{onConflict:'user_id'});
+      if(profileError)console.warn('Perfil pode depender de trigger no banco:',profileError.message);
+      try{await startApp();}catch(err){handleError(err,'Conta criada, mas não foi possível carregar o perfil');}
+    }else showMessage('Cadastro iniciado. Confirme seu e-mail e depois entre na plataforma.','ok',false);
+  });
+  $('recoverButton').onclick=async()=>{const email=$('loginEmail').value.trim();if(!email)return showMessage('Digite seu e-mail no campo acima.','error',false);const {error}=await db.auth.resetPasswordForEmail(email);if(error)return showMessage(error.message,'error',false);showMessage('Se o e-mail estiver cadastrado, você receberá as instruções.','ok',false);};
+  $('logoutButton').onclick=async()=>{await db.auth.signOut();user=null;session=null;profile=null;isAdmin=false;setAppVisible(false);};
+  $('nav').addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b)openPage(b.dataset.page);});
+  $('content').addEventListener('click',e=>{if(e.target.closest('[data-back-home]'))openPage('inicio');const card=e.target.closest('[data-showcase-open]');if(card){sessionStorage.setItem('spooky_showcase_open',card.dataset.showcaseOpen);openPage('anuncio');}});
+
+  async function boot(){
+    if(!db){showMessage('Não foi possível carregar o cliente Supabase.','error',false);return;}
+    const {data,error}=await db.auth.getSession();if(error)console.warn(error.message);
+    if(data?.session){session=data.session;user=session.user;try{await startApp();}catch(err){handleError(err,'Erro ao iniciar a sessão');setAppVisible(false);}}
+    else setAppVisible(false);
+    db.auth.onAuthStateChange(async(_event,newSession)=>{
+      if(newSession&&!user){session=newSession;user=newSession.user;try{await startApp();}catch(err){console.error(err);}}
+      if(!newSession){session=null;user=null;profile=null;isAdmin=false;setAppVisible(false);}
+    });
+  }
+  boot();
+})();
+</script>
+</body>
+</html>
+
+
